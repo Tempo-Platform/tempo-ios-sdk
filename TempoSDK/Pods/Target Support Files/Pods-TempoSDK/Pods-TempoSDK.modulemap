@@ -1,6 +1,0 @@
-framework module Pods_TempoSDK {
-  umbrella header "Pods-TempoSDK-umbrella.h"
-
-  export *
-  module * { export * }
-}
