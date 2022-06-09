@@ -13,7 +13,6 @@
 		5A522FDE284C374C00A41438 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 5A522FDC284C374C00A41438 /* Main.storyboard */; };
 		5A522FE0284C374D00A41438 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5A522FDF284C374D00A41438 /* Assets.xcassets */; };
 		5A522FE3284C374D00A41438 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 5A522FE1284C374D00A41438 /* LaunchScreen.storyboard */; };
-		5A522FEC284C3D9A00A41438 /* SDKConsumer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A522FEB284C3D9A00A41438 /* SDKConsumer.swift */; };
 		5A522FF4284C3DCE00A41438 /* TempoSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5A522FF2284C3DC300A41438 /* TempoSDK.framework */; platformFilter = ios; };
 		5A522FF5284C3DCE00A41438 /* TempoSDK.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 5A522FF2284C3DC300A41438 /* TempoSDK.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
@@ -51,7 +50,6 @@
 		5A522FDF284C374D00A41438 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		5A522FE2284C374D00A41438 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		5A522FE4284C374D00A41438 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		5A522FEB284C3D9A00A41438 /* SDKConsumer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SDKConsumer.swift; sourceTree = "<group>"; };
 		5A522FED284C3DC300A41438 /* TempoSDK.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = TempoSDK.xcodeproj; path = ../TempoSDK/TempoSDK.xcodeproj; sourceTree = "<group>"; };
 		5A950422284EC7F40024D52E /* TempoSDKTester.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = TempoSDKTester.entitlements; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -90,7 +88,6 @@
 			isa = PBXGroup;
 			children = (
 				5A950422284EC7F40024D52E /* TempoSDKTester.entitlements */,
-				5A522FEB284C3D9A00A41438 /* SDKConsumer.swift */,
 				5A522FD6284C374C00A41438 /* AppDelegate.swift */,
 				5A522FD8284C374C00A41438 /* SceneDelegate.swift */,
 				5A522FDA284C374C00A41438 /* ViewController.swift */,
@@ -207,7 +204,6 @@
 			files = (
 				5A522FDB284C374C00A41438 /* ViewController.swift in Sources */,
 				5A522FD7284C374C00A41438 /* AppDelegate.swift in Sources */,
-				5A522FEC284C3D9A00A41438 /* SDKConsumer.swift in Sources */,
 				5A522FD9284C374C00A41438 /* SceneDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

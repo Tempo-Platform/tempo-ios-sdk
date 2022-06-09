@@ -1,47 +1,59 @@
 import TempoSDK
 import UIKit
 
-class ViewController: UIViewController, TempoInterstitialDelegate {
+class ViewController: UIViewController, TempoInterstitialListener {
 
-    @IBOutlet weak var loadAd: UIButton!
     var interstitialReady:Bool = false
-    var sdk:SDKConsumer! = nil
-    
-    @IBAction func loadAd(_ sender: Any) {
-        print("load Ad was clicked")
-        sdk = SDKConsumer(parentViewController:self)
-        sdk.setInterstitialDelegate(self)
-        sdk.getInterstitial()
-        sdk.displayInterstitial()
-    }
-    
+    var interstitial:TempoInterstitial? = nil
+    @IBOutlet weak var loadAdButton: UIButton!
+    @IBOutlet weak var showAdButton: UIButton!
+
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view.
-    }
-
-    func setInterstitialReady(_ ready:Bool){
-        interstitialReady = ready
-//        btnDisplayInterstitial.isHidden = !ready
+        self.interstitial = TempoInterstitial(parentViewController:self, delegate:self)
+        initializeUIButtons();
     }
     
-    func interstitialReady(_ interstitial: TempoInterstitial) {
+    private func initializeUIButtons(){
+        showAdButton.backgroundColor = UIColor(red: 0.9, green: 0.9, blue:0.9, alpha: 1.0)
+        showAdButton.layer.cornerRadius = 5
+        loadAdButton.backgroundColor = UIColor(red: 0.9, green: 0.9, blue:0.9, alpha: 1.0)
+        loadAdButton.layer.cornerRadius = 5
+        showAdButton.isEnabled = false
+    }
+    
+    @IBAction func loadAd(_ sender: Any) {
+        print("Loading Ad now")
+        interstitial?.loadAd()
+    }
+    
+    @IBAction func showAd(_ sender: Any) {
+        print("Showing Ad now")
+        interstitial?.showAd()
+    }
+    
+    
+    func setInterstitialReady(_ ready:Bool){
+        interstitialReady = ready
+        showAdButton.isEnabled = true
+    }
+    
+    func onAdFetchSucceeded() {
         print("Interstitial :: ready")
         setInterstitialReady(true)
     }
     
-    func interstitialFailedToLoad(_ interstitial: TempoInterstitial) {
+    func onAdFetchFailed() {
         print("Interstitial :: failed")
     }
     
-    func interstitialClosed(_ interstitial: TempoInterstitial) {
+    func onAdClosed() {
         print("Interstitial :: close")
     }
     
-    func interstitialStartLoad(_ interstitial: TempoInterstitial) {
-        print("Interstitial :: start load")
+    func onAdDisplayed() {
+        print("Interstitial :: displayed")
+        showAdButton.isEnabled = false
     }
-    
-
 }
 

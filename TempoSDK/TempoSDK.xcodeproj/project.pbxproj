@@ -12,7 +12,7 @@
 		5A522F87284BF6E200A41438 /* TempoInterstitial.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A522F85284BF6E200A41438 /* TempoInterstitial.swift */; };
 		5A522F8A284BF7F900A41438 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5A522F89284BF7F900A41438 /* Foundation.framework */; };
 		5A522F8C284BF80600A41438 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5A522F8B284BF80600A41438 /* UIKit.framework */; };
-		5A522F90284BF99900A41438 /* TempoInterstitialDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A522F8F284BF99900A41438 /* TempoInterstitialDelegate.swift */; };
+		5A522F90284BF99900A41438 /* TempoInterstitialListener.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A522F8F284BF99900A41438 /* TempoInterstitialListener.swift */; };
 		5A950425284FE7100024D52E /* form.html in Resources */ = {isa = PBXBuildFile; fileRef = 5A950424284FE7100024D52E /* form.html */; };
 /* End PBXBuildFile section */
 
@@ -23,7 +23,7 @@
 		5A522F85284BF6E200A41438 /* TempoInterstitial.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TempoInterstitial.swift; sourceTree = "<group>"; };
 		5A522F89284BF7F900A41438 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		5A522F8B284BF80600A41438 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
-		5A522F8F284BF99900A41438 /* TempoInterstitialDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TempoInterstitialDelegate.swift; sourceTree = "<group>"; };
+		5A522F8F284BF99900A41438 /* TempoInterstitialListener.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TempoInterstitialListener.swift; sourceTree = "<group>"; };
 		5A950424284FE7100024D52E /* form.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; name = form.html; path = "../../../Explore-WKScriptMessageHandler/ExploreWKScriptMessageHandler/form.html"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -61,7 +61,7 @@
 			isa = PBXGroup;
 			children = (
 				5A950424284FE7100024D52E /* form.html */,
-				5A522F8F284BF99900A41438 /* TempoInterstitialDelegate.swift */,
+				5A522F8F284BF99900A41438 /* TempoInterstitialListener.swift */,
 				5A522F85284BF6E200A41438 /* TempoInterstitial.swift */,
 				5A522F84284BF6E200A41438 /* TempoInterstitialView.swift */,
 				5A522F7C284BF21600A41438 /* TempoSDK.h */,
@@ -159,7 +159,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				5A522F90284BF99900A41438 /* TempoInterstitialDelegate.swift in Sources */,
+				5A522F90284BF99900A41438 /* TempoInterstitialListener.swift in Sources */,
 				5A522F87284BF6E200A41438 /* TempoInterstitial.swift in Sources */,
 				5A522F86284BF6E200A41438 /* TempoInterstitialView.swift in Sources */,
 			);

@@ -2,23 +2,21 @@ import Foundation
 import UIKit
 
 public class TempoInterstitial: NSObject {
-    private var interstitial:TempoInterstitialView?
+    private var interstitialView:TempoInterstitialView?
     private var parentViewController:UIViewController?
-    public init(parentViewController:UIViewController?, delegate:TempoInterstitialDelegate){
+    
+    public init(parentViewController:UIViewController?, delegate:TempoInterstitialListener){
         super.init()
         self.parentViewController = parentViewController
-        interstitial = TempoInterstitialView()
-        interstitial!.delegate = delegate
-        interstitial!.loadURLInterstitial(interstitial:self)
+        interstitialView = TempoInterstitialView()
+        interstitialView!.listener = delegate
     }
     
-    public func display(){
-        if(interstitial != nil){
-            if(parentViewController != nil){
-                interstitial!.display(parentViewController!)
-            }else{
-                // error
-            }
-        }
+    public func loadAd(){
+        interstitialView!.loadAd(interstitial:self)
+    }
+    
+    public func showAd(){
+        interstitialView!.showAd(parentViewController: parentViewController!)
     }
 }

@@ -3,25 +3,26 @@ import UIKit
 import WebKit
 
 public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKScriptMessageHandler  {
-    private var interstitial:TempoInterstitial!
-    public var delegate:TempoInterstitialDelegate!
+    public var listener:TempoInterstitialListener!
     
     var webView:WKWebView!
 
-    public func loadURLInterstitial(interstitial:TempoInterstitial){
-        self.interstitial = interstitial
+    public func loadAd(interstitial:TempoInterstitial){
+        print("load url interstitial")
         self.setupWKWebview()
-        self.loadPage()
+        self.loadUrl()
         
         webView.navigationDelegate = self
         webView.allowsBackForwardNavigationGestures = true
-        delegate.interstitialReady(self.interstitial)
-        
-        print("load url interstitial")
-        self.view.backgroundColor = UIColor.red
+        listener.onAdFetchSucceeded()
     }
     
-    private func loadPage() {
+    public func showAd(parentViewController:UIViewController) {
+        parentViewController.view.addSubview(webView)
+        listener.onAdDisplayed()
+    }
+    
+    private func loadUrl() {
         let url = URL(string: "https://brands.tempoplatform.com/campaign/1/ios")!
         self.webView.load(URLRequest(url: url))
     }
@@ -41,11 +42,8 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
     public func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
         if(message.body as? String == "CLOSE_AD"){
             webView.removeFromSuperview()
+            listener.onAdClosed()
         }
-    }
-    
-    public func display(_ parentViewController:UIViewController) {
-        parentViewController.view.addSubview(webView)
     }
     
 }
