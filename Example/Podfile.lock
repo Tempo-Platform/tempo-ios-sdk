@@ -1,0 +1,16 @@
+PODS:
+  - TempoSDK (0.0.7)
+
+DEPENDENCIES:
+  - TempoSDK (from `../`)
+
+EXTERNAL SOURCES:
+  TempoSDK:
+    :path: "../"
+
+SPEC CHECKSUMS:
+  TempoSDK: bf3f1c3f579b0d6c886cabcdc5f5f4fdb29eeb25
+
+PODFILE CHECKSUM: a1870a73036dd74e8f73b0612ace9216bbbd6866
+
+COCOAPODS: 1.11.3

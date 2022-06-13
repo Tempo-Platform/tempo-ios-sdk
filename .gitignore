@@ -1,24 +1,40 @@
-# Mac OS X
-*.DS_Store
+# Mac OS X Finder
+.DS_Store
 
-# Xcode
-*.pbxuser
+# Private Keys
+*.pem
+
+# Xcode legacy
+*.mode1
 *.mode1v3
 *.mode2v3
+*.perspective
 *.perspectivev3
-*.xcuserstate
-project.xcworkspace/
+*.pbxuser
+
+# Xcode
 xcuserdata/
+project.xcworkspace/
+DerivedData/
 
-# Generated files
-*.o
-*.pyc
-
-
-#Python modules
-MANIFEST
-dist/
+# build products
 build/
+*.[oa]
 
-# Backup files
+# repositories
+.hg
+.svn
+CVS
+
+# automatic backup files
 *~.nib
+*.swp
+*~
+*(Autosaved).rtfd/
+Backup[ ]of[ ]*.pages/
+Backup[ ]of[ ]*.key/
+Backup[ ]of[ ]*.numbers/
+
+# Cocoapods
+Pods/
+*.xcworkspace
