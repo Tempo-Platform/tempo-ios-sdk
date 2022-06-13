@@ -5,9 +5,10 @@ class ViewController: UIViewController, TempoInterstitialListener {
 
     var interstitialReady:Bool = false
     var interstitial:TempoInterstitial? = nil
+
     @IBOutlet weak var loadAdButton: UIButton!
     @IBOutlet weak var showAdButton: UIButton!
-
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         self.interstitial = TempoInterstitial(parentViewController:self, delegate:self)
@@ -26,7 +27,7 @@ class ViewController: UIViewController, TempoInterstitialListener {
         print("Loading Ad now")
         interstitial?.loadAd()
     }
-    
+
     @IBAction func showAd(_ sender: Any) {
         print("Showing Ad now")
         interstitial?.showAd()
