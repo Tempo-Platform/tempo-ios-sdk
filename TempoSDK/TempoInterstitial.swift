@@ -3,7 +3,7 @@ import UIKit
 
 public class TempoInterstitial: NSObject {
     private var interstitialView:TempoInterstitialView?
-    private var parentViewController:UIViewController?
+    public var parentViewController:UIViewController?
     
     public init(parentViewController:UIViewController?, delegate:TempoInterstitialListener){
         super.init()
