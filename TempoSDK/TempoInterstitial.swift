@@ -12,6 +12,10 @@ public class TempoInterstitial: NSObject {
         interstitialView!.listener = delegate
     }
     
+    public func updateViewController(parentViewController:UIViewController?){
+        self.parentViewController = parentViewController
+    }
+    
     public func loadAd(){
         interstitialView!.loadAd(interstitial:self)
     }
