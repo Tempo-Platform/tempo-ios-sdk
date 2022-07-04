@@ -14,7 +14,6 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
         
         webView.navigationDelegate = self
         webView.allowsBackForwardNavigationGestures = true
-        listener.onAdFetchSucceeded()
     }
     
     public func showAd(parentViewController:UIViewController) {
@@ -23,8 +22,27 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
     }
     
     private func loadUrl() {
-        let url = URL(string: "https://brands.tempoplatform.com/campaign/1/ios")!
-        self.webView.load(URLRequest(url: url))
+        var request = URLRequest(url: URL(string: "https://tempo.free.beeceptor.com/json")!)
+        request.httpMethod = "GET"
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        let session = URLSession.shared
+        let task = session.dataTask(with: request, completionHandler: { data, response, error -> Void in
+            do {
+                let json = try JSONSerialization.jsonObject(with: data!) as! Dictionary<String, Int>
+                DispatchQueue.main.async {
+                    let url = URL(string: "https://brands.tempoplatform.com/campaign/\(json["id"]!)/ios")!
+                    self.webView.load(URLRequest(url: url))
+                    self.listener.onAdFetchSucceeded()
+                }
+            } catch {
+                DispatchQueue.main.async {
+                    self.listener.onAdFetchFailed()
+                }
+                print("Tempo SDK: Failed loading the Ad.")
+            }
+        })
+        task.resume()
     }
     
     private func setupWKWebview() {
