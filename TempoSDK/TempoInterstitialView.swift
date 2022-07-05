@@ -33,7 +33,6 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
                 DispatchQueue.main.async {
                     let url = URL(string: "https://brands.tempoplatform.com/campaign/\(json["id"]!)/ios")!
                     self.webView.load(URLRequest(url: url))
-                    self.listener.onAdFetchSucceeded()
                 }
             } catch {
                 DispatchQueue.main.async {
@@ -46,7 +45,11 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
     }
     
     private func setupWKWebview() {
-        self.webView = WKWebView(frame: self.view.bounds, configuration: self.getWKWebViewConfiguration())
+        webView = WKWebView(frame: self.view.bounds, configuration: self.getWKWebViewConfiguration())
+//        webView.scrollView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
+        if #available(iOS 11.0, *) {
+            webView.scrollView.contentInsetAdjustmentBehavior = .never
+        }
     }
     
     private func getWKWebViewConfiguration() -> WKWebViewConfiguration {
@@ -54,13 +57,23 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
         userController.add(self, name: "observer")
         let configuration = WKWebViewConfiguration()
         configuration.userContentController = userController
+        configuration.allowsInlineMediaPlayback = true
+        if #available(iOS 10.0, *) {
+           configuration.mediaTypesRequiringUserActionForPlayback = []
+        }
         return configuration
     }
     
     public func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
+        
         if(message.body as? String == "CLOSE_AD"){
             webView.removeFromSuperview()
+            webView = nil
             listener.onAdClosed()
+        }
+        
+        if(message.body as? String == "ASSETS_LOADED"){
+            listener.onAdFetchSucceeded()
         }
     }
     

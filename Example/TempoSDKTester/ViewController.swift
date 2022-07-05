@@ -5,14 +5,16 @@ class ViewController: UIViewController, TempoInterstitialListener {
 
     var interstitialReady:Bool = false
     var interstitial:TempoInterstitial? = nil
-
+    
+    
     @IBOutlet weak var loadAdButton: UIButton!
     @IBOutlet weak var showAdButton: UIButton!
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        self.modalPresentationStyle = .fullScreen
         self.interstitial = TempoInterstitial(parentViewController:self, delegate:self)
-        initializeUIButtons();
+        initializeUIButtons();        
     }
     
     private func initializeUIButtons(){
@@ -25,6 +27,8 @@ class ViewController: UIViewController, TempoInterstitialListener {
     
     @IBAction func loadAd(_ sender: Any) {
         print("Loading Ad now")
+        loadAdButton.setTitle("Loading..", for: .normal)
+        loadAdButton.isEnabled = false
         interstitial?.loadAd()
     }
 
@@ -36,6 +40,8 @@ class ViewController: UIViewController, TempoInterstitialListener {
     
     func setInterstitialReady(_ ready:Bool){
         interstitialReady = ready
+        loadAdButton.setTitle("Load Ad", for: .normal)
+        loadAdButton.isEnabled = true
         showAdButton.isEnabled = true
     }
     
