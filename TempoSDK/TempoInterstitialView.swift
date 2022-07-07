@@ -49,6 +49,7 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
     
     private func setupWKWebview() {
         webView = WKWebView(frame: self.view.bounds, configuration: self.getWKWebViewConfiguration())
+        webView.scrollView.bounces = false
 //        observation = webView.observe(\WKWebView.estimatedProgress, options: .new) { _, change in
 //            print("Loaded: \(change)")
 //        }
