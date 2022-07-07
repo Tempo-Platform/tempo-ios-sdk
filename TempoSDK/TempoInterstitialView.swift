@@ -4,7 +4,7 @@ import WebKit
 
 public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKScriptMessageHandler  {
     public var listener:TempoInterstitialListener!
-    
+    private var observation: NSKeyValueObservation?
     var webView:WKWebView!
 
     public func loadAd(interstitial:TempoInterstitial){
@@ -14,10 +14,13 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
         
         webView.navigationDelegate = self
         webView.allowsBackForwardNavigationGestures = true
+        self.webView.isHidden = true;
+        UIApplication.shared.windows.last?.addSubview(webView)
     }
     
     public func showAd(parentViewController:UIViewController) {
         parentViewController.view.addSubview(webView)
+        webView.isHidden = false;
         listener.onAdDisplayed()
     }
     
@@ -46,6 +49,9 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
     
     private func setupWKWebview() {
         webView = WKWebView(frame: self.view.bounds, configuration: self.getWKWebViewConfiguration())
+//        observation = webView.observe(\WKWebView.estimatedProgress, options: .new) { _, change in
+//            print("Loaded: \(change)")
+//        }
 //        webView.scrollView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
         if #available(iOS 11.0, *) {
             webView.scrollView.contentInsetAdjustmentBehavior = .never
@@ -63,18 +69,29 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
         }
         return configuration
     }
-    
+        
     public func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
         
-        if(message.body as? String == "CLOSE_AD"){
+        if(message.body as? String == "TEMPO_CLOSE_AD"){
             webView.removeFromSuperview()
             webView = nil
             listener.onAdClosed()
         }
         
-        if(message.body as? String == "ASSETS_LOADED"){
+        if(message.body as? String == "TEMPO_ASSETS_LOADED"){
+            print("TEMPO_ASSETS_LOADED")
             listener.onAdFetchSucceeded()
         }
+        
+        if(message.body as? String == "TEMPO_VIDEO_LOADED"){
+            webView.removeFromSuperview()
+            print("TEMPO_VIDEO_LOADED")
+        }
+        
+        if(message.body as? String == "TEMPO_IMAGES_LOADED"){
+            print("TEMPO_IMAGES_LOADED")
+        }
+        
     }
     
 }
