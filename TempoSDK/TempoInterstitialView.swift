@@ -11,11 +11,6 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
         print("load url interstitial")
         self.setupWKWebview()
         self.loadUrl()
-        
-        webView.navigationDelegate = self
-        webView.allowsBackForwardNavigationGestures = true
-        self.webView.isHidden = true;
-        UIApplication.shared.windows.last?.addSubview(webView)
     }
     
     public func showAd(parentViewController:UIViewController) {
@@ -50,13 +45,13 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
     private func setupWKWebview() {
         webView = WKWebView(frame: self.view.bounds, configuration: self.getWKWebViewConfiguration())
         webView.scrollView.bounces = false
-//        observation = webView.observe(\WKWebView.estimatedProgress, options: .new) { _, change in
-//            print("Loaded: \(change)")
-//        }
-//        webView.scrollView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
+        webView.isHidden = true;
+        UIApplication.shared.windows.last?.addSubview(webView)
         if #available(iOS 11.0, *) {
             webView.scrollView.contentInsetAdjustmentBehavior = .never
         }
+        webView.navigationDelegate = self
+        webView.allowsBackForwardNavigationGestures = true
     }
     
     private func getWKWebViewConfiguration() -> WKWebViewConfiguration {

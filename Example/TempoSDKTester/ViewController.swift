@@ -10,7 +10,12 @@ class ViewController: UIViewController, TempoInterstitialListener {
     @IBOutlet weak var loadAdButton: UIButton!
     @IBOutlet weak var showAdButton: UIButton!
     
+    override var prefersStatusBarHidden: Bool {
+        return true
+    }
+    
     override func viewDidLoad() {
+//        view.backgroundColor = .gray
         super.viewDidLoad()
         self.modalPresentationStyle = .fullScreen
         self.interstitial = TempoInterstitial(parentViewController:self, delegate:self)
@@ -30,6 +35,8 @@ class ViewController: UIViewController, TempoInterstitialListener {
         loadAdButton.setTitle("Loading..", for: .normal)
         loadAdButton.isEnabled = false
         interstitial?.loadAd()
+        
+        
     }
 
     @IBAction func showAd(_ sender: Any) {
