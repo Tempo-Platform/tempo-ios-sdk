@@ -14,6 +14,10 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
     }
     
     public func showAd(parentViewController:UIViewController) {
+        
+        if #available(iOS 15.0, *) {
+            webView.setAllMediaPlaybackSuspended(false)
+        }
         parentViewController.view.addSubview(webView)
         webView.isHidden = false;
         listener.onAdDisplayed()
@@ -29,6 +33,7 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
             do {
                 let json = try JSONSerialization.jsonObject(with: data!) as! Dictionary<String, Int>
                 DispatchQueue.main.async {
+//                    let url = URL(string: "https://dedc-49-205-147-202.ngrok.io/campaign/\(json["id"]!)/ios")!
                     let url = URL(string: "https://brands.tempoplatform.com/campaign/\(json["id"]!)/ios")!
                     self.webView.load(URLRequest(url: url))
                 }
@@ -46,7 +51,9 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
         webView = WKWebView(frame: self.view.bounds, configuration: self.getWKWebViewConfiguration())
         webView.scrollView.bounces = false
         webView.isHidden = true;
-        UIApplication.shared.windows.last?.addSubview(webView)
+        if #available(iOS 15.0, *) {
+            UIApplication.shared.windows.last?.addSubview(webView)
+        }
         if #available(iOS 11.0, *) {
             webView.scrollView.contentInsetAdjustmentBehavior = .never
         }
@@ -80,7 +87,12 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
         }
         
         if(message.body as? String == "TEMPO_VIDEO_LOADED"){
-            webView.removeFromSuperview()
+            if #available(iOS 15.0, *) {
+                webView.setAllMediaPlaybackSuspended(true)
+                webView.removeFromSuperview()
+            } else {
+                
+            }
             print("TEMPO_VIDEO_LOADED")
         }
         
