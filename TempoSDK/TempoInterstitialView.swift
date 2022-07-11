@@ -14,12 +14,8 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
     }
     
     public func showAd(parentViewController:UIViewController) {
-        
-        if #available(iOS 15.0, *) {
-            webView.setAllMediaPlaybackSuspended(false)
-        }
         parentViewController.view.addSubview(webView)
-        webView.isHidden = false;
+//        webView.isHidden = false;
         listener.onAdDisplayed()
     }
     
@@ -33,8 +29,8 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
             do {
                 let json = try JSONSerialization.jsonObject(with: data!) as! Dictionary<String, Int>
                 DispatchQueue.main.async {
-//                    let url = URL(string: "https://dedc-49-205-147-202.ngrok.io/campaign/\(json["id"]!)/ios")!
                     let url = URL(string: "https://brands.tempoplatform.com/campaign/\(json["id"]!)/ios")!
+//                    let url = URL(string: "https://f8e8-49-205-146-88.ngrok.io/campaign/\(json["id"]!)/ios")!
                     self.webView.load(URLRequest(url: url))
                 }
             } catch {
@@ -50,10 +46,9 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
     private func setupWKWebview() {
         webView = WKWebView(frame: self.view.bounds, configuration: self.getWKWebViewConfiguration())
         webView.scrollView.bounces = false
-        webView.isHidden = true;
-        if #available(iOS 15.0, *) {
-            UIApplication.shared.windows.last?.addSubview(webView)
-        }
+//        webView.isHidden = true;
+//        UIApplication.shared.windows.last?.addSubview(webView)
+        
         if #available(iOS 11.0, *) {
             webView.scrollView.contentInsetAdjustmentBehavior = .never
         }
@@ -83,21 +78,19 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
         
         if(message.body as? String == "TEMPO_ASSETS_LOADED"){
             print("TEMPO_ASSETS_LOADED")
-            listener.onAdFetchSucceeded()
+//            webView.removeFromSuperview()
+            
         }
         
+        
         if(message.body as? String == "TEMPO_VIDEO_LOADED"){
-            if #available(iOS 15.0, *) {
-                webView.setAllMediaPlaybackSuspended(true)
-                webView.removeFromSuperview()
-            } else {
-                
-            }
+//            webView.removeFromSuperview()
             print("TEMPO_VIDEO_LOADED")
         }
         
         if(message.body as? String == "TEMPO_IMAGES_LOADED"){
             print("TEMPO_IMAGES_LOADED")
+            listener.onAdFetchSucceeded()
         }
         
     }
