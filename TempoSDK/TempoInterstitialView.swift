@@ -2,10 +2,16 @@ import Foundation
 import UIKit
 import WebKit
 
+class FullScreenWKWebView: WKWebView {
+    override var safeAreaInsets: UIEdgeInsets {
+        return UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
+    }
+}
+
 public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKScriptMessageHandler  {
     public var listener:TempoInterstitialListener!
     private var observation: NSKeyValueObservation?
-    var webView:WKWebView!
+    var webView:FullScreenWKWebView!
 
     public func loadAd(interstitial:TempoInterstitial, appId:String, adId:String?){
         print("load url interstitial")
@@ -64,7 +70,7 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
     }
     
     private func setupWKWebview() {
-        webView = WKWebView(frame: UIScreen.main.bounds, configuration: self.getWKWebViewConfiguration())
+        webView = FullScreenWKWebView(frame: UIScreen.main.bounds, configuration: self.getWKWebViewConfiguration())
         webView.scrollView.bounces = false
 //        webView.isHidden = true;
 //        UIApplication.shared.windows.last?.addSubview(webView)
