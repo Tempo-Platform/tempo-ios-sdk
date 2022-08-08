@@ -1,13 +1,16 @@
 public protocol TempoInterstitialListener {
-    // called when the interstitial content is finished loading
+    // Called when the interstitial content is finished loading.
     func onAdFetchSucceeded()
     
-    // called when an error occurs loading the interstitial content
+    // Called when an error occurs loading the interstitial content.
     func onAdFetchFailed()
     
-    // called when the interstitial has close, and disposed of it's views
+    // Called when the interstitial has closed and disposed of its views.
     func onAdClosed()
     
     // Called when an ad goes full screen.
     func onAdDisplayed()
+    
+    // Called when an ad is clicked.
+    func onAdClicked()  // TODO: actually monitor clicks and call this callback
 }

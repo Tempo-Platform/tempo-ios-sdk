@@ -18,8 +18,8 @@ class ViewController: UIViewController, TempoInterstitialListener {
 //        view.backgroundColor = .gray
         super.viewDidLoad()
         self.modalPresentationStyle = .fullScreen
-        self.interstitial = TempoInterstitial(parentViewController:self, delegate:self)
-        initializeUIButtons();        
+        self.interstitial = TempoInterstitial(parentViewController:self, delegate:self, appId:"8")
+        initializeUIButtons();
     }
     
     private func initializeUIButtons(){
@@ -68,6 +68,10 @@ class ViewController: UIViewController, TempoInterstitialListener {
     func onAdDisplayed() {
         print("Interstitial :: displayed")
         showAdButton.isEnabled = false
+    }
+
+    func onAdClicked() {
+        print("Interstitial :: clicked")
     }
 }
 
