@@ -4,8 +4,20 @@ import WebKit
 
 class FullScreenWKWebView: WKWebView {
     override var safeAreaInsets: UIEdgeInsets {
-        return UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
+        return UIEdgeInsets(top: 50, left: 0, bottom: 0, right: 0)
     }
+}
+
+@available(iOS 13.0, *)
+func getSafeAreaTop()->CGFloat{
+    let keyWindow = UIApplication.shared.connectedScenes
+        .filter({$0.activationState == .foregroundActive})
+        .map({$0 as? UIWindowScene})
+        .compactMap({$0})
+        .first?.windows
+        .filter({$0.isKeyWindow}).first
+    
+    return keyWindow?.safeAreaInsets.top ?? 0
 }
 
 public struct Metric : Codable {
@@ -33,6 +45,8 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
     var currentAdId: String?
     var currentCampaignId: String?
     var currentAppId: String?
+    var currentParentViewController: UIViewController?
+    var previousParentBGColor: UIColor?
 
     public func loadAd(interstitial:TempoInterstitial, appId:String, adId:String?){
         print("load url interstitial")
@@ -41,12 +55,16 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
     }
     
     public func showAd(parentViewController:UIViewController) {
-        parentViewController.view.addSubview(webView)
+        self.currentParentViewController = parentViewController
+        self.previousParentBGColor = self.currentParentViewController!.view.backgroundColor
+        self.currentParentViewController!.view.backgroundColor = .black
+        self.currentParentViewController!.view.addSubview(webView)
 //        webView.isHidden = false;
         listener.onAdDisplayed()
     }
     
     public func closeAd(){
+        self.currentParentViewController!.view.backgroundColor = self.previousParentBGColor!
         webView.removeFromSuperview()
         webView = nil
         pushMetrics()
@@ -95,7 +113,7 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
                                                   os: "iOS \(UIDevice.current.systemVersion)"))
                 } else {
                     DispatchQueue.main.async {
-                        let url = URL(string: "https://brands.tempoplatform.com/campaign/\(json["id"]!)/ios")!
+                        let url = URL(string: "https://ads.tempoplatform.com/campaign/\(json["id"]!)/ios")!
                         self.currentCampaignId = (json["id"] as! String)
     //                    let url = URL(string: "https://f8e8-49-205-146-88.ngrok.io/campaign/\(json["id"]!)/ios")!
                         self.webView.load(URLRequest(url: url))
@@ -120,7 +138,13 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
     }
     
     private func setupWKWebview() {
-        webView = FullScreenWKWebView(frame: UIScreen.main.bounds, configuration: self.getWKWebViewConfiguration())
+        var safeAreaTop: CGFloat
+        if #available(iOS 13.0, *) {
+            safeAreaTop = getSafeAreaTop()
+        } else {
+            safeAreaTop = 0.0
+        }
+        webView = FullScreenWKWebView(frame: CGRect( x: 0, y: safeAreaTop, width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height - safeAreaTop ), configuration: self.getWKWebViewConfiguration())
         webView.scrollView.bounces = false
 //        webView.isHidden = true;
 //        UIApplication.shared.windows.last?.addSubview(webView)
