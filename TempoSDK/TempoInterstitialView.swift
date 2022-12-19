@@ -48,10 +48,10 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
     var currentParentViewController: UIViewController?
     var previousParentBGColor: UIColor?
 
-    public func loadAd(interstitial:TempoInterstitial, appId:String, adId:String?){
+    public func loadAd(interstitial:TempoInterstitial, appId:String, adId:String?, cpmFloor:Float?){
         print("load url interstitial")
         self.setupWKWebview()
-        self.loadUrl(appId:appId, adId:adId)
+        self.loadUrl(appId:appId, adId:adId, cpmFloor:cpmFloor)
     }
     
     public func showAd(parentViewController:UIViewController) {
@@ -71,10 +71,11 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
         listener.onAdClosed()
     }
     
-    private func loadUrl(appId:String, adId:String?) {
+    private func loadUrl(appId:String, adId:String?, cpmFloor:Float?) {
         currentUUID = UUID().uuidString
         currentAdId = adId ?? "NONE"
         currentAppId = appId
+        let currentCPMFloor = cpmFloor ?? 0.0
         metricList.append(Metric(metric_type: "AD_LOAD_REQUEST",
                                  ad_id: currentAdId,
                                  app_id: appId,
@@ -87,7 +88,8 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
         components.queryItems = [
             URLQueryItem(name: "uuid", value: currentUUID),  // this UUID is unique per ad load
             URLQueryItem(name: "ad_id", value: currentAdId),
-            URLQueryItem(name: "app_id", value: appId)
+            URLQueryItem(name: "app_id", value: appId),
+            URLQueryItem(name: "cpm_floor", value: String(describing: currentCPMFloor)),
         ]
         components.percentEncodedQuery = components.percentEncodedQuery?.replacingOccurrences(of: "+", with: "%2B")
         var request = URLRequest(url: components.url!)
@@ -112,6 +114,7 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
                                                   session_id: self.currentUUID!,
                                                   os: "iOS \(UIDevice.current.systemVersion)"))
                 } else {
+                    print("Tempo SDK: Got Ad ID from server. Response \(json).")
                     DispatchQueue.main.async {
                         let url = URL(string: "https://ads.tempoplatform.com/campaign/\(json["id"]!)/ios")!
                         self.currentCampaignId = (json["id"] as! String)
@@ -123,7 +126,7 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
                 DispatchQueue.main.async {
                     self.listener.onAdFetchFailed()
                 }
-                print("Tempo SDK: Failed loading the Ad.")
+                print("Tempo SDK: Failed loading the Ad. \(error)")
                 self.metricList.append(Metric(metric_type: "AD_LOAD_FAILED",
                                               ad_id: self.currentAdId,
                                               app_id: appId,

@@ -23,8 +23,8 @@ public class TempoInterstitial: NSObject {
         self.parentViewController = parentViewController
     }
     
-    public func loadAd(){
-        interstitialView!.loadAd(interstitial:self, appId:appId!, adId:adId)
+    public func loadAd(cpmFloor: Float?){
+        interstitialView!.loadAd(interstitial:self, appId:appId!, adId:adId, cpmFloor:cpmFloor)
     }
     
     public func showAd(){

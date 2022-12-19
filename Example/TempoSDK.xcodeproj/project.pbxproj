@@ -132,7 +132,7 @@
 				TargetAttributes = {
 					607FACCF1AFB9204008FA782 = {
 						CreatedOnToolsVersion = 6.3.1;
-						DevelopmentTeam = G5UH6YP33C;
+						DevelopmentTeam = GULURF5GWL;
 						LastSwiftMigration = 1340;
 					};
 				};
@@ -355,12 +355,12 @@
 			baseConfigurationReference = FFE163EDE664910BAFA54DDA /* Pods-TempoSDKTester.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				DEVELOPMENT_TEAM = G5UH6YP33C;
+				DEVELOPMENT_TEAM = GULURF5GWL;
 				INFOPLIST_FILE = TempoSDKTester/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				MODULE_NAME = ExampleApp;
-				PRODUCT_BUNDLE_IDENTIFIER = com.tempoplatform.sdktester;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.tempoplatform.sdk-tester";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_SWIFT3_OBJC_INFERENCE = Default;
 				SWIFT_VERSION = 5.0;
@@ -372,12 +372,12 @@
 			baseConfigurationReference = 252ACDBF2F07F21506EE4F01 /* Pods-TempoSDKTester.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				DEVELOPMENT_TEAM = G5UH6YP33C;
+				DEVELOPMENT_TEAM = GULURF5GWL;
 				INFOPLIST_FILE = TempoSDKTester/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				MODULE_NAME = ExampleApp;
-				PRODUCT_BUNDLE_IDENTIFIER = com.tempoplatform.sdktester;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.tempoplatform.sdk-tester";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_SWIFT3_OBJC_INFERENCE = Default;
 				SWIFT_VERSION = 5.0;

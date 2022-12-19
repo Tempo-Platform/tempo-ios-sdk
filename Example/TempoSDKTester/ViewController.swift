@@ -34,7 +34,7 @@ class ViewController: UIViewController, TempoInterstitialListener {
         print("Loading Ad now")
         loadAdButton.setTitle("Loading..", for: .normal)
         loadAdButton.isEnabled = false
-        interstitial?.loadAd()
+        interstitial?.loadAd(cpmFloor: 25.0)
         
         
     }
