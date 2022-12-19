@@ -64,7 +64,7 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
     }
     
     public func closeAd(){
-        self.currentParentViewController!.view.backgroundColor = self.previousParentBGColor!
+        self.currentParentViewController!.view.backgroundColor = self.previousParentBGColor
         webView.removeFromSuperview()
         webView = nil
         pushMetrics()

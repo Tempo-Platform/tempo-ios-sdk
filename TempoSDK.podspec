@@ -8,7 +8,7 @@
 
 Pod::Spec.new do |s|
   s.name             = 'TempoSDK'
-  s.version          = '0.0.16'
+  s.version          = '0.0.17'
   s.summary          = 'Tempo SDK to show payable ads'
   s.swift_version    = '5.6.1'
   s.description      = <<-DESC
@@ -23,7 +23,7 @@ TODO: Add long description of the pod here.
   s.source           = { :git => 'https://github.com/Tempo-Platform/tempo-ios-sdk.git', :tag => s.version.to_s }
   # s.social_media_url = 'https://twitter.com/<TWITTER_USERNAME>'
 
-  s.ios.deployment_target = '9.0'
+  s.ios.deployment_target = '11.0'
 
   s.source_files  = "TempoSDK/**/*.{h,m,swift}"
   # s.exclude_files = "TempoSDK/Exclude"
