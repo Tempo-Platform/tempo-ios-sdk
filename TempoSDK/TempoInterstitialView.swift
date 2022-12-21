@@ -8,6 +8,12 @@ class FullScreenWKWebView: WKWebView {
     }
 }
 
+class FullScreenUIView: UIView {
+    override var safeAreaInsets: UIEdgeInsets {
+        return UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
+    }
+}
+
 @available(iOS 13.0, *)
 func getSafeAreaTop()->CGFloat{
     let keyWindow = UIApplication.shared.connectedScenes
@@ -18,6 +24,18 @@ func getSafeAreaTop()->CGFloat{
         .filter({$0.isKeyWindow}).first
     
     return keyWindow?.safeAreaInsets.top ?? 0
+}
+
+@available(iOS 13.0, *)
+func getSafeAreaBottom()->CGFloat{
+    let keyWindow = UIApplication.shared.connectedScenes
+        .filter({$0.activationState == .foregroundActive})
+        .map({$0 as? UIWindowScene})
+        .compactMap({$0})
+        .first?.windows
+        .filter({$0.isKeyWindow}).first
+    
+    return keyWindow?.safeAreaInsets.bottom ?? 0
 }
 
 public struct Metric : Codable {
@@ -39,6 +57,7 @@ public struct Metric : Codable {
 public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKScriptMessageHandler  {
     public var listener:TempoInterstitialListener!
     private var observation: NSKeyValueObservation?
+    var solidColorView:FullScreenUIView!
     var webView:FullScreenWKWebView!
     var metricList: [Metric] = []
     var currentUUID: String?
@@ -56,17 +75,15 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
     
     public func showAd(parentViewController:UIViewController) {
         self.currentParentViewController = parentViewController
-        self.previousParentBGColor = self.currentParentViewController!.view.backgroundColor
-        self.currentParentViewController!.view.backgroundColor = .black
-        self.currentParentViewController!.view.addSubview(webView)
-//        webView.isHidden = false;
+        self.currentParentViewController!.view.addSubview(solidColorView)
         listener.onAdDisplayed()
     }
     
     public func closeAd(){
-        self.currentParentViewController!.view.backgroundColor = self.previousParentBGColor
+        solidColorView.removeFromSuperview()
         webView.removeFromSuperview()
         webView = nil
+        solidColorView = nil
         pushMetrics()
         listener.onAdClosed()
     }
@@ -118,7 +135,6 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
                     DispatchQueue.main.async {
                         let url = URL(string: "https://ads.tempoplatform.com/campaign/\(json["id"]!)/ios")!
                         self.currentCampaignId = (json["id"] as! String)
-    //                    let url = URL(string: "https://f8e8-49-205-146-88.ngrok.io/campaign/\(json["id"]!)/ios")!
                         self.webView.load(URLRequest(url: url))
                     }
                 }
@@ -142,21 +158,30 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
     
     private func setupWKWebview() {
         var safeAreaTop: CGFloat
+        var safeAreaBottom: CGFloat
         if #available(iOS 13.0, *) {
             safeAreaTop = getSafeAreaTop()
+            safeAreaBottom = getSafeAreaBottom()
         } else {
             safeAreaTop = 0.0
+            safeAreaBottom = 0.0
         }
-        webView = FullScreenWKWebView(frame: CGRect( x: 0, y: safeAreaTop, width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height - safeAreaTop ), configuration: self.getWKWebViewConfiguration())
+        webView = FullScreenWKWebView(frame: CGRect(
+            x: 0,
+            y: safeAreaTop,
+            width: UIScreen.main.bounds.width,
+            height: UIScreen.main.bounds.height - safeAreaTop - safeAreaBottom
+        ), configuration: self.getWKWebViewConfiguration())
         webView.scrollView.bounces = false
-//        webView.isHidden = true;
-//        UIApplication.shared.windows.last?.addSubview(webView)
         
         if #available(iOS 11.0, *) {
             webView.scrollView.contentInsetAdjustmentBehavior = .never
         }
         webView.navigationDelegate = self
         webView.allowsBackForwardNavigationGestures = true
+        solidColorView = FullScreenUIView(frame: CGRect( x: 0, y: 0, width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height))
+        solidColorView.backgroundColor = .black
+        solidColorView.addSubview(webView)
     }
     
     private func getWKWebViewConfiguration() -> WKWebViewConfiguration {
