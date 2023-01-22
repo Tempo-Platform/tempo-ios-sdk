@@ -76,6 +76,7 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
     public func showAd(parentViewController:UIViewController) {
         self.currentParentViewController = parentViewController
         self.currentParentViewController!.view.addSubview(solidColorView)
+        addMetric(metricType: "AD_SHOW")
         listener.onAdDisplayed()
     }
     
@@ -93,14 +94,7 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
         currentAdId = adId ?? "NONE"
         currentAppId = appId
         let currentCPMFloor = cpmFloor ?? 0.0
-        metricList.append(Metric(metric_type: "AD_LOAD_REQUEST",
-                                 ad_id: currentAdId,
-                                 app_id: appId,
-                                 timestamp: Int(NSDate().timeIntervalSince1970 * 1000),
-                                 bundle_id: Bundle.main.bundleIdentifier!,
-                                 campaign_id: "N/A",
-                                 session_id: currentUUID!,
-                                 os: "iOS \(UIDevice.current.systemVersion)"))
+        self.addMetric(metricType: "AD_LOAD_REQUEST")
         var components = URLComponents(string: "https://ads-api.tempoplatform.com/ad/")!
         components.queryItems = [
             URLQueryItem(name: "uuid", value: currentUUID),  // this UUID is unique per ad load
@@ -122,14 +116,7 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
                         self.listener.onAdFetchFailed()
                     }
                     print("Tempo SDK: Failed loading the Ad. Received NO_FILL response from API.")
-                    self.metricList.append(Metric(metric_type: "NO_FILL",
-                                                  ad_id: self.currentAdId,
-                                                  app_id: appId,
-                                                  timestamp: Int(NSDate().timeIntervalSince1970 * 1000),
-                                                  bundle_id: Bundle.main.bundleIdentifier!,
-                                                  campaign_id: "N/A",
-                                                  session_id: self.currentUUID!,
-                                                  os: "iOS \(UIDevice.current.systemVersion)"))
+                    self.addMetric(metricType: "NO_FILL")
                 } else {
                     print("Tempo SDK: Got Ad ID from server. Response \(json).")
                     DispatchQueue.main.async {
@@ -143,14 +130,7 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
                     self.listener.onAdFetchFailed()
                 }
                 print("Tempo SDK: Failed loading the Ad. \(error)")
-                self.metricList.append(Metric(metric_type: "AD_LOAD_FAILED",
-                                              ad_id: self.currentAdId,
-                                              app_id: appId,
-                                              timestamp: Int(NSDate().timeIntervalSince1970 * 1000),
-                                              bundle_id: Bundle.main.bundleIdentifier!,
-                                              campaign_id: "N/A",
-                                              session_id: self.currentUUID!,
-                                              os: "iOS \(UIDevice.current.systemVersion)"))
+                self.addMetric(metricType: "AD_LOAD_FAILED")
             }
         })
         task.resume()
@@ -197,6 +177,9 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
     }
         
     public func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
+        if(message.body as? String != nil){
+            self.addMetric(metricType: message.body as! String)
+        }
         
         if(message.body as? String == "TEMPO_CLOSE_AD"){
             self.closeAd()
@@ -214,16 +197,20 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
         if(message.body as? String == "TEMPO_IMAGES_LOADED"){
             print("TEMPO_IMAGES_LOADED")
             listener.onAdFetchSucceeded()
-            self.metricList.append(Metric(metric_type: "AD_LOAD_SUCCESS",
-                                          ad_id: currentAdId,
-                                          app_id: currentAppId,
-                                          timestamp: Int(NSDate().timeIntervalSince1970 * 1000),
-                                          bundle_id: Bundle.main.bundleIdentifier!,
-                                          campaign_id: currentCampaignId!,
-                                          session_id: currentUUID!,
-                                          os: "iOS \(UIDevice.current.systemVersion)"))
+            self.addMetric(metricType: "AD_LOAD_SUCCESS")
         }
         
+    }
+
+    private func addMetric(metricType: String) {
+        self.metricList.append(Metric(metric_type: metricType,
+                                      ad_id: currentAdId,
+                                      app_id: currentAppId,
+                                      timestamp: Int(NSDate().timeIntervalSince1970 * 1000),
+                                      bundle_id: Bundle.main.bundleIdentifier!,
+                                      campaign_id: currentCampaignId ?? "",
+                                      session_id: currentUUID!,
+                                      os: "iOS \(UIDevice.current.systemVersion)"))
     }
 
     private func pushMetrics() {
@@ -247,8 +234,8 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
 
         //create dataTask using the session object to send data to the server
         let task = session.dataTask(with: request, completionHandler: { data, response, error in
-
             guard error == nil else {
+                // TODO: add error handling here, maybe try to send again? Or just send a "FAILED_TO_PUSH" single metric elsewhere?
                 return
             }
         })
