@@ -95,7 +95,7 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
         currentAppId = appId
         let currentCPMFloor = cpmFloor ?? 0.0
         self.addMetric(metricType: "AD_LOAD_REQUEST")
-        var components = URLComponents(string: "https://ads-api.tempoplatform.com/ad/")!
+        var components = URLComponents(string: "https://ads-api.tempoplatform.com/ad")!
         components.queryItems = [
             URLQueryItem(name: "uuid", value: currentUUID),  // this UUID is unique per ad load
             URLQueryItem(name: "ad_id", value: currentAdId),
@@ -215,7 +215,7 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
 
     private func pushMetrics() {
         //create the url with NSURL
-        let url = URL(string: "https://metric-api.tempoplatform.com/metrics/")!
+        let url = URL(string: "https://metric-api.tempoplatform.com/metrics")!
 
         //create the session object
         let session = URLSession.shared
