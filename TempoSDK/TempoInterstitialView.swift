@@ -78,7 +78,7 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
         self.currentParentViewController = parentViewController
         self.currentParentViewController!.view.addSubview(solidColorView)
         addMetric(metricType: "AD_SHOW")
-        listener.onAdDisplayed()
+        listener.onAdDisplayed(isInterstitial: self.currentIsInterstitial ?? true)
     }
     
     public func closeAd(){
@@ -87,7 +87,7 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
         webView = nil
         solidColorView = nil
         pushMetrics()
-        listener.onAdClosed()
+        listener.onAdClosed(isInterstitial: self.currentIsInterstitial ?? true)
     }
     
     public func loadSpecificAd(isInterstitial: Bool, campaignId:String) {
@@ -130,7 +130,7 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
                 let json = try JSONSerialization.jsonObject(with: data!) as! Dictionary<String, Any>
                 if (json["status"] as! String == "NO_FILL") {
                     DispatchQueue.main.async {
-                        self.listener.onAdFetchFailed()
+                        self.listener.onAdFetchFailed(isInterstitial: self.currentIsInterstitial ?? true)
                     }
                     print("Tempo SDK: Failed loading the Ad. Received NO_FILL response from API.")
                     self.addMetric(metricType: "NO_FILL")
@@ -145,7 +145,7 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
                 }
             } catch {
                 DispatchQueue.main.async {
-                    self.listener.onAdFetchFailed()
+                    self.listener.onAdFetchFailed(isInterstitial: self.currentIsInterstitial ?? true)
                 }
                 print("Tempo SDK: Failed loading the Ad. \(error)")
                 self.addMetric(metricType: "AD_LOAD_FAILED")
@@ -214,7 +214,7 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
         
         if(message.body as? String == "TEMPO_IMAGES_LOADED"){
             print("TEMPO_IMAGES_LOADED")
-            listener.onAdFetchSucceeded()
+            listener.onAdFetchSucceeded(isInterstitial: self.currentIsInterstitial ?? true)
             self.addMetric(metricType: "AD_LOAD_SUCCESS")
         }
         
