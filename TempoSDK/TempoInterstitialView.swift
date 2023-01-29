@@ -64,13 +64,14 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
     var currentAdId: String?
     var currentCampaignId: String?
     var currentAppId: String?
+    var currentIsInterstitial: Bool?
     var currentParentViewController: UIViewController?
     var previousParentBGColor: UIColor?
 
-    public func loadAd(interstitial:TempoInterstitial, appId:String, adId:String?, cpmFloor:Float?){
+    public func loadAd(interstitial:TempoInterstitial, isInterstitial: Bool, appId:String, adId:String?, cpmFloor:Float?){
         print("load url interstitial")
         self.setupWKWebview()
-        self.loadUrl(appId:appId, adId:adId, cpmFloor:cpmFloor)
+        self.loadUrl(isInterstitial:isInterstitial, appId:appId, adId:adId, cpmFloor:cpmFloor)
     }
     
     public func showAd(parentViewController:UIViewController) {
@@ -89,10 +90,25 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
         listener.onAdClosed()
     }
     
-    private func loadUrl(appId:String, adId:String?, cpmFloor:Float?) {
+    public func loadSpecificAd(isInterstitial: Bool, campaignId:String) {
+        print("load specific url interstitial")
+        self.setupWKWebview()
+        currentUUID = "TEST"
+        currentAdId = "TEST"
+        currentAppId = "TEST"
+        currentIsInterstitial = isInterstitial
+        let urlComponent = isInterstitial ? "interstitial" : "campaign"
+        self.addMetric(metricType: "CUSTOM_AD_LOAD_REQUEST")
+        let url = URL(string: "https://ads.tempoplatform.com/\(urlComponent)/\(campaignId)/ios")!
+        self.currentCampaignId = campaignId
+        self.webView.load(URLRequest(url: url))
+    }
+    
+    private func loadUrl(isInterstitial: Bool, appId:String, adId:String?, cpmFloor:Float?) {
         currentUUID = UUID().uuidString
         currentAdId = adId ?? "NONE"
         currentAppId = appId
+        currentIsInterstitial = isInterstitial
         let currentCPMFloor = cpmFloor ?? 0.0
         self.addMetric(metricType: "AD_LOAD_REQUEST")
         var components = URLComponents(string: "https://ads-api.tempoplatform.com/ad")!
@@ -101,6 +117,7 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
             URLQueryItem(name: "ad_id", value: currentAdId),
             URLQueryItem(name: "app_id", value: appId),
             URLQueryItem(name: "cpm_floor", value: String(describing: currentCPMFloor)),
+            URLQueryItem(name: "is_interstitial", value: String(currentIsInterstitial!)),
         ]
         components.percentEncodedQuery = components.percentEncodedQuery?.replacingOccurrences(of: "+", with: "%2B")
         var request = URLRequest(url: components.url!)
@@ -120,7 +137,8 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
                 } else {
                     print("Tempo SDK: Got Ad ID from server. Response \(json).")
                     DispatchQueue.main.async {
-                        let url = URL(string: "https://ads.tempoplatform.com/campaign/\(json["id"]!)/ios")!
+                        let urlComponent = self.currentIsInterstitial! ? "interstitial" : "campaign"
+                        let url = URL(string: "https://ads.tempoplatform.com/\(urlComponent)/\(json["id"]!)/ios")!
                         self.currentCampaignId = (json["id"] as! String)
                         self.webView.load(URLRequest(url: url))
                     }

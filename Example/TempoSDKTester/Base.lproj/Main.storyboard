@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="20037" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="vXZ-lx-hvc">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="21507" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="vXZ-lx-hvc">
     <device id="retina4_7" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="20020"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="21505"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
@@ -20,16 +20,34 @@
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                         <subviews>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="29" translatesAutoresizingMaskIntoConstraints="NO" id="xnt-jG-Th3">
-                                <rect key="frame" x="137" y="263.5" width="101.5" height="140.5"/>
+                                <rect key="frame" x="106" y="198.5" width="163" height="270.5"/>
                                 <subviews>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Tempo Demo" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="DbH-xa-PN3" userLabel="Tempo Demo Label">
-                                        <rect key="frame" x="0.0" y="0.0" width="101.5" height="20.5"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="163" height="20.5"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                         <color key="textColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <nil key="highlightedColor"/>
                                     </label>
+                                    <textField opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="248" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Campaign ID" textAlignment="center" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="tyn-cn-1Sy">
+                                        <rect key="frame" x="0.0" y="49.5" width="163" height="34"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                        <textInputTraits key="textInputTraits" keyboardType="numberPad" returnKeyType="done" enablesReturnKeyAutomatically="YES"/>
+                                        <connections>
+                                            <action selector="textFieldDidChange:" destination="vXZ-lx-hvc" eventType="editingChanged" id="fyK-hW-w8U"/>
+                                        </connections>
+                                    </textField>
+                                    <segmentedControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="0" translatesAutoresizingMaskIntoConstraints="NO" id="QeJ-gA-O8Q">
+                                        <rect key="frame" x="0.0" y="112.5" width="163" height="32"/>
+                                        <segments>
+                                            <segment title="Interstitial"/>
+                                            <segment title="Rewarded"/>
+                                        </segments>
+                                        <connections>
+                                            <action selector="segmentedControlAction:" destination="vXZ-lx-hvc" eventType="primaryActionTriggered" id="RiJ-NG-Ea2"/>
+                                        </connections>
+                                    </segmentedControl>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="noH-Fc-j5r" userLabel="Load Ad Button">
-                                        <rect key="frame" x="0.0" y="49.5" width="101.5" height="31"/>
+                                        <rect key="frame" x="0.0" y="172.5" width="163" height="34.5"/>
                                         <state key="normal" title="Button"/>
                                         <buttonConfiguration key="configuration" style="gray" title="Load Ad"/>
                                         <connections>
@@ -37,7 +55,7 @@
                                         </connections>
                                     </button>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="9EP-PG-jog">
-                                        <rect key="frame" x="0.0" y="109.5" width="101.5" height="31"/>
+                                        <rect key="frame" x="0.0" y="236" width="163" height="34.5"/>
                                         <state key="normal" title="Button"/>
                                         <buttonConfiguration key="configuration" style="gray" title="Show Ad"/>
                                         <connections>
@@ -55,6 +73,7 @@
                     </view>
                     <connections>
                         <outlet property="loadAdButton" destination="noH-Fc-j5r" id="flk-UD-lEX"/>
+                        <outlet property="segmentedControl" destination="QeJ-gA-O8Q" id="Vda-Fv-k6V"/>
                         <outlet property="showAdButton" destination="9EP-PG-jog" id="EWK-G9-XNx"/>
                     </connections>
                 </viewController>

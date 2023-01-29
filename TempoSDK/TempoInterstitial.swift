@@ -27,8 +27,12 @@ public class TempoInterstitial: NSObject {
         self.appId = appId
     }
     
-    public func loadAd(cpmFloor: Float?){
-        interstitialView!.loadAd(interstitial:self, appId:appId!, adId:adId, cpmFloor:cpmFloor)
+    public func loadSpecificAd(isInterstitial: Bool, campaignId:String){
+        interstitialView!.loadSpecificAd(isInterstitial: isInterstitial, campaignId: campaignId)
+    }
+    
+    public func loadAd(isInterstitial: Bool, cpmFloor: Float?){
+        interstitialView!.loadAd(interstitial: self, isInterstitial: isInterstitial, appId: appId!, adId: adId, cpmFloor: cpmFloor)
     }
     
     public func showAd(){
