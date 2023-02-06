@@ -82,25 +82,25 @@ class ViewController: UIViewController, TempoInterstitialListener {
         showAdButton.isEnabled = true
     }
     
-    func onAdFetchSucceeded() {
+    func onAdFetchSucceeded(isInterstitial: Bool) {
         print("Interstitial :: ready")
         setInterstitialReady(true)
     }
     
-    func onAdFetchFailed() {
+    func onAdFetchFailed(isInterstitial: Bool) {
         print("Interstitial :: failed")
     }
     
-    func onAdClosed() {
+    func onAdClosed(isInterstitial: Bool) {
         print("Interstitial :: close")
     }
     
-    func onAdDisplayed() {
+    func onAdDisplayed(isInterstitial: Bool) {
         print("Interstitial :: displayed")
         showAdButton.isEnabled = false
     }
 
-    func onAdClicked() {
+    func onAdClicked(isInterstitial: Bool) {
         print("Interstitial :: clicked")
     }
 }
