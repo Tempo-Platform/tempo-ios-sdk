@@ -127,21 +127,41 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
         let session = URLSession.shared
         let task = session.dataTask(with: request, completionHandler: { data, response, error -> Void in
             do {
-                let json = try JSONSerialization.jsonObject(with: data!) as! Dictionary<String, Any>
-                if (json["status"] as! String == "NO_FILL") {
+                var didSomething = false
+                let json = try JSONSerialization.jsonObject(with: data!)
+                if let jsonDict = json as? Dictionary<String, Any> {
+                    if let status = jsonDict["status"] {
+                        if let statusString = status as? String {
+                            if statusString == "NO_FILL" {
+                                DispatchQueue.main.async {
+                                    self.listener.onAdFetchFailed(isInterstitial: self.currentIsInterstitial ?? true)
+                                }
+                                print("Tempo SDK: Failed loading the Ad. Received NO_FILL response from API.")
+                                self.addMetric(metricType: "NO_FILL")
+                                didSomething = true
+                            } else if (statusString == "OK") {
+                                if let id = jsonDict["id"] {
+                                    if let idString = id as? String {
+                                        print("Tempo SDK: Got Ad ID from server. Response \(jsonDict).")
+                                        DispatchQueue.main.async {
+                                            let urlComponent = self.currentIsInterstitial! ? "interstitial" : "campaign"
+                                            let url = URL(string: "https://ads.tempoplatform.com/\(urlComponent)/\(idString)/ios")!
+                                            self.currentCampaignId = idString
+                                            self.webView.load(URLRequest(url: url))
+                                        }
+                                        didSomething = true
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                if (!didSomething) {
                     DispatchQueue.main.async {
                         self.listener.onAdFetchFailed(isInterstitial: self.currentIsInterstitial ?? true)
                     }
-                    print("Tempo SDK: Failed loading the Ad. Received NO_FILL response from API.")
-                    self.addMetric(metricType: "NO_FILL")
-                } else {
-                    print("Tempo SDK: Got Ad ID from server. Response \(json).")
-                    DispatchQueue.main.async {
-                        let urlComponent = self.currentIsInterstitial! ? "interstitial" : "campaign"
-                        let url = URL(string: "https://ads.tempoplatform.com/\(urlComponent)/\(json["id"]!)/ios")!
-                        self.currentCampaignId = (json["id"] as! String)
-                        self.webView.load(URLRequest(url: url))
-                    }
+                    print("Tempo SDK: Failed loading the Ad. Reason unknown.")
+                    self.addMetric(metricType: "AD_LOAD_FAILED")
                 }
             } catch {
                 DispatchQueue.main.async {
@@ -218,6 +238,11 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
             self.addMetric(metricType: "AD_LOAD_SUCCESS")
         }
         
+        if(message.body as? String == "TIMER_COMPLETED"){
+            print("TIMER_COMPLETED")
+            self.pushMetrics()
+        }
+        
     }
 
     private func addMetric(metricType: String) {
@@ -252,6 +277,7 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
 
         //create dataTask using the session object to send data to the server
         let task = session.dataTask(with: request, completionHandler: { data, response, error in
+            self.metricList.removeAll()
             guard error == nil else {
                 // TODO: add error handling here, maybe try to send again? Or just send a "FAILED_TO_PUSH" single metric elsewhere?
                 return
