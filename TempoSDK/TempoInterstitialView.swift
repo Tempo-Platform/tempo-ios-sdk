@@ -43,6 +43,7 @@ public struct Metric : Codable {
     var ad_id: String?
     var app_id: String?
     var timestamp: Int?
+    var is_interstitial: Bool?
     var bundle_id: String = "unknown"
     var campaign_id: String = "unknown"
     var session_id: String = "unknown"
@@ -240,9 +241,7 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
         
         if(message.body as? String == "TIMER_COMPLETED"){
             print("TIMER_COMPLETED")
-            self.pushMetrics()
         }
-        
     }
 
     private func addMetric(metricType: String) {
@@ -250,10 +249,14 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
                                       ad_id: currentAdId,
                                       app_id: currentAppId,
                                       timestamp: Int(NSDate().timeIntervalSince1970 * 1000),
+                                      is_interstitial: currentIsInterstitial,
                                       bundle_id: Bundle.main.bundleIdentifier!,
                                       campaign_id: currentCampaignId ?? "",
                                       session_id: currentUUID!,
                                       os: "iOS \(UIDevice.current.systemVersion)"))
+        if (["AD_SHOW", "AD_LOAD_REQUEST", "TIMER_COMPLETED"].contains(metricType)) {
+            pushMetrics()
+        }
     }
 
     private func pushMetrics() {
@@ -268,6 +271,7 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
         request.httpMethod = "POST" //set http method as POST
 
         let metricData = try? JSONEncoder().encode(metricList)
+        metricList.removeAll()
 
         request.httpBody = metricData // pass dictionary to data object and set it as request body
 
@@ -277,7 +281,6 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
 
         //create dataTask using the session object to send data to the server
         let task = session.dataTask(with: request, completionHandler: { data, response, error in
-            self.metricList.removeAll()
             guard error == nil else {
                 // TODO: add error handling here, maybe try to send again? Or just send a "FAILED_TO_PUSH" single metric elsewhere?
                 return
