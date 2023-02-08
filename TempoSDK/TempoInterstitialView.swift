@@ -127,52 +127,63 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
 
         let session = URLSession.shared
         let task = session.dataTask(with: request, completionHandler: { data, response, error -> Void in
-            do {
-                var didSomething = false
-                let json = try JSONSerialization.jsonObject(with: data!)
-                if let jsonDict = json as? Dictionary<String, Any> {
-                    if let status = jsonDict["status"] {
-                        if let statusString = status as? String {
-                            if statusString == "NO_FILL" {
-                                DispatchQueue.main.async {
-                                    self.listener.onAdFetchFailed(isInterstitial: self.currentIsInterstitial ?? true)
-                                }
-                                print("Tempo SDK: Failed loading the Ad. Received NO_FILL response from API.")
-                                self.addMetric(metricType: "NO_FILL")
-                                didSomething = true
-                            } else if (statusString == "OK") {
-                                if let id = jsonDict["id"] {
-                                    if let idString = id as? String {
-                                        print("Tempo SDK: Got Ad ID from server. Response \(jsonDict).")
-                                        DispatchQueue.main.async {
-                                            let urlComponent = self.currentIsInterstitial! ? "interstitial" : "campaign"
-                                            let url = URL(string: "https://ads.tempoplatform.com/\(urlComponent)/\(idString)/ios")!
-                                            self.currentCampaignId = idString
-                                            self.webView.load(URLRequest(url: url))
-                                        }
+            if error != nil || data == nil {
+                DispatchQueue.main.async {
+                    self.sendAdFetchFailed()
+                }
+            } else {
+                guard let httpResponse = response as? HTTPURLResponse,
+                      (200...299).contains(httpResponse.statusCode) else {
+                    DispatchQueue.main.async {
+                        self.sendAdFetchFailed()
+                    }
+                    return
+                }
+                do {
+                    var didSomething = false
+                    let json = try JSONSerialization.jsonObject(with: data!)
+                    DispatchQueue.main.async {
+                        if let jsonDict = json as? Dictionary<String, Any> {
+                            if let status = jsonDict["status"] {
+                                if let statusString = status as? String {
+                                    if statusString == "NO_FILL" {
+                                        self.listener.onAdFetchFailed(isInterstitial: self.currentIsInterstitial ?? true)
+                                        print("Tempo SDK: Failed loading the Ad. Received NO_FILL response from API.")
+                                        self.addMetric(metricType: "NO_FILL")
                                         didSomething = true
+                                    } else if (statusString == "OK") {
+                                        if let id = jsonDict["id"] {
+                                            if let idString = id as? String {
+                                                print("Tempo SDK: Got Ad ID from server. Response \(jsonDict).")
+                                                let urlComponent = self.currentIsInterstitial! ? "interstitial" : "campaign"
+                                                let url = URL(string: "https://ads.tempoplatform.com/\(urlComponent)/\(idString)/ios")!
+                                                self.currentCampaignId = idString
+                                                self.webView.load(URLRequest(url: url))
+                                                didSomething = true
+                                            }
+                                        }
                                     }
                                 }
                             }
                         }
+                        if (!didSomething) {
+                            self.sendAdFetchFailed()
+                        }
                     }
-                }
-                if (!didSomething) {
+                } catch {
                     DispatchQueue.main.async {
-                        self.listener.onAdFetchFailed(isInterstitial: self.currentIsInterstitial ?? true)
+                        self.sendAdFetchFailed()
                     }
-                    print("Tempo SDK: Failed loading the Ad. Reason unknown.")
-                    self.addMetric(metricType: "AD_LOAD_FAILED")
                 }
-            } catch {
-                DispatchQueue.main.async {
-                    self.listener.onAdFetchFailed(isInterstitial: self.currentIsInterstitial ?? true)
-                }
-                print("Tempo SDK: Failed loading the Ad. \(error)")
-                self.addMetric(metricType: "AD_LOAD_FAILED")
             }
         })
         task.resume()
+    }
+    
+    private func sendAdFetchFailed() {
+        self.listener.onAdFetchFailed(isInterstitial: self.currentIsInterstitial ?? true)
+        print("Tempo SDK: Failed loading the Ad. Reason unknown.")
+        self.addMetric(metricType: "AD_LOAD_FAILED")
     }
     
     private func setupWKWebview() {
