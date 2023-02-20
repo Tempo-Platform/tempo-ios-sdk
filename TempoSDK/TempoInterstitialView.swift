@@ -210,7 +210,10 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
         webView.navigationDelegate = self
         webView.allowsBackForwardNavigationGestures = true
         solidColorView = FullScreenUIView(frame: CGRect( x: 0, y: 0, width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height))
-        solidColorView.backgroundColor = .black
+        
+        //solidColorView.backgroundColor = .black
+        // ".black/#000" treated as transparent in Unity so making it a 'pseudo-black'
+        solidColorView.backgroundColor = UIColor(red: 0.01, green: 0.01, blue:0.01, alpha: 1)
         solidColorView.addSubview(webView)
     }
     
