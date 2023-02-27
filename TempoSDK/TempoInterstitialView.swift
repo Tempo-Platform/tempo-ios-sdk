@@ -211,7 +211,6 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
         webView.allowsBackForwardNavigationGestures = true
         solidColorView = FullScreenUIView(frame: CGRect( x: 0, y: 0, width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height))
         
-        //solidColorView.backgroundColor = .black
         // ".black/#000" treated as transparent in Unity so making it a 'pseudo-black'
         solidColorView.backgroundColor = UIColor(red: 0.01, green: 0.01, blue:0.01, alpha: 1)
         solidColorView.addSubview(webView)
@@ -220,12 +219,23 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
     private func getWKWebViewConfiguration() -> WKWebViewConfiguration {
         let userController = WKUserContentController()
         userController.add(self, name: "observer")
+        
+        // Create script that locks scalability and add to WK content controller
+        let lockScaleSource: String = "var meta = document.createElement('meta');" +
+            "meta.name = 'viewport';" +
+            "meta.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no';" +
+            "var head = document.getElementsByTagName('head')[0];" +
+            "head.appendChild(meta);"
+        let lockScaleScript: WKUserScript = WKUserScript(source: lockScaleSource, injectionTime: .atDocumentEnd, forMainFrameOnly: true)
+        userController.addUserScript(lockScaleScript)
+        
         let configuration = WKWebViewConfiguration()
         configuration.userContentController = userController
         configuration.allowsInlineMediaPlayback = true
         if #available(iOS 10.0, *) {
            configuration.mediaTypesRequiringUserActionForPlayback = []
         }
+    
         return configuration
     }
         
