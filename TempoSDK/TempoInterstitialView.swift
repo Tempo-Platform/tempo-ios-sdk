@@ -269,19 +269,43 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
     }
 
     private func addMetric(metricType: String) {
-        self.metricList.append(Metric(metric_type: metricType,
-                                      ad_id: currentAdId,
-                                      app_id: currentAppId,
-                                      timestamp: Int(NSDate().timeIntervalSince1970 * 1000),
-                                      is_interstitial: currentIsInterstitial,
-                                      bundle_id: Bundle.main.bundleIdentifier!,
-                                      campaign_id: currentCampaignId ?? "",
-                                      session_id: currentUUID!,
-                                      os: "iOS \(UIDevice.current.systemVersion)"))
+        var deviceTime: Bool = false
+        var metric = Metric(metric_type: metricType,
+                                   ad_id: currentAdId,
+                                   app_id: currentAppId,
+                                   timestamp: TempoUtcRetriever.getUTCTime(deviceTime: &deviceTime),
+                                   is_interstitial: currentIsInterstitial,
+                                   bundle_id: Bundle.main.bundleIdentifier!,
+                                   campaign_id: currentCampaignId ?? "",
+                                   session_id: currentUUID!,
+                                   os: "iOS \(UIDevice.current.systemVersion)")
+        
+        self.metricList.append(metric)
         if (["AD_SHOW", "AD_LOAD_REQUEST", "TIMER_COMPLETED"].contains(metricType)) {
             pushMetrics()
         }
+        
+        // If metric using device time, send additional metric instance
+        if(deviceTime)
+        {
+            addDeviceTimeMetric(metric: metric)
+        }
     }
+    
+    private func addDeviceTimeMetric(metric: Metric) {
+        print("DEVICE_TIME metric sent")
+        self.metricList.append(Metric(metric_type: "DEVICE_TIME",
+                                      ad_id: metric.ad_id,
+                                      app_id: metric.app_id,
+                                      timestamp: metric.timestamp,
+                                      is_interstitial: metric.is_interstitial,
+                                      bundle_id: metric.bundle_id,
+                                      campaign_id: metric.campaign_id,
+                                      session_id: metric.session_id,
+                                      os: metric.os))
+        pushMetrics()
+    }
+    
 
     private func pushMetrics() {
         //create the url with NSURL

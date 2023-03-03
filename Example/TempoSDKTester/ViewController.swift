@@ -17,15 +17,18 @@ class ViewController: UIViewController, TempoInterstitialListener {
     override var prefersStatusBarHidden: Bool {
         return true
     }
-    
-    
-    
+
     override func viewDidLoad() {
 //        view.backgroundColor = .gray
         super.viewDidLoad()
         self.modalPresentationStyle = .fullScreen
         self.interstitial = TempoInterstitial(parentViewController:self, delegate:self, appId:"8")
         initializeUIButtons();
+        
+//        // For testing metric time functions
+//        var deviceTime: Bool = false
+//        TempoUtcRetriever.getUTCTime(&deviceTime)
+//        print("API time? \(!deviceTime)")
     }
     
     private func initializeUIButtons(){
