@@ -57,6 +57,7 @@ public struct Metric : Codable {
 
 public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKScriptMessageHandler  {
     public var listener:TempoInterstitialListener!
+    public var utcGenerator: TempoUtcGenerator!
     private var observation: NSKeyValueObservation?
     var solidColorView:FullScreenUIView!
     var webView:FullScreenWKWebView!
@@ -273,7 +274,7 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
         var metric = Metric(metric_type: metricType,
                                    ad_id: currentAdId,
                                    app_id: currentAppId,
-                                   timestamp: TempoUtcRetriever.getUTCTime(deviceTime: &deviceTime),
+                                   timestamp: utcGenerator.getUTCTime(deviceTime: &deviceTime),
                                    is_interstitial: currentIsInterstitial,
                                    bundle_id: Bundle.main.bundleIdentifier!,
                                    campaign_id: currentCampaignId ?? "",

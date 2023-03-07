@@ -9,43 +9,40 @@
 import Foundation
 import TrueTime
 
-public class TempoUtcRetriever{
+public class TempoUtcGenerator{
     
-    public static var ntpCtrl: TempoNtpController?
+    public var ntpCtrl: TempoNtpController?
+    
+    public init() {
+        print("🤝 Generated!")
+        ntpCtrl = TempoNtpController()
+        ntpCtrl?.createClient(delegate: monitoredOutput)
+    }
     
     ///  Find best result for acurate time, falling back on device time if others fails
-    public static func getUTCTime(deviceTime: inout Bool) -> Int? {
+    public func getUTCTime(deviceTime: inout Bool) -> Int? {
         
-        //monitoredOutput()
-
         let utcTimestampNTP: Int? = ntpCtrl?.getNtpDateTime()
-        let utcTimestampREST: Int? = getUTCTimeRestAPI()
-        let utcTimestampDevice: Int? = Int(NSDate().timeIntervalSince1970)
-        
-        print("\n⏰ NTP: \(utcTimestampNTP)" +
-              "\n⏰ WEB: \(utcTimestampREST)" +
-              "\n⏰ DEV: \(utcTimestampDevice)\n")
-        
-        // Rreturn device value if
         if(utcTimestampNTP != nil)
         {
             deviceTime = false
-            return utcTimestampREST
+            return utcTimestampNTP
         }
-        else if(utcTimestampREST != nil)
+        
+        let utcTimestampREST: Int? = getUTCTimeRestAPI()
+        if(utcTimestampREST != nil)
         {
             deviceTime = false
             return utcTimestampREST
         }
-        else
-        {
-            deviceTime = true
-            return utcTimestampDevice
-        }
+        
+        // Fall back on device tim
+        deviceTime = true
+        return getUTCTimeDevice()
     }
     
     /// Uses online REST API to get Unix time (not 100% reliable)
-    private static func getUTCTimeRestAPI() -> Int? {
+    private func getUTCTimeRestAPI() -> Int? {
         // Declare URL
         guard let url = URL(string: "https://worldtimeapi.org/api/timezone/Etc/UTC") else { return nil }
         
@@ -94,42 +91,31 @@ public class TempoUtcRetriever{
         
         task.resume()
         
-        _ = semaphore.wait(timeout: .now() + 1.0) // wait up to 2 second for a reply
+        _ = semaphore.wait(timeout: .now() + 2.0) // wait up to 2 second for a reply
 
         return unixtime
     }
     
     /// Gets time from device (unreliable, vulnerable to user time/date changes)
-    public static func getUTCTimeDevice() -> Int? {
+    public func getUTCTimeDevice() -> Int? {
         
         return Int(NSDate().timeIntervalSince1970 * 1000)
     }
     
-    
-    private static func monitoredOutput(){
-        var utcTimestamp: Int?
-        var timeTakenSoFar: Int?
-        var startTime = Int(NSDate().timeIntervalSince1970 * 1000)
-                
-        // NTP
-//        let utcTimestampNTP: Int? = getUTCTimeNTP()
-//        timeTakenSoFar = Int(NSDate().timeIntervalSince1970 * 1000) - startTime
-//        utcTimestamp = utcTimestamp == nil ? utcTimestampNTP: utcTimestamp
-//        print("⏰ NTP: \(timeTakenSoFar ?? -1): \(utcTimestampNTP ?? -1)")
-                
-        // REST API
-        startTime = Int(NSDate().timeIntervalSince1970 * 1000)
+    /// Debugging tool to check date version status
+    private func monitoredOutput(){
+        
+        let checkpointA = NSDate().timeIntervalSince1970
+        let utcTimestampNTP: Int? = ntpCtrl?.getNtpDateTime()
+        let checkpointB = NSDate().timeIntervalSince1970
         let utcTimestampREST: Int? = getUTCTimeRestAPI()
-        timeTakenSoFar = Int(NSDate().timeIntervalSince1970 * 1000) - startTime
-        utcTimestamp = utcTimestamp == nil ? utcTimestampREST: utcTimestamp
-        print("⏰ RST: \(timeTakenSoFar ?? -1): \(utcTimestampREST ?? -1)")
-                
-        // DEVICE
-        startTime = Int(NSDate().timeIntervalSince1970 * 1000)
-        let utcTimestampDevice: Int? = Int(NSDate().timeIntervalSince1970 * 1000)
-        timeTakenSoFar = Int(NSDate().timeIntervalSince1970 * 1000) - startTime
-        utcTimestamp = utcTimestamp == nil ? utcTimestampDevice: utcTimestamp
-        print("⏰ DEV: \(timeTakenSoFar ?? -1): \(utcTimestampDevice ?? -1)")
+        let checkpointC = NSDate().timeIntervalSince1970
+        let utcTimestampDevice: Int? = Int(NSDate().timeIntervalSince1970) * 1000
+        
+        print("⏰ Initial check:" +
+              "\n - NTP: \(utcTimestampNTP == nil ? "n/a" : String(utcTimestampNTP!)) [\(checkpointB - checkpointA)]" +
+              "\n - WEB: \(utcTimestampREST == nil ? "n/a" : String(utcTimestampREST!)) [\(checkpointC - checkpointB)]" +
+              "\n - DEV: \(utcTimestampDevice == nil ? "n/a" : String(utcTimestampDevice!))")
     }
 }
 
