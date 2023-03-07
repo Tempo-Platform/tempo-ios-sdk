@@ -1,15 +1,22 @@
 PODS:
-  - TempoSDK (0.2.6)
+  - TempoSDK (0.2.8):
+    - TrueTime (~> 5.0.0)
+  - TrueTime (5.0.3)
 
 DEPENDENCIES:
   - TempoSDK (from `../`)
+
+SPEC REPOS:
+  trunk:
+    - TrueTime
 
 EXTERNAL SOURCES:
   TempoSDK:
     :path: "../"
 
 SPEC CHECKSUMS:
-  TempoSDK: d9a6e55603746f5bdfb7daf5bed01dccce06cab9
+  TempoSDK: 78e5cba89b2317309cd8e0536a625c951675746c
+  TrueTime: b49551ffafb28a9dee04e51b226f42a416010842
 
 PODFILE CHECKSUM: 75ff74daf906221a27574f53dfc45b3288c5119c
 

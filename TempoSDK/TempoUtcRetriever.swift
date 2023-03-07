@@ -7,8 +7,10 @@
 //
 
 import Foundation
+import TrueTime
 
 public class TempoUtcRetriever{
+    
     
     ///  Find best result for acurate time, falling back on device time if others fails
     public static func getUTCTime(deviceTime: inout Bool) -> Int? {

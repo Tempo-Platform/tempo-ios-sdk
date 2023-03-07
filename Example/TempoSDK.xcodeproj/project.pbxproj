@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		2B1DE9D07C6968F6571045E9 /* Pods_TempoSDKTester.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5723727C03E50C521D6A5EB6 /* Pods_TempoSDKTester.framework */; };
+		4D6C4C2CDDC01E7906B6F482 /* Pods_TempoSDKTester.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DDA44C7DD6491D58EBC30CB7 /* Pods_TempoSDKTester.framework */; };
 		5A2EFC602857C36400959DCA /* .gitignore in Resources */ = {isa = PBXBuildFile; fileRef = 5A2EFC5F2857C36400959DCA /* .gitignore */; };
 		5A2EFC612857C73300959DCA /* TempoSDK.podspec in Resources */ = {isa = PBXBuildFile; fileRef = 5A2EFC4B2857AF3E00959DCA /* TempoSDK.podspec */; };
 		607FACD61AFB9204008FA782 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 607FACD51AFB9204008FA782 /* AppDelegate.swift */; };
@@ -19,8 +19,6 @@
 
 /* Begin PBXFileReference section */
 		05A9D1D472495A1B7B02E2E5 /* README.md */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = net.daringfireball.markdown; name = README.md; path = ../README.md; sourceTree = "<group>"; };
-		252ACDBF2F07F21506EE4F01 /* Pods-TempoSDKTester.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TempoSDKTester.release.xcconfig"; path = "Target Support Files/Pods-TempoSDKTester/Pods-TempoSDKTester.release.xcconfig"; sourceTree = "<group>"; };
-		5723727C03E50C521D6A5EB6 /* Pods_TempoSDKTester.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_TempoSDKTester.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		5A2EFC4B2857AF3E00959DCA /* TempoSDK.podspec */ = {isa = PBXFileReference; explicitFileType = text.script.ruby; name = TempoSDK.podspec; path = ../TempoSDK.podspec; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
 		5A2EFC5F2857C36400959DCA /* .gitignore */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = .gitignore; path = ../.gitignore; sourceTree = "<group>"; };
 		607FACD01AFB9204008FA782 /* TempoSDKTester.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TempoSDKTester.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -30,8 +28,10 @@
 		607FACDA1AFB9204008FA782 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		607FACDC1AFB9204008FA782 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
 		607FACDF1AFB9204008FA782 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/LaunchScreen.xib; sourceTree = "<group>"; };
+		DDA44C7DD6491D58EBC30CB7 /* Pods_TempoSDKTester.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_TempoSDKTester.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		E0D7FB9987520D36E089428A /* LICENSE */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = LICENSE; path = ../LICENSE; sourceTree = "<group>"; };
-		FFE163EDE664910BAFA54DDA /* Pods-TempoSDKTester.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TempoSDKTester.debug.xcconfig"; path = "Target Support Files/Pods-TempoSDKTester/Pods-TempoSDKTester.debug.xcconfig"; sourceTree = "<group>"; };
+		ED76BE396BCC17328D826FC2 /* Pods-TempoSDKTester.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TempoSDKTester.debug.xcconfig"; path = "Target Support Files/Pods-TempoSDKTester/Pods-TempoSDKTester.debug.xcconfig"; sourceTree = "<group>"; };
+		FC502D23C0FC25BCCA0845BD /* Pods-TempoSDKTester.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TempoSDKTester.release.xcconfig"; path = "Target Support Files/Pods-TempoSDKTester/Pods-TempoSDKTester.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -39,7 +39,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				2B1DE9D07C6968F6571045E9 /* Pods_TempoSDKTester.framework in Frameworks */,
+				4D6C4C2CDDC01E7906B6F482 /* Pods_TempoSDKTester.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -56,7 +56,7 @@
 				607FACD21AFB9204008FA782 /* TempoSDKTester */,
 				607FACD11AFB9204008FA782 /* Products */,
 				9A9811840931ACAB00CE2DFC /* Pods */,
-				88A632B2818FFA360D3CD614 /* Frameworks */,
+				DBBBA142FF13EA6976C2DB0D /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -81,21 +81,21 @@
 			path = TempoSDKTester;
 			sourceTree = "<group>";
 		};
-		88A632B2818FFA360D3CD614 /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-				5723727C03E50C521D6A5EB6 /* Pods_TempoSDKTester.framework */,
-			);
-			name = Frameworks;
-			sourceTree = "<group>";
-		};
 		9A9811840931ACAB00CE2DFC /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				FFE163EDE664910BAFA54DDA /* Pods-TempoSDKTester.debug.xcconfig */,
-				252ACDBF2F07F21506EE4F01 /* Pods-TempoSDKTester.release.xcconfig */,
+				ED76BE396BCC17328D826FC2 /* Pods-TempoSDKTester.debug.xcconfig */,
+				FC502D23C0FC25BCCA0845BD /* Pods-TempoSDKTester.release.xcconfig */,
 			);
 			path = Pods;
+			sourceTree = "<group>";
+		};
+		DBBBA142FF13EA6976C2DB0D /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				DDA44C7DD6491D58EBC30CB7 /* Pods_TempoSDKTester.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -105,11 +105,11 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 607FACEF1AFB9204008FA782 /* Build configuration list for PBXNativeTarget "TempoSDKTester" */;
 			buildPhases = (
-				B8843B67B9DBF80BABBC6A37 /* [CP] Check Pods Manifest.lock */,
+				3B20884B5452AAE65AC3E012 /* [CP] Check Pods Manifest.lock */,
 				607FACCC1AFB9204008FA782 /* Sources */,
 				607FACCD1AFB9204008FA782 /* Frameworks */,
 				607FACCE1AFB9204008FA782 /* Resources */,
-				2B7C17C6F3FD6C38861024F6 /* [CP] Embed Pods Frameworks */,
+				96A0E528A05B2DFDCC753A69 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -132,8 +132,9 @@
 				TargetAttributes = {
 					607FACCF1AFB9204008FA782 = {
 						CreatedOnToolsVersion = 6.3.1;
-						DevelopmentTeam = GULURF5GWL;
+						DevelopmentTeam = 5W4JSF4BTN;
 						LastSwiftMigration = 1340;
+						ProvisioningStyle = Automatic;
 					};
 				};
 			};
@@ -171,25 +172,7 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		2B7C17C6F3FD6C38861024F6 /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-TempoSDKTester/Pods-TempoSDKTester-frameworks.sh",
-				"${BUILT_PRODUCTS_DIR}/TempoSDK/TempoSDK.framework",
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputPaths = (
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/TempoSDK.framework",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-TempoSDKTester/Pods-TempoSDKTester-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		B8843B67B9DBF80BABBC6A37 /* [CP] Check Pods Manifest.lock */ = {
+		3B20884B5452AAE65AC3E012 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -209,6 +192,26 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		96A0E528A05B2DFDCC753A69 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-TempoSDKTester/Pods-TempoSDKTester-frameworks.sh",
+				"${BUILT_PRODUCTS_DIR}/TempoSDK/TempoSDK.framework",
+				"${BUILT_PRODUCTS_DIR}/TrueTime/TrueTime.framework",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputPaths = (
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/TempoSDK.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/TrueTime.framework",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-TempoSDKTester/Pods-TempoSDKTester-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
@@ -352,11 +355,13 @@
 		};
 		607FACF01AFB9204008FA782 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = FFE163EDE664910BAFA54DDA /* Pods-TempoSDKTester.debug.xcconfig */;
+			baseConfigurationReference = ED76BE396BCC17328D826FC2 /* Pods-TempoSDKTester.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = GULURF5GWL;
+				DEVELOPMENT_TEAM = 5W4JSF4BTN;
 				INFOPLIST_FILE = TempoSDKTester/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
@@ -364,6 +369,7 @@
 				MODULE_NAME = ExampleApp;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.tempoplatform.sdk-tester";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_SWIFT3_OBJC_INFERENCE = Default;
 				SWIFT_VERSION = 5.0;
 			};
@@ -371,11 +377,13 @@
 		};
 		607FACF11AFB9204008FA782 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 252ACDBF2F07F21506EE4F01 /* Pods-TempoSDKTester.release.xcconfig */;
+			baseConfigurationReference = FC502D23C0FC25BCCA0845BD /* Pods-TempoSDKTester.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = GULURF5GWL;
+				DEVELOPMENT_TEAM = 5W4JSF4BTN;
 				INFOPLIST_FILE = TempoSDKTester/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
@@ -383,6 +391,7 @@
 				MODULE_NAME = ExampleApp;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.tempoplatform.sdk-tester";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_SWIFT3_OBJC_INFERENCE = Default;
 				SWIFT_VERSION = 5.0;
 			};

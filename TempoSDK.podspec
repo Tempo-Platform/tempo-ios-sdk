@@ -27,7 +27,8 @@ TODO: Add long description of the pod here.
 
   s.source_files  = "TempoSDK/**/*.{h,m,swift}"
   # s.exclude_files = "TempoSDK/Exclude"
-
+  
+  s.dependency 'TrueTime', '~> 5.0.0'
   
   # s.resource_bundles = {
   #   'SKImageExtension' => ['SKImageExtension/Assets/*.png']
