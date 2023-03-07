@@ -1,10 +1,3 @@
-//
-//  TempoNtpController.swift
-//  Pods
-//
-//  Created by Stephen Baker on 7/3/2023.
-//
-
 import Foundation
 import TrueTime
 
@@ -13,14 +6,15 @@ public class TempoNtpController {
     var client: TrueTimeClient?
     
     public init() {
-        print("NtpClient Initialised")
+        //print("NtpClient Initialised")
     }
     
     /// Sets up initial NTP client which will be used throughout the session
     /// See https://cocoapods.org/pods/TrueTime for implementation descroption
     public func createClient(delegate: @escaping () -> Void)
     {
-        let startTime = NSDate().timeIntervalSince1970
+        //let startTime = NSDate().timeIntervalSince1970
+        
         // At an opportune time (e.g. app start):
         client = TrueTimeClient.sharedInstance
         if(client != nil)
@@ -33,8 +27,7 @@ public class TempoNtpController {
                 switch result
                 {
                     case let .success(referenceTime):
-                        let now = referenceTime.now()
-                        print("Time = \(now) [\(NSDate().timeIntervalSince1970 - startTime)]")
+                        //print("NTPTime = \(referenceTime.now()) [\(NSDate().timeIntervalSince1970 - startTime)]")
                         delegate()
                     case let .failure(error):
                         print("Error! \(error)")
@@ -43,7 +36,7 @@ public class TempoNtpController {
         }
         else
         {
-            print("TrueTime client is ni!")
+            print("TrueTime client is nil!")
         }
     }
     
@@ -52,10 +45,7 @@ public class TempoNtpController {
         
         let datetime = client?.referenceTime?.now()
 
-        if(datetime == nil)
-        {
-            return nil
-        }
+        if(datetime == nil) { return nil }
         
         return Int(datetime!.timeIntervalSince1970) * 1000
     }
