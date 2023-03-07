@@ -8,7 +8,7 @@
 import Foundation
 import TrueTime
 
-public class NtpCtrl {
+public class TempoNtpController {
     
     var startDT: Double?
     var client: TrueTimeClient?
@@ -44,6 +44,21 @@ public class NtpCtrl {
             print("TrueTime client is ni!")
         }
     }
+    
+    
+    func getNtpDateTime() -> Int? {
+        
+        var datetime = client?.referenceTime?.now()
+        
+        if(datetime == nil)
+        {
+            return nil
+        }
+        return Int(datetime!.timeIntervalSince1970)
+        
+    }
+    
+    
     
     func getNewDt() -> String {
         

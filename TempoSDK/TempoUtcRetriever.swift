@@ -11,23 +11,36 @@ import TrueTime
 
 public class TempoUtcRetriever{
     
+    public static var ntpCtrl: TempoNtpController?
     
     ///  Find best result for acurate time, falling back on device time if others fails
     public static func getUTCTime(deviceTime: inout Bool) -> Int? {
         
         //monitoredOutput()
 
+        let utcTimestampNTP: Int? = ntpCtrl?.getNtpDateTime()
         let utcTimestampREST: Int? = getUTCTimeRestAPI()
-        let utcTimestampDevice: Int? = Int(NSDate().timeIntervalSince1970 * 1000)
+        let utcTimestampDevice: Int? = Int(NSDate().timeIntervalSince1970)
+        
+        print("\n⏰ NTP: \(utcTimestampNTP)" +
+              "\n⏰ WEB: \(utcTimestampREST)" +
+              "\n⏰ DEV: \(utcTimestampDevice)\n")
         
         // Rreturn device value if
-        if(utcTimestampREST == nil) {
-            deviceTime = true
-            return utcTimestampDevice
-        } else
+        if(utcTimestampNTP != nil)
         {
             deviceTime = false
             return utcTimestampREST
+        }
+        else if(utcTimestampREST != nil)
+        {
+            deviceTime = false
+            return utcTimestampREST
+        }
+        else
+        {
+            deviceTime = true
+            return utcTimestampDevice
         }
     }
     
@@ -92,77 +105,6 @@ public class TempoUtcRetriever{
         return Int(NSDate().timeIntervalSince1970 * 1000)
     }
     
-    
-//    public static func getUTCTimeNTP() -> Int? {
-//        // Create URL components for "time.apple.com"
-//        var urlComponents = URLComponents()
-//        urlComponents.scheme = "https"
-//        urlComponents.host = "time.apple.com"
-//
-//        // Create URL object from URL components
-//        guard let url = urlComponents.url else {
-//            return nil
-//        }
-//
-//        // Create semaphore to halt calling method
-//        let semaphore = DispatchSemaphore(value: 0)
-//
-//        // Create URL session and data task
-//        let session = URLSession.shared
-//        var result: Int?
-//        let task = session.dataTask(with: url) { (data, response, error) in
-//
-//            // Check for errors and unwrap response data
-//            guard error == nil, let data = data else {
-//                //print("🚨 Error \(error!)")
-//                semaphore.signal()
-//                return
-//            }
-//
-//            // Parse time string from response data
-//            guard let timeString = String(data: data, encoding: .utf8) else {
-//                semaphore.signal()
-//                return
-//            }
-//
-//            print("TimeString: \(timeString)")
-//
-//            // Create date formatter and parse date from time string
-//            let dateFormatter = DateFormatter()
-//            dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss z"
-//            dateFormatter.timeZone = TimeZone(abbreviation: "GMT")
-//
-//            guard let date = dateFormatter.date(from: timeString) else {
-//                semaphore.signal()
-//                return
-//            }
-//
-//            // Convert date to UTC timestamp
-//            let utcTimestamp = Int(date.timeIntervalSince1970)
-//
-//
-//            // Save result and signal semaphore
-//            result = utcTimestamp
-//            semaphore.signal()
-//        }
-//
-//        // Start data task
-//        task.resume()
-//
-////        // Wait for semaphore to be signaled
-////        semaphore.wait()
-//
-//        // Wait for two seconds or until semaphore is signaled
-//            let timeoutResult = semaphore.wait(timeout: DispatchTime.now() + 1.0)
-//
-//            // Check if semaphore was signaled before timeout
-//            if timeoutResult == .timedOut {
-//                task.cancel()
-//                return nil
-//            }
-//
-//        return result
-//    }
     
     private static func monitoredOutput(){
         var utcTimestamp: Int?

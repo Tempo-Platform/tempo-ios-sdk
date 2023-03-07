@@ -17,6 +17,9 @@ public class TempoInterstitial: NSObject {
         // TODO: add proper IDFA alternative here if we don't have advertisingIdentifier
         self.adId = (advertisingIdentifier.uuidString != "00000000-0000-0000-0000-000000000000") ? advertisingIdentifier.uuidString : nil
         self.appId = appId
+        
+        TempoUtcRetriever.ntpCtrl = TempoNtpController()
+        TempoUtcRetriever.ntpCtrl?.createClient()
     }
     
     public func updateViewController(parentViewController:UIViewController?){

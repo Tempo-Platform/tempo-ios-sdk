@@ -306,7 +306,6 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
         pushMetrics()
     }
     
-
     private func pushMetrics() {
         //create the url with NSURL
         let url = URL(string: "https://metric-api.tempoplatform.com/metrics")!
