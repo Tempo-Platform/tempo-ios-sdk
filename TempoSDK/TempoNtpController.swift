@@ -5,7 +5,7 @@ public class TempoNtpController {
     
     static var client: TrueTimeClient?
     static var fetching: Bool = false
-    static var debugging: Bool = true // make true for console outputs
+    static var debugging: Bool = false // make true for console outputs
     
     /// Sets up initial NTP client which will be used throughout the session
     /// See https://cocoapods.org/pods/TrueTime for implementation descroption

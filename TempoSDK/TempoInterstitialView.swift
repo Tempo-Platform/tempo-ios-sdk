@@ -271,7 +271,7 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
 
     private func addMetric(metricType: String) {
         var deviceTime: Bool = false
-        var metric = Metric(metric_type: metricType,
+        let metric = Metric(metric_type: metricType,
                                    ad_id: currentAdId,
                                    app_id: currentAppId,
                                    timestamp: utcGenerator.getUTCTime(deviceTime: &deviceTime),
@@ -285,6 +285,7 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
         if (["AD_SHOW", "AD_LOAD_REQUEST", "TIMER_COMPLETED"].contains(metricType)) {
             pushMetrics()
         }
+        print("MetricTime: \(metric.timestamp!)")
         
         // If metric using device time, send additional metric instance
         if(deviceTime)

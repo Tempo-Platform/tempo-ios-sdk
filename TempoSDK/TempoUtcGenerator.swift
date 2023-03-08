@@ -3,7 +3,7 @@ import TrueTime
 
 public class TempoUtcGenerator{
     
-    let debugging: Bool = true // make true for console outputs
+    let debugging: Bool = false // make true for console outputs
     
     public init() {
         TempoNtpController.createClient(delegate: monitoredOutput)
