@@ -3,21 +3,19 @@ import TrueTime
 
 public class TempoUtcGenerator{
     
-    let debugging: Bool = false // make true for outputs
-    public var ntpCtrl: TempoNtpController?
+    let debugging: Bool = true // make true for console outputs
     
     public init() {
-        ntpCtrl = TempoNtpController()
-        ntpCtrl?.createClient(delegate: monitoredOutput)
+        TempoNtpController.createClient(delegate: monitoredOutput)
     }
     
     ///  Find best result for acurate time, falling back on device time if others fails
     public func getUTCTime(deviceTime: inout Bool) -> Int? {
         
-        let utcTimestampNTP: Int? = ntpCtrl?.getNtpDateTime()
+        let utcTimestampNTP: Int? = TempoNtpController.getNtpDateTime()
         if(utcTimestampNTP != nil)
         {
-            if(debugging) { print("✅ NTP -> \(utcTimestampNTP!)") }
+            if(debugging) { print("🍏 NTP -> \(utcTimestampNTP!)") }
             deviceTime = false
             return utcTimestampNTP
         }
@@ -25,12 +23,12 @@ public class TempoUtcGenerator{
         let utcTimestampREST: Int? = getUTCTimeRestAPI()
         if(utcTimestampREST != nil)
         {
-            if(debugging) { print("⚠️ REST -> \(utcTimestampREST!)") }
+            if(debugging) { print("🍌 REST -> \(utcTimestampREST!)") }
             deviceTime = false
             return utcTimestampREST
         }
         
-        if(debugging) { print("❌ DEVICE -> \(getUTCTimeDevice())") }
+        if(debugging) { print("🍓 DEVICE -> \(getUTCTimeDevice())") }
         // Fall back on device tim
         deviceTime = true
         return getUTCTimeDevice()
@@ -103,7 +101,7 @@ public class TempoUtcGenerator{
         if(debugging)
         {
             let checkpointA = NSDate().timeIntervalSince1970
-            let utcTimestampNTP: Int? = ntpCtrl?.getNtpDateTime()
+            let utcTimestampNTP: Int? = TempoNtpController.getNtpDateTime()
             let checkpointB = NSDate().timeIntervalSince1970
             let utcTimestampREST: Int? = getUTCTimeRestAPI()
             let checkpointC = NSDate().timeIntervalSince1970
@@ -117,11 +115,9 @@ public class TempoUtcGenerator{
     }
     
     /// If set time has passed after specified time, resyncs NTP time delta
-    public func resyncNtp()
-    {
-        ntpCtrl?.client?.pause()
-        ntpCtrl = TempoNtpController()
-        ntpCtrl?.createClient(delegate: monitoredOutput)
+    public func resyncNtp() {
+        //TempoNtpController.client?.pause()
+        TempoNtpController.createClient(delegate: monitoredOutput)
     }
 }
 

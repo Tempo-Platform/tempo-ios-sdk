@@ -13,6 +13,7 @@ public class TempoInterstitial: NSObject {
         self.parentViewController = parentViewController
         interstitialView = TempoInterstitialView()
         interstitialView!.listener = delegate
+        
         interstitialView!.utcGenerator = TempoUtcGenerator()
         let advertisingIdentifier: UUID = ASIdentifierManager().advertisingIdentifier
         // TODO: add proper IDFA alternative here if we don't have advertisingIdentifier

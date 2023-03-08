@@ -3,23 +3,37 @@ import TrueTime
 
 public class TempoNtpController {
     
-    var client: TrueTimeClient?
-    
-    public init() {
-        //print("NtpClient Initialised")
-    }
+    static var client: TrueTimeClient?
+    static var fetching: Bool = false
+    static var debugging: Bool = true // make true for console outputs
     
     /// Sets up initial NTP client which will be used throughout the session
     /// See https://cocoapods.org/pods/TrueTime for implementation descroption
-    public func createClient(delegate: @escaping () -> Void)
-    {
-        //let startTime = NSDate().timeIntervalSince1970
+    public static func createClient(delegate: @escaping () -> Void) {
         
-        // At an opportune time (e.g. app start):
-        client = TrueTimeClient.sharedInstance
+        if(fetching)
+        {
+            if(debugging) { print("\n⚠️ Ignored: currently fetching \n") }
+            return
+        }
+        
+        let startTime = NSDate().timeIntervalSince1970
+        if(client != nil)
+        {
+            client?.pause()
+        }
+        else
+        {
+            // At an opportune time (e.g. app start):
+            client = TrueTimeClient.sharedInstance
+        }
+        
         if(client != nil)
         {
             client!.start()
+            
+            if(debugging) { print("\n✅ Start fetching \n") }
+            fetching = true
             
             // To block waiting for fetch, use the following:
             client!.fetchIfNeeded(completion: {
@@ -27,11 +41,15 @@ public class TempoNtpController {
                 switch result
                 {
                     case let .success(referenceTime):
-                        //print("NTPTime = \(referenceTime.now()) [\(NSDate().timeIntervalSince1970 - startTime)]")
+                        if(debugging) {
+                            print("NTPTime = \(referenceTime.now()) " + "[\(NSDate().timeIntervalSince1970 - startTime)]")
+                        }
                         delegate()
                     case let .failure(error):
                         print("Error! \(error)")
                 }
+                if(debugging) { print("\n❌ End fetching \n") }
+                fetching = false
             })
         }
         else
@@ -41,7 +59,7 @@ public class TempoNtpController {
     }
     
     /// Returns a unix timestamp integer from first available NTP server
-    func getNtpDateTime() -> Int? {
+    public static func getNtpDateTime() -> Int? {
         
         let datetime = client?.referenceTime?.now()
 
@@ -51,7 +69,7 @@ public class TempoNtpController {
     }
     
     /// Converts Date object into formatted String for readability
-    func getDateString(dateTime: Date) -> String {
+    static func getDateString(dateTime: Date) -> String {
         
         var dtString: String = "???"
         
