@@ -33,9 +33,9 @@ public class TempoInterstitial: NSObject {
         interstitialView!.loadSpecificAd(isInterstitial: isInterstitial, campaignId: campaignId)
     }
     
-    public func loadAd(isInterstitial: Bool, cpmFloor: Float?){
+    public func loadAd(isInterstitial: Bool, cpmFloor: Float?, placementId: String?){
         interstitialView!.utcGenerator.resyncNtp()
-        interstitialView!.loadAd(interstitial: self, isInterstitial: isInterstitial, appId: appId!, adId: adId, cpmFloor: cpmFloor)
+        interstitialView!.loadAd(interstitial: self, isInterstitial: isInterstitial, appId: appId!, adId: adId, cpmFloor: cpmFloor, placementId: placementId)
     }
     
     public func showAd(){
