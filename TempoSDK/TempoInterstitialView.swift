@@ -51,6 +51,7 @@ public struct Metric : Codable {
     var gender: String = "?"
     var age_range: String = "unknown"
     var income_range: String = "unknown"
+    var placement_id: String = "unknown"
     var os: String = "unknown"
 //    var additional_metrics: Dictionary<String, Any>? = nil
 }
@@ -66,14 +67,15 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
     var currentAdId: String?
     var currentCampaignId: String?
     var currentAppId: String?
+    var currentPlacementId: String?
     var currentIsInterstitial: Bool?
     var currentParentViewController: UIViewController?
     var previousParentBGColor: UIColor?
 
-    public func loadAd(interstitial:TempoInterstitial, isInterstitial: Bool, appId:String, adId:String?, cpmFloor:Float?){
+    public func loadAd(interstitial:TempoInterstitial, isInterstitial: Bool, appId:String, adId:String?, cpmFloor:Float?, placementId: String?){
         print("load url interstitial")
         self.setupWKWebview()
-        self.loadUrl(isInterstitial:isInterstitial, appId:appId, adId:adId, cpmFloor:cpmFloor)
+        self.loadUrl(isInterstitial:isInterstitial, appId:appId, adId:adId, cpmFloor:cpmFloor, placementId: placementId)
     }
     
     public func showAd(parentViewController:UIViewController) {
@@ -106,11 +108,12 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
         self.webView.load(URLRequest(url: url))
     }
     
-    private func loadUrl(isInterstitial: Bool, appId:String, adId:String?, cpmFloor:Float?) {
+    private func loadUrl(isInterstitial: Bool, appId:String, adId:String?, cpmFloor:Float?, placementId: String?) {
         currentUUID = UUID().uuidString
         currentAdId = adId ?? "NONE"
         currentAppId = appId
         currentIsInterstitial = isInterstitial
+        currentPlacementId = placementId
         let currentCPMFloor = cpmFloor ?? 0.0
         self.addMetric(metricType: "AD_LOAD_REQUEST")
         var components = URLComponents(string: "https://ads-api.tempoplatform.com/ad")!
@@ -272,14 +275,15 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
     private func addMetric(metricType: String) {
         var deviceTime: Bool = false
         let metric = Metric(metric_type: metricType,
-                                   ad_id: currentAdId,
-                                   app_id: currentAppId,
-                                   timestamp: utcGenerator.getUTCTime(deviceTime: &deviceTime),
-                                   is_interstitial: currentIsInterstitial,
-                                   bundle_id: Bundle.main.bundleIdentifier!,
-                                   campaign_id: currentCampaignId ?? "",
-                                   session_id: currentUUID!,
-                                   os: "iOS \(UIDevice.current.systemVersion)")
+                            ad_id: currentAdId,
+                            app_id: currentAppId,
+                            timestamp: utcGenerator.getUTCTime(deviceTime: &deviceTime),
+                            is_interstitial: currentIsInterstitial,
+                            bundle_id: Bundle.main.bundleIdentifier!,
+                            campaign_id: currentCampaignId ?? "",
+                            session_id: currentUUID!,
+                            placement_id: currentPlacementId ?? "",
+                            os: "iOS \(UIDevice.current.systemVersion)")
         
         self.metricList.append(metric)
         if (["AD_SHOW", "AD_LOAD_REQUEST", "TIMER_COMPLETED"].contains(metricType)) {
@@ -304,6 +308,7 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
                                       bundle_id: metric.bundle_id,
                                       campaign_id: metric.campaign_id,
                                       session_id: metric.session_id,
+                                      placement_id: metric.placement_id,
                                       os: metric.os))
         pushMetrics()
     }

@@ -13,7 +13,7 @@ public class TempoNtpController {
         
         if(fetching)
         {
-            if(debugging) { print("\n⚠️ Ignored: currently fetching \n") }
+            if(debugging) { print("⚠️ Ignored: currently fetching") }
             return
         }
         
@@ -32,7 +32,7 @@ public class TempoNtpController {
         {
             client!.start()
             
-            if(debugging) { print("\n✅ Start fetching \n") }
+            if(debugging) { print("✅ Start fetching") }
             fetching = true
             
             // To block waiting for fetch, use the following:
@@ -48,7 +48,7 @@ public class TempoNtpController {
                     case let .failure(error):
                         print("Error! \(error)")
                 }
-                if(debugging) { print("\n❌ End fetching \n") }
+                if(debugging) { print("❌ End fetching") }
                 fetching = false
             })
         }
