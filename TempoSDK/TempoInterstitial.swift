@@ -10,6 +10,7 @@ public class TempoInterstitial: NSObject {
     
     public init(parentViewController:UIViewController?, delegate:TempoInterstitialListener, appId:String){
         super.init()
+        print("🎬 Init triggered")
         self.parentViewController = parentViewController
         interstitialView = TempoInterstitialView()
         interstitialView!.listener = delegate

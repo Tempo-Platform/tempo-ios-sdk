@@ -90,7 +90,7 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
         webView.removeFromSuperview()
         webView = nil
         solidColorView = nil
-        pushMetrics()
+        pushMetrics(backupMetric: nil)
         listener.onAdClosed(isInterstitial: self.currentIsInterstitial ?? true)
     }
     
@@ -287,7 +287,7 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
         
         self.metricList.append(metric)
         if (["AD_SHOW", "AD_LOAD_REQUEST", "TIMER_COMPLETED"].contains(metricType)) {
-            pushMetrics()
+            pushMetrics(backupMetric: nil)
         }
         print("MetricTime: \(metric.timestamp!)")
         
@@ -310,10 +310,11 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
                                       session_id: metric.session_id,
                                       placement_id: metric.placement_id,
                                       os: metric.os))
-        pushMetrics()
+        pushMetrics(backupMetric: nil)
     }
     
-    private func pushMetrics() {
+    private func pushMetrics(backupMetric: [Metric]?) {
+        
         //create the url with NSURL
         let url = URL(string: "https://metric-api.tempoplatform.com/metrics")!
 
@@ -324,6 +325,7 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
         var request = URLRequest(url: url)
         request.httpMethod = "POST" //set http method as POST
 
+        let metricListCopy = metricList;
         let metricData = try? JSONEncoder().encode(metricList)
         metricList.removeAll()
 
@@ -336,6 +338,8 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
         //create dataTask using the session object to send data to the server
         let task = session.dataTask(with: request, completionHandler: { data, response, error in
             guard error == nil else {
+                print("🥶🥶🥶 Data did not send, creating backup")
+                TempoDataBackup.sendData(dataArray: metricListCopy)
                 // TODO: add error handling here, maybe try to send again? Or just send a "FAILED_TO_PUSH" single metric elsewhere?
                 return
             }
