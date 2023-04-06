@@ -325,9 +325,21 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
         var request = URLRequest(url: url)
         request.httpMethod = "POST" //set http method as POST
 
-        let metricListCopy = metricList;
-        let metricData = try? JSONEncoder().encode(metricList)
-        metricList.removeAll()
+        // Declare local metric/data varaibles
+        let metricData: Data?
+        var metricListCopy = [Metric]()
+        
+        // Assigned values depend on whether it's backup-resend or standard push
+        if(backupMetric == nil) {
+            metricListCopy = metricList;
+            metricData = try? JSONEncoder().encode(metricList)
+            metricList.removeAll()
+        }
+        else
+        {
+            metricData = try? JSONEncoder().encode(backupMetric)
+        }
+        
 
         request.httpBody = metricData // pass dictionary to data object and set it as request body
 
@@ -338,10 +350,16 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
         //create dataTask using the session object to send data to the server
         let task = session.dataTask(with: request, completionHandler: { data, response, error in
             guard error == nil else {
-                print("🥶🥶🥶 Data did not send, creating backup")
-                TempoDataBackup.sendData(dataArray: metricListCopy)
                 // TODO: add error handling here, maybe try to send again? Or just send a "FAILED_TO_PUSH" single metric elsewhere?
+                if(backupMetric == nil) {
+                    print("🥶🥶🥶 Data did not send, creating backup")
+                    TempoDataBackup.sendData(dataArray: metricListCopy)
+                }
                 return
+            }
+            if(backupMetric != nil)
+            {
+                //TODO: Remove metricList from device storage
             }
         })
         task.resume()

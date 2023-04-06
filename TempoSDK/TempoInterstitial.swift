@@ -10,7 +10,16 @@ public class TempoInterstitial: NSObject {
     
     public init(parentViewController:UIViewController?, delegate:TempoInterstitialListener, appId:String){
         super.init()
-        print("🎬 Init triggered")
+        
+        let currentLocale = Locale.current
+        let currencyCode = currentLocale.currencyCode
+        let regionLocale = currentLocale.identifier
+        let locale = NSLocale(localeIdentifier: regionLocale)
+        guard let countryCode = currentLocale.regionCode else {
+            print("ERROR: region code was nil")
+            return
+        }
+        print("🎬 Init triggered: \(currencyCode ?? "<currencyCodeInvalid>") | \(regionLocale) | \(countryCode)")
         self.parentViewController = parentViewController
         interstitialView = TempoInterstitialView()
         interstitialView!.listener = delegate
