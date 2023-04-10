@@ -8,7 +8,7 @@
 
 Pod::Spec.new do |s|
   s.name             = 'TempoSDK'
-  s.version          = '0.2.15'
+  s.version          = '0.2.16'
   s.summary          = 'Tempo SDK to show payable ads'
   s.swift_version    = '5.6.1'
   s.description      = <<-DESC

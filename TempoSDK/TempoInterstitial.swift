@@ -10,6 +10,7 @@ public class TempoInterstitial: NSObject {
     
     public init(parentViewController:UIViewController?, delegate:TempoInterstitialListener, appId:String){
         super.init()
+        print("Area: \(TempoUserInfo.getIsoCountryCode2Digit())");
         self.parentViewController = parentViewController
         interstitialView = TempoInterstitialView()
         interstitialView!.listener = delegate
