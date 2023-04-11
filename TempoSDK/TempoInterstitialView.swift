@@ -52,6 +52,7 @@ public struct Metric : Codable {
     var age_range: String = "unknown"
     var income_range: String = "unknown"
     var placement_id: String = "unknown"
+    var country_code: String? = TempoUserInfo.getIsoCountryCode2Digit()
     var os: String = "unknown"
 //    var additional_metrics: Dictionary<String, Any>? = nil
 }
@@ -325,6 +326,10 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
         var request = URLRequest(url: url)
         request.httpMethod = "POST" //set http method as POST
 
+        //        for metric in metricList{
+        //            print("💥 \(metric.metric_type) - \(metric.country_code)")
+        //        }
+        
         // Declare local metric/data varaibles
         let metricData: Data?
         var metricListCopy = [Metric]()
@@ -339,7 +344,6 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
         {
             metricData = try? JSONEncoder().encode(backupMetric)
         }
-        
 
         request.httpBody = metricData // pass dictionary to data object and set it as request body
 
