@@ -9,8 +9,14 @@ import Foundation
 
 public class TempoDataBackup
 {
+    public static var readyForCheck: Bool = true
     static let folderName: String = "metricJsons"
     static let fileSuffix: String = "_mtarr.tempo"
+    static var fileMetric: [URL: [Metric]] = [:]
+    
+    public static func initCheck() {
+        getData()
+    }
     
     // TODO:
     public static func sendData(dataArray: [Metric]?) {
@@ -38,10 +44,13 @@ public class TempoDataBackup
                 filename = filename.replacingOccurrences(of: ".", with: "_") + fileSuffix
                 nameList += " - \(filename)"
                 
-                // Add metric arrays to device file storage
+                // Create file URL to device storage
                 let fileURL = jsonDirectory.appendingPathComponent(filename)
+                
+                // Add metric arrays to device file storage
                 try jsonData.write(to: fileURL)
                 for metric in dataArray! {
+                    
                     nameList += "\n - \(metric.metric_type ?? "[type_undefined]")"
                 }
             }
@@ -77,6 +86,7 @@ public class TempoDataBackup
                 let metricPayload = try decoder.decode([Metric].self, from: data)
                 for metric in metricPayload
                 {
+                    fileMetric[fileURL] = metricPayload
                     print("💥 \(fileURL) => \(metric.metric_type ?? "UNKNOWN")")
                 }
                 returningMetrics.append(metricPayload)
@@ -89,6 +99,21 @@ public class TempoDataBackup
         return returningMetrics
     }
 
+    public static func removeSpecificMetricList(backupUrl: URL) {
+        let jsonDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!.appendingPathComponent(folderName)
+        
+        do {
+            // Get the contents of the directory
+            let contents = try FileManager.default.contentsOfDirectory(at: jsonDirectory, includingPropertiesForKeys: nil, options: [])
+
+            // Remove each file
+            try FileManager.default.removeItem(at: backupUrl)
+            
+        } catch {
+            // Handle error
+        }
+    }
+    
     // Clears all references in the dedicated
     public static func clearData()  {
         let jsonDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!.appendingPathComponent(folderName)

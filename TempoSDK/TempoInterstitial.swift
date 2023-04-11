@@ -10,7 +10,7 @@ public class TempoInterstitial: NSObject {
     
     public init(parentViewController:UIViewController?, delegate:TempoInterstitialListener, appId:String){
         super.init()
-        print("Area: \(TempoUserInfo.getIsoCountryCode2Digit() ?? "unknown")");
+        print("✅✅✅ Area: \(TempoUserInfo.getIsoCountryCode2Digit() ?? "unknown")");
         self.parentViewController = parentViewController
         interstitialView = TempoInterstitialView()
         interstitialView!.listener = delegate
@@ -20,6 +20,7 @@ public class TempoInterstitial: NSObject {
         // TODO: add proper IDFA alternative here if we don't have advertisingIdentifier
         self.adId = (advertisingIdentifier.uuidString != "00000000-0000-0000-0000-000000000000") ? advertisingIdentifier.uuidString : nil
         self.appId = appId
+        interstitialView?.checkHeldMetrics()
     }
     
     public func updateViewController(parentViewController:UIViewController?){

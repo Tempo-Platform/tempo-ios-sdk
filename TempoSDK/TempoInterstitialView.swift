@@ -73,7 +73,7 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
     var currentParentViewController: UIViewController?
     var previousParentBGColor: UIColor?
 
-    public func loadAd(interstitial:TempoInterstitial, isInterstitial: Bool, appId:String, adId:String?, cpmFloor:Float?, placementId: String?){
+    public func loadAd(interstitial:TempoInterstitial, isInterstitial: Bool, appId:String, adId:String?, cpmFloor:Float?, placementId: String?) {
         print("load url interstitial")
         self.setupWKWebview()
         self.loadUrl(isInterstitial:isInterstitial, appId:appId, adId:adId, cpmFloor:cpmFloor, placementId: placementId)
@@ -91,7 +91,7 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
         webView.removeFromSuperview()
         webView = nil
         solidColorView = nil
-        pushMetrics(backupMetric: nil)
+        pushMetrics(backupUrl: nil)
         listener.onAdClosed(isInterstitial: self.currentIsInterstitial ?? true)
     }
     
@@ -288,7 +288,7 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
         
         self.metricList.append(metric)
         if (["AD_SHOW", "AD_LOAD_REQUEST", "TIMER_COMPLETED"].contains(metricType)) {
-            pushMetrics(backupMetric: nil)
+            pushMetrics(backupUrl: nil)
         }
         print("MetricTime: \(metric.timestamp!)")
         
@@ -311,13 +311,13 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
                                       session_id: metric.session_id,
                                       placement_id: metric.placement_id,
                                       os: metric.os))
-        pushMetrics(backupMetric: nil)
+        pushMetrics(backupUrl: nil)
     }
     
-    private func pushMetrics(backupMetric: [Metric]?) {
+    private func pushMetrics(backupUrl: URL?) {
         
         //create the url with NSURL
-        let url = URL(string: "https://metric-api.tempoplatform.com/metrics")!
+        let url = URL(string: "https://xxxmetric-api.tempoplatform.com/metrics")!
 
         //create the session object
         let session = URLSession.shared
@@ -335,14 +335,16 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
         var metricListCopy = [Metric]()
         
         // Assigned values depend on whether it's backup-resend or standard push
-        if(backupMetric == nil) {
+        if(backupUrl != nil)
+        {
+            print("💥 Pushing backedup URL!");
+            var backupMetricList = TempoDataBackup.fileMetric[backupUrl!]
+            metricData = try? JSONEncoder().encode(backupMetricList)
+        }
+        else {
             metricListCopy = metricList;
             metricData = try? JSONEncoder().encode(metricList)
             metricList.removeAll()
-        }
-        else
-        {
-            metricData = try? JSONEncoder().encode(backupMetric)
         }
 
         request.httpBody = metricData // pass dictionary to data object and set it as request body
@@ -355,18 +357,39 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
         let task = session.dataTask(with: request, completionHandler: { data, response, error in
             guard error == nil else {
                 // TODO: add error handling here, maybe try to send again? Or just send a "FAILED_TO_PUSH" single metric elsewhere?
-                if(backupMetric == nil) {
+                if(backupUrl == nil) {
                     print("🥶🥶🥶 Data did not send, creating backup")
                     TempoDataBackup.sendData(dataArray: metricListCopy)
                 }
+                else{
+                    print("🥶🥶🥶 Data did not send, keeping backup: \(backupUrl!)")
+                }
                 return
             }
-            if(backupMetric != nil)
+            
+            if(backupUrl != nil)
             {
-                //TODO: Remove metricList from device storage
+                print("😇😇😇 Removing backup: \(backupUrl!)")
+                // Remove metricList from device storage
+                TempoDataBackup.removeSpecificMetricList(backupUrl: backupUrl!)
             }
         })
+        
         task.resume()
+        
+        
+        
     }
     
+    public func checkHeldMetrics() {
+        if(TempoDataBackup.readyForCheck) {
+            TempoDataBackup.initCheck()
+            print("👀👀 Checking Held Metrics: \(TempoDataBackup.fileMetric.count)")
+            for url in TempoDataBackup.fileMetric.keys
+            {
+                pushMetrics(backupUrl: url)
+            }
+        }
+        TempoDataBackup.readyForCheck = false
+    }
 }
