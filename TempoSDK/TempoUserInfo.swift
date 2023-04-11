@@ -29,9 +29,9 @@ public class TempoUserInfo {
     }
     
     /// Returns the ISO/countryCode as per the user's device region settings ISO 3166-1 (alpha-2)
-    public static func getIsoCountryCode2Digit() -> String
+    public static func getIsoCountryCode2Digit() -> String?
     {
-        var currencyCode: String? = currentLocale.currencyCode
+        var currencyCode: String?
         
         // currentLocale.regionCode deprecated in iOS 16
         if #available(iOS 16, *) {
@@ -39,25 +39,28 @@ public class TempoUserInfo {
         } else {
             currencyCode = currentLocale.regionCode
         }
-        
+
         if(currencyCode == nil)
         {
             currencyCode = iso1366Dict[getIsoCountryCode3Digit()]
         }
         
-        return currencyCode == nil ? "??" : currencyCode!
+        return currencyCode;
     }
     
     /// Returns the ISO/countryCode as per the user's device region settings ISO 3166-1 (alpha-3)
     public static func getIsoCountryCode3Digit() -> String
     {
-        let currencyCode = currentLocale.currencyCode
-        if(currencyCode == nil || currencyCode == "") {
-            return unknown // Technically, Locale.current.currencyCode defaults to "XXX" so this should never happen
-        }
-        else {
-            return currencyCode!
-        }
+//        let currencyCode = currentLocale.currencyCode
+//        if(currencyCode == nil || currencyCode == "") {
+//            print("3 digit country code not recognised, return \(unknown)")
+//            return unknown // Technically, Locale.current.currencyCode defaults to "XXX" so this should never happen
+//        }
+//        else {
+//            return currencyCode!
+//        }
+        
+        return "???"
     }
     
     // Dictionary of 3 -> 2 digit ISO-1366-1 counrty codes

@@ -1,5 +1,5 @@
 PODS:
-  - TempoSDK (0.2.15):
+  - TempoSDK (0.2.16):
     - TrueTime (~> 5.0.0)
   - TrueTime (5.0.3)
 
@@ -15,7 +15,7 @@ EXTERNAL SOURCES:
     :path: "../"
 
 SPEC CHECKSUMS:
-  TempoSDK: 2135e2cbd8f6301c7cf82522b982d11187671438
+  TempoSDK: d81ce6f9b1305a0e9646a83d5446f78e75679e9b
   TrueTime: b49551ffafb28a9dee04e51b226f42a416010842
 
 PODFILE CHECKSUM: 75ff74daf906221a27574f53dfc45b3288c5119c

@@ -52,7 +52,7 @@ public struct Metric : Codable {
     var age_range: String = "unknown"
     var income_range: String = "unknown"
     var placement_id: String = "unknown"
-    var country_code: String = TempoUserInfo.getIsoCountryCode2Digit()
+    var country_code: String? = TempoUserInfo.getIsoCountryCode2Digit()
     var os: String = "unknown"
 //    var additional_metrics: Dictionary<String, Any>? = nil
 }
