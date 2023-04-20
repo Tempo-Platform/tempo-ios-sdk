@@ -65,7 +65,7 @@ class ViewController: UIViewController, TempoInterstitialListener {
         loadAdButton.setTitle("Loading..", for: .normal)
         loadAdButton.isEnabled = false
         if (campaignId == "") {
-            interstitial?.loadAd(isInterstitial: isInterstitial, cpmFloor: 25.0, placementId: "XCODE_PLACEMENT")
+            interstitial?.loadAd(isInterstitial: isInterstitial, cpmFloor: 25.0, placementId: "XCODE")
         } else {
             interstitial?.loadSpecificAd(isInterstitial: isInterstitial, campaignId: campaignId)
         }

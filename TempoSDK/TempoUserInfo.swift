@@ -1,9 +1,3 @@
-//
-//  TempoUserInfo.swift
-//  TempoSDK
-//
-//  Created by Stephen Baker on 6/4/2023.
-//
 
 import Foundation
 

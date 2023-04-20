@@ -54,7 +54,6 @@ public struct Metric : Codable {
     var placement_id: String = "unknown"
     var country_code: String? = TempoUserInfo.getIsoCountryCode2Digit()
     var os: String = "unknown"
-//    var additional_metrics: Dictionary<String, Any>? = nil
 }
 
 public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKScriptMessageHandler  {
@@ -73,7 +72,7 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
     var currentParentViewController: UIViewController?
     var previousParentBGColor: UIColor?
 
-    public func loadAd(interstitial:TempoInterstitial, isInterstitial: Bool, appId:String, adId:String?, cpmFloor:Float?, placementId: String?){
+    public func loadAd(interstitial:TempoInterstitial, isInterstitial: Bool, appId:String, adId:String?, cpmFloor:Float?, placementId: String?) {
         print("load url interstitial")
         self.setupWKWebview()
         self.loadUrl(isInterstitial:isInterstitial, appId:appId, adId:adId, cpmFloor:cpmFloor, placementId: placementId)
@@ -91,7 +90,7 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
         webView.removeFromSuperview()
         webView = nil
         solidColorView = nil
-        pushMetrics()
+        pushMetrics(backupUrl: nil)
         listener.onAdClosed(isInterstitial: self.currentIsInterstitial ?? true)
     }
     
@@ -288,9 +287,9 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
         
         self.metricList.append(metric)
         if (["AD_SHOW", "AD_LOAD_REQUEST", "TIMER_COMPLETED"].contains(metricType)) {
-            pushMetrics()
+            pushMetrics(backupUrl: nil)
         }
-        print("MetricTime: \(metric.timestamp!)")
+        //print("MetricTime: \(metric.timestamp!)")
         
         // If metric using device time, send additional metric instance
         if(deviceTime)
@@ -311,25 +310,50 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
                                       session_id: metric.session_id,
                                       placement_id: metric.placement_id,
                                       os: metric.os))
-        pushMetrics()
+        pushMetrics(backupUrl: nil)
     }
     
-    private func pushMetrics() {
+    private func pushMetrics(backupUrl: URL?) {
+        
         //create the url with NSURL
-        let url = URL(string: "https://metric-api.tempoplatform.com/metrics")!
-
+        let url = URL(string: TempoConstants.METRIC_SERVER_URL)!
+        
         //create the session object
         let session = URLSession.shared
-
+        
         //now create the Request object using the url object
         var request = URLRequest(url: url)
         request.httpMethod = "POST" //set http method as POST
-
-//        for metric in metricList{
-//            print("💥 \(metric.metric_type) - \(metric.country_code)")
-//        }
-        let metricData = try? JSONEncoder().encode(metricList)
-        metricList.removeAll()
+        
+        // Prints out metrics types being sent in this push
+        if(TempoConstants.IS_DEBUGGING)
+        {
+            var outMetricList = backupUrl != nil ? TempoDataBackup.fileMetric[backupUrl!]: metricList
+            if(outMetricList != nil)
+            {
+                var metricOutput = "Metrics: "
+                for metric in outMetricList!{
+                    metricOutput += "\n  - \(metric.metric_type ?? "<TYPE_UNKNOWN>")"
+                }
+                print("📊 \(metricOutput)")
+            }
+        }
+        
+        // Declare local metric/data varaibles
+        let metricData: Data?
+        var metricListCopy = [Metric]()
+        
+        // Assigned values depend on whether it's backup-resend or standard push
+        if(backupUrl != nil)
+        {
+            var backupMetricList = TempoDataBackup.fileMetric[backupUrl!]
+            metricData = try? JSONEncoder().encode(backupMetricList)
+        }
+        else {
+            metricListCopy = metricList;
+            metricData = try? JSONEncoder().encode(metricList)
+            metricList.removeAll()
+        }
 
         request.httpBody = metricData // pass dictionary to data object and set it as request body
 
@@ -341,10 +365,55 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
         let task = session.dataTask(with: request, completionHandler: { data, response, error in
             guard error == nil else {
                 // TODO: add error handling here, maybe try to send again? Or just send a "FAILED_TO_PUSH" single metric elsewhere?
+                if(backupUrl == nil) {
+                    print("Data did not send, creating backup")
+                    TempoDataBackup.sendData(metricsArray: metricListCopy)
+                }
+                else{
+                    print("Data did not send, keeping backup: \(backupUrl!)")
+                }
                 return
             }
+            
+            // If metrics were backeups - and were successfully resent - delete the file fro mdevice storage
+            if(backupUrl != nil)
+            {
+                if(TempoConstants.IS_DEBUGGING)
+                {
+                    print("Removing backup: \(backupUrl!) (x\(TempoDataBackup.fileMetric[backupUrl!]!.count))")
+                }
+                
+                // Remove metricList from device storage
+                TempoDataBackup.removeSpecificMetricList(backupUrl: backupUrl!)
+            }
+            else
+            {
+                if(TempoConstants.IS_DEBUGGING)
+                {
+                    print("Standard Metric sent (x\(metricListCopy.count))")
+                }
+            }
         })
+        
         task.resume()
     }
     
+    /// Checks once if there are any backed up metrics and runs if found
+    public func checkHeldMetrics() {
+        // See if check has already been called
+        if(TempoDataBackup.readyForCheck) {
+            // Request creation of backup metrics dictionary
+            TempoDataBackup.initCheck()
+            print("Resending: \(TempoDataBackup.fileMetric.count)")
+            
+            // Cycles through each stored arrays and resends
+            for url in TempoDataBackup.fileMetric.keys
+            {
+                pushMetrics(backupUrl: url)
+            }
+            
+            // Prevents from beign checked again this session. If network is failing, no point retrying during this session
+            TempoDataBackup.readyForCheck = false
+        }
+    }
 }
