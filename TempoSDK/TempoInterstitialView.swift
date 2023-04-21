@@ -273,11 +273,14 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
     }
 
     private func addMetric(metricType: String) {
-        var deviceTime: Bool = false
+        
+        var intTime = Int(Date().timeIntervalSince1970 * 1000)
+        print("⏰ intTime = \(intTime)")
+        
         let metric = Metric(metric_type: metricType,
                             ad_id: currentAdId,
                             app_id: currentAppId,
-                            timestamp: utcGenerator.getUTCTime(deviceTime: &deviceTime),
+                            timestamp: Int(Date().timeIntervalSince1970 * 1000),// utcGenerator.getUTCTime(deviceTime: &deviceTime),
                             is_interstitial: currentIsInterstitial,
                             bundle_id: Bundle.main.bundleIdentifier!,
                             campaign_id: currentCampaignId ?? "",
@@ -291,27 +294,27 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
         }
         //print("MetricTime: \(metric.timestamp!)")
         
-        // If metric using device time, send additional metric instance
-        if(deviceTime)
-        {
-            addDeviceTimeMetric(metric: metric)
-        }
+//        // If metric using device time, send additional metric instance
+//        if(deviceTime)
+//        {
+//            addDeviceTimeMetric(metric: metric)
+//        }
     }
     
-    private func addDeviceTimeMetric(metric: Metric) {
-        print("DEVICE_TIME metric sent")
-        self.metricList.append(Metric(metric_type: "DEVICE_TIME",
-                                      ad_id: metric.ad_id,
-                                      app_id: metric.app_id,
-                                      timestamp: metric.timestamp,
-                                      is_interstitial: metric.is_interstitial,
-                                      bundle_id: metric.bundle_id,
-                                      campaign_id: metric.campaign_id,
-                                      session_id: metric.session_id,
-                                      placement_id: metric.placement_id,
-                                      os: metric.os))
-        pushMetrics(backupUrl: nil)
-    }
+//    private func addDeviceTimeMetric(metric: Metric) {
+//        print("DEVICE_TIME metric sent")
+//        self.metricList.append(Metric(metric_type: "DEVICE_TIME",
+//                                      ad_id: metric.ad_id,
+//                                      app_id: metric.app_id,
+//                                      timestamp: metric.timestamp,
+//                                      is_interstitial: metric.is_interstitial,
+//                                      bundle_id: metric.bundle_id,
+//                                      campaign_id: metric.campaign_id,
+//                                      session_id: metric.session_id,
+//                                      placement_id: metric.placement_id,
+//                                      os: metric.os))
+//        pushMetrics(backupUrl: nil)
+//    }
     
     private func pushMetrics(backupUrl: URL?) {
         
@@ -328,7 +331,7 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
         // Prints out metrics types being sent in this push
         if(TempoConstants.IS_DEBUGGING)
         {
-            var outMetricList = backupUrl != nil ? TempoDataBackup.fileMetric[backupUrl!]: metricList
+            let outMetricList = backupUrl != nil ? TempoDataBackup.fileMetric[backupUrl!]: metricList
             if(outMetricList != nil)
             {
                 var metricOutput = "Metrics: "
@@ -346,7 +349,7 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
         // Assigned values depend on whether it's backup-resend or standard push
         if(backupUrl != nil)
         {
-            var backupMetricList = TempoDataBackup.fileMetric[backupUrl!]
+            let backupMetricList = TempoDataBackup.fileMetric[backupUrl!]
             metricData = try? JSONEncoder().encode(backupMetricList)
         }
         else {
@@ -360,6 +363,7 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
         //HTTP Headers
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
         request.addValue("application/json", forHTTPHeaderField: "Accept")
+        request.addValue(String(Int(Date().timeIntervalSince1970 * 1000)), forHTTPHeaderField: TempoConstants.METRIC_TIME_HEADER)
 
         //create dataTask using the session object to send data to the server
         let task = session.dataTask(with: request, completionHandler: { data, response, error in

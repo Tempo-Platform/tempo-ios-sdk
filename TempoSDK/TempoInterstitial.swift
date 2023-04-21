@@ -36,7 +36,7 @@ public class TempoInterstitial: NSObject {
     }
     
     public func loadAd(isInterstitial: Bool, cpmFloor: Float?, placementId: String?){
-        interstitialView!.utcGenerator.resyncNtp()
+        //interstitialView!.utcGenerator.resyncNtp()
         interstitialView!.loadAd(interstitial: self, isInterstitial: isInterstitial, appId: appId!, adId: adId, cpmFloor: cpmFloor, placementId: placementId)
     }
     
