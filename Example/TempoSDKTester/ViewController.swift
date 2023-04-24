@@ -3,6 +3,7 @@ import UIKit
 
 class ViewController: UIViewController, TempoInterstitialListener {
 
+
     var interstitialReady:Bool = false
     var interstitial:TempoInterstitial? = nil
     
@@ -13,6 +14,8 @@ class ViewController: UIViewController, TempoInterstitialListener {
 
     private var campaignId: String! = ""
     private var isInterstitial: Bool! = true
+    
+    private var demoAdaptervVersion = "0.9.9"
     
     override var prefersStatusBarHidden: Bool {
         return true
@@ -106,5 +109,11 @@ class ViewController: UIViewController, TempoInterstitialListener {
     func onAdClicked(isInterstitial: Bool) {
         print("Interstitial :: clicked")
     }
+    
+    func onVersionExchange(sdkVersion: String) -> String? {
+        print("Interstitial :: versionSwap")
+        return demoAdaptervVersion
+    }
+    
 }
 

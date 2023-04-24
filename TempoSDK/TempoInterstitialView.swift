@@ -54,6 +54,8 @@ public struct Metric : Codable {
     var placement_id: String = "unknown"
     var country_code: String? = TempoUserInfo.getIsoCountryCode2Digit()
     var os: String = "unknown"
+    var sdk_version: String
+    var adapter_version: String
 }
 
 public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKScriptMessageHandler  {
@@ -69,13 +71,15 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
     var currentAppId: String?
     var currentPlacementId: String?
     var currentIsInterstitial: Bool?
+    var currentSdkVersion: String?
+    var currentAdapterVersion: String?
     var currentParentViewController: UIViewController?
     var previousParentBGColor: UIColor?
 
-    public func loadAd(interstitial:TempoInterstitial, isInterstitial: Bool, appId:String, adId:String?, cpmFloor:Float?, placementId: String?) {
+    public func loadAd(interstitial:TempoInterstitial, isInterstitial: Bool, appId:String, adId:String?, cpmFloor:Float?, placementId: String?, sdkVersion: String?, adapterVersion: String?) {
         print("load url interstitial")
         self.setupWKWebview()
-        self.loadUrl(isInterstitial:isInterstitial, appId:appId, adId:adId, cpmFloor:cpmFloor, placementId: placementId)
+        self.loadUrl(isInterstitial:isInterstitial, appId:appId, adId:adId, cpmFloor:cpmFloor, placementId: placementId, sdkVersion: sdkVersion, adapterVersion: adapterVersion)
     }
     
     public func showAd(parentViewController:UIViewController) {
@@ -108,12 +112,14 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
         self.webView.load(URLRequest(url: url))
     }
     
-    private func loadUrl(isInterstitial: Bool, appId:String, adId:String?, cpmFloor:Float?, placementId: String?) {
+    private func loadUrl(isInterstitial: Bool, appId:String, adId:String?, cpmFloor:Float?, placementId: String?, sdkVersion: String?, adapterVersion: String?) {
         currentUUID = UUID().uuidString
         currentAdId = adId ?? "NONE"
         currentAppId = appId
         currentIsInterstitial = isInterstitial
         currentPlacementId = placementId
+        currentSdkVersion = sdkVersion
+        currentAdapterVersion = adapterVersion
         let currentCPMFloor = cpmFloor ?? 0.0
         self.addMetric(metricType: "AD_LOAD_REQUEST")
         var components = URLComponents(string: "https://ads-api.tempoplatform.com/ad")!
@@ -283,7 +289,9 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
                             campaign_id: currentCampaignId ?? "",
                             session_id: currentUUID!,
                             placement_id: currentPlacementId ?? "",
-                            os: "iOS \(UIDevice.current.systemVersion)")
+                            os: "iOS \(UIDevice.current.systemVersion)",
+                            sdk_version: currentSdkVersion ?? "",
+                            adapter_version: currentAdapterVersion ?? "")
         
         self.metricList.append(metric)
         if (["AD_SHOW", "AD_LOAD_REQUEST", "TIMER_COMPLETED"].contains(metricType)) {
@@ -309,7 +317,9 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
                                       campaign_id: metric.campaign_id,
                                       session_id: metric.session_id,
                                       placement_id: metric.placement_id,
-                                      os: metric.os))
+                                      os: metric.os,
+                                      sdk_version: metric.sdk_version,
+                                      adapter_version: metric.adapter_version))
         pushMetrics(backupUrl: nil)
     }
     
@@ -333,15 +343,16 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
             {
                 var metricOutput = "Metrics: "
                 for metric in outMetricList!{
-                    metricOutput += "\n  - \(metric.metric_type ?? "<TYPE_UNKNOWN>")"
+                    metricOutput += "\n  - \(metric.metric_type ?? "<TYPE_UNKNOWN>") | \(metric.sdk_version)/\(metric.adapter_version)"
                 }
-                print("📊 \(metricOutput)")
+                //print("📊 \(metricOutput)")
             }
         }
         
         // Declare local metric/data varaibles
         let metricData: Data?
         var metricListCopy = [Metric]()
+        
         
         // Assigned values depend on whether it's backup-resend or standard push
         if(backupUrl != nil)
@@ -356,7 +367,9 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
         }
 
         request.httpBody = metricData // pass dictionary to data object and set it as request body
-
+        
+        //print("Payload: " + String(data: metricData ?? Data(), encoding: .utf8)!)
+        
         //HTTP Headers
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
         request.addValue("application/json", forHTTPHeaderField: "Accept")
@@ -367,6 +380,7 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
                 // TODO: add error handling here, maybe try to send again? Or just send a "FAILED_TO_PUSH" single metric elsewhere?
                 if(backupUrl == nil) {
                     print("Data did not send, creating backup")
+                    print("👹👹👹 => \(response)")
                     TempoDataBackup.sendData(metricsArray: metricListCopy)
                 }
                 else{
@@ -374,6 +388,8 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
                 }
                 return
             }
+            
+            //print("✅✅✅ \(response)")
             
             // If metrics were backeups - and were successfully resent - delete the file fro mdevice storage
             if(backupUrl != nil)
