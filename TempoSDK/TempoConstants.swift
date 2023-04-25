@@ -6,4 +6,5 @@ struct TempoConstants {
     static let METRIC_BACKUP_SUFFIX = "_mtarr.tempo"
     static let IS_DEBUGGING = true
     static let SDK_VERSIONS = "0.6.7"
+    static let METRIC_TIME_HEADER = "X-Timestamp"
 }
