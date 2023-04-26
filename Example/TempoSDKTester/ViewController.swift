@@ -89,31 +89,36 @@ class ViewController: UIViewController, TempoInterstitialListener {
     }
     
     func onAdFetchSucceeded(isInterstitial: Bool) {
-        print("Interstitial :: ready")
+        print("\(getType(isInterstitial: isInterstitial)) :: ready")
         setInterstitialReady(true)
     }
     
     func onAdFetchFailed(isInterstitial: Bool) {
-        print("Interstitial :: failed")
+        print("\(getType(isInterstitial: isInterstitial)) :: failed")
     }
     
     func onAdClosed(isInterstitial: Bool) {
-        print("Interstitial :: close")
+        print("\(getType(isInterstitial: isInterstitial)) :: close")
     }
     
     func onAdDisplayed(isInterstitial: Bool) {
-        print("Interstitial :: displayed")
+        print("\(getType(isInterstitial: isInterstitial)) :: displayed")
         showAdButton.isEnabled = false
     }
 
     func onAdClicked(isInterstitial: Bool) {
-        print("Interstitial :: clicked")
+        print("\(getType(isInterstitial: isInterstitial)) :: clicked")
     }
     
     func onVersionExchange(sdkVersion: String) -> String? {
-        print("Interstitial :: versionSwap")
+        print("\(getType(isInterstitial: isInterstitial)) :: versionSwap")
         return demoAdaptervVersion
     }
     
+    
+    func getType(isInterstitial: Bool) -> String
+    {
+        return isInterstitial ? "INTERSTITIAL" : "REWARDED"
+    }
 }
 

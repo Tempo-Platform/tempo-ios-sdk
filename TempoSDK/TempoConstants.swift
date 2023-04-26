@@ -2,9 +2,12 @@
 
 struct TempoConstants {
     static let METRIC_SERVER_URL = "https://dev-metric-api.tempoplatform.com/metrics" // DEV: "https://dev-metric-api.tempoplatform.com/metrics"
-    static let METRIC_BACKUOP_FOLDER = "metricJsons"
-    static let METRIC_BACKUP_SUFFIX = "_mtarr.tempo"
-    static let IS_DEBUGGING = true
-    static let SDK_VERSIONS = "0.6.7"
+    static let METRIC_BACKUP_FOLDER = "metricJsons"
+    static let METRIC_BACKUP_APPEND = ".tempo"
+    static let IS_DEBUGGING = false
+    static let SDK_VERSIONS = "0.0.1"
     static let METRIC_TIME_HEADER = "X-Timestamp"
+    static let MAX_BACKUPS: Int = 100
+    static let EXPIRY_DAYS: Int = 7
+    
 }

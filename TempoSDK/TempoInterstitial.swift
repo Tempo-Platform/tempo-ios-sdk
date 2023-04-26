@@ -19,7 +19,7 @@ public class TempoInterstitial: NSObject {
         interstitialView!.listener = delegate
         adapterVersion = interstitialView!.listener.onVersionExchange(sdkVersion: self.sdkVersion)
         
-        interstitialView!.utcGenerator = TempoUtcGenerator()
+        //interstitialView!.utcGenerator = TempoUtcGenerator()
         let advertisingIdentifier: UUID = ASIdentifierManager().advertisingIdentifier
         // TODO: add proper IDFA alternative here if we don't have advertisingIdentifier
         self.adId = (advertisingIdentifier.uuidString != "00000000-0000-0000-0000-000000000000") ? advertisingIdentifier.uuidString : nil
