@@ -8,7 +8,7 @@
 
 Pod::Spec.new do |s|
   s.name             = 'TempoSDK'
-  s.version          = '0.2.18'
+  s.version          = '1.0.0'
   s.summary          = 'Tempo SDK to show payable ads'
   s.swift_version    = '5.6.1'
   s.description      = <<-DESC
@@ -28,7 +28,6 @@ TODO: Add long description of the pod here.
   s.source_files  = "TempoSDK/**/*.{h,m,swift}"
   # s.exclude_files = "TempoSDK/Exclude"
   
-  s.dependency 'TrueTime', '~> 5.0.0'
   
   # s.resource_bundles = {
   #   'SKImageExtension' => ['SKImageExtension/Assets/*.png']
