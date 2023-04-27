@@ -76,10 +76,10 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
     var currentParentViewController: UIViewController?
     var previousParentBGColor: UIColor?
 
-    public func loadAd(interstitial:TempoInterstitial, isInterstitial: Bool, appId:String, adId:String?, cpmFloor:Float?, placementId: String?, sdkVersion: String?, adapterVersion: String?) {
+    public func loadAd(interstitial:TempoInterstitial, isInterstitial: Bool, appId:String, adId:String?, cpmFloor:Float?, placementId: String?, sdkVersion: String?, adapterVersion: String?, htmlAdsURLOverride:String?) {
         print("load url interstitial")
         self.setupWKWebview()
-        self.loadUrl(isInterstitial:isInterstitial, appId:appId, adId:adId, cpmFloor:cpmFloor, placementId: placementId, sdkVersion: sdkVersion, adapterVersion: adapterVersion)
+        self.loadUrl(isInterstitial:isInterstitial, appId:appId, adId:adId, cpmFloor:cpmFloor, placementId: placementId, sdkVersion: sdkVersion, adapterVersion: adapterVersion, htmlAdsURLOverride:htmlAdsURLOverride)
     }
     
     public func showAd(parentViewController:UIViewController) {
@@ -98,7 +98,7 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
         listener.onAdClosed(isInterstitial: self.currentIsInterstitial ?? true)
     }
     
-    public func loadSpecificAd(isInterstitial: Bool, campaignId:String) {
+    public func loadSpecificAd(isInterstitial: Bool, campaignId:String, htmlAdsURLOverride:String?) {
         print("load specific url interstitial")
         self.setupWKWebview()
         currentUUID = "TEST"
@@ -107,12 +107,16 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
         currentIsInterstitial = isInterstitial
         let urlComponent = isInterstitial ? "interstitial" : "campaign"
         self.addMetric(metricType: "CUSTOM_AD_LOAD_REQUEST")
-        let url = URL(string: "https://ads.tempoplatform.com/\(urlComponent)/\(campaignId)/ios")!
+        var baseURL = "https://ads.tempoplatform.com"
+        if !((htmlAdsURLOverride ?? "").isEmpty) {
+            baseURL = htmlAdsURLOverride!
+        }
+        let url = URL(string: "\(baseURL)/\(urlComponent)/\(campaignId)/ios")!
         self.currentCampaignId = campaignId
         self.webView.load(URLRequest(url: url))
     }
     
-    private func loadUrl(isInterstitial: Bool, appId:String, adId:String?, cpmFloor:Float?, placementId: String?, sdkVersion: String?, adapterVersion: String?) {
+    private func loadUrl(isInterstitial: Bool, appId:String, adId:String?, cpmFloor:Float?, placementId: String?, sdkVersion: String?, adapterVersion: String?, htmlAdsURLOverride:String?) {
         currentUUID = UUID().uuidString
         currentAdId = adId ?? "NONE"
         currentAppId = appId
@@ -167,8 +171,12 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
                                         if let id = jsonDict["id"] {
                                             if let idString = id as? String {
                                                 print("Tempo SDK: Got Ad ID from server. Response \(jsonDict).")
+                                                var baseURL = "https://ads.tempoplatform.com"
+                                                if !((htmlAdsURLOverride ?? "").isEmpty) {
+                                                    baseURL = htmlAdsURLOverride!
+                                                }
                                                 let urlComponent = self.currentIsInterstitial! ? "interstitial" : "campaign"
-                                                let url = URL(string: "https://ads.tempoplatform.com/\(urlComponent)/\(idString)/ios")!
+                                                let url = URL(string: "\(baseURL)/\(urlComponent)/\(idString)/ios")!
                                                 self.currentCampaignId = idString
                                                 self.webView.load(URLRequest(url: url))
                                                 didSomething = true

@@ -11,7 +11,10 @@ class ViewController: UIViewController, TempoInterstitialListener {
     @IBOutlet weak var loadAdButton: UIButton!
     @IBOutlet weak var showAdButton: UIButton!
     @IBOutlet weak var segmentedControl: UISegmentedControl!
+    @IBOutlet weak var envSelector: UISegmentedControl!
 
+    private var deployPreviewId: String! = ""
+    private var baseURLOverride: String! = ""
     private var campaignId: String! = ""
     private var isInterstitial: Bool! = true
     
@@ -50,6 +53,23 @@ class ViewController: UIViewController, TempoInterstitialListener {
         self.view.endEditing(true)
     }
     
+    @IBAction func envSelectorSegmentedControlAction(_ sender: Any) {
+        if (envSelector.selectedSegmentIndex == 0) {
+            baseURLOverride = ""
+        } else if (envSelector.selectedSegmentIndex == 1) {
+            baseURLOverride = "https://development--tempo-html-ads.netlify.app"
+        } else if (envSelector.selectedSegmentIndex == 2) {
+            baseURLOverride = "https://deploy-preview-\(deployPreviewId!)--tempo-html-ads.netlify.app"
+        }
+    }
+    
+    @IBAction func deployPreviewFieldDidChange(_ textField: UITextField) {
+        deployPreviewId = textField.text
+        if (envSelector.selectedSegmentIndex == 2) {
+            baseURLOverride = "https://deploy-preview-\(deployPreviewId!)--tempo-html-ads.netlify.app"
+        }
+    }
+    
     @IBAction func textFieldDidChange(_ textField: UITextField) {
         campaignId = textField.text
     }
@@ -68,9 +88,9 @@ class ViewController: UIViewController, TempoInterstitialListener {
         loadAdButton.setTitle("Loading..", for: .normal)
         loadAdButton.isEnabled = false
         if (campaignId == "") {
-            interstitial?.loadAd(isInterstitial: isInterstitial, cpmFloor: 25.0, placementId: "XCODE")
+            interstitial?.loadAd(isInterstitial: isInterstitial, cpmFloor: 25.0, placementId: "XCODE", htmlAdsURLOverride: baseURLOverride)
         } else {
-            interstitial?.loadSpecificAd(isInterstitial: isInterstitial, campaignId: campaignId)
+            interstitial?.loadSpecificAd(isInterstitial: isInterstitial, campaignId: campaignId, htmlAdsURLOverride: baseURLOverride)
         }
     }
 

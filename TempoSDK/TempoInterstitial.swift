@@ -37,14 +37,14 @@ public class TempoInterstitial: NSObject {
         self.appId = appId
     }
     
-    public func loadSpecificAd(isInterstitial: Bool, campaignId:String){
-        interstitialView!.loadSpecificAd(isInterstitial: isInterstitial, campaignId: campaignId)
+    public func loadSpecificAd(isInterstitial: Bool, campaignId:String, htmlAdsURLOverride:String?){
+        interstitialView!.loadSpecificAd(isInterstitial: isInterstitial, campaignId: campaignId, htmlAdsURLOverride: htmlAdsURLOverride)
     }
     
-    public func loadAd(isInterstitial: Bool, cpmFloor: Float?, placementId: String?){
+    public func loadAd(isInterstitial: Bool, cpmFloor: Float?, placementId: String?, htmlAdsURLOverride:String?){
 
         //interstitialView!.utcGenerator.resyncNtp()
-        interstitialView!.loadAd(interstitial: self, isInterstitial: isInterstitial, appId: appId!, adId: adId, cpmFloor: cpmFloor, placementId: placementId, sdkVersion: sdkVersion, adapterVersion: adapterVersion )
+        interstitialView!.loadAd(interstitial: self, isInterstitial: isInterstitial, appId: appId!, adId: adId, cpmFloor: cpmFloor, placementId: placementId, sdkVersion: sdkVersion, adapterVersion: adapterVersion, htmlAdsURLOverride: htmlAdsURLOverride)
     }
     
     public func showAd(){
