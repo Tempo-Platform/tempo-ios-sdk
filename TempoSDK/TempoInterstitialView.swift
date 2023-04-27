@@ -129,6 +129,8 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
             URLQueryItem(name: "app_id", value: appId),
             URLQueryItem(name: "cpm_floor", value: String(describing: currentCPMFloor)),
             URLQueryItem(name: "is_interstitial", value: String(currentIsInterstitial!)),
+            URLQueryItem(name: "sdk_version", value: String(currentSdkVersion ?? "")),
+            URLQueryItem(name: "adapter_version", value: String(currentAdapterVersion ?? "")),
         ]
         components.percentEncodedQuery = components.percentEncodedQuery?.replacingOccurrences(of: "+", with: "%2B")
         var request = URLRequest(url: components.url!)
