@@ -4,5 +4,5 @@ platform :ios, '11.0'
 
 target 'TempoSDKTester' do
   pod 'TempoSDK', :path => '../'
-#  pod 'TempoSDK', '~> 0.0.10'
+#  pod 'TempoSDK', '~> 1.0.0'
 end

@@ -15,7 +15,7 @@ class ViewController: UIViewController, TempoInterstitialListener {
     private var campaignId: String! = ""
     private var isInterstitial: Bool! = true
     
-    private var demoAdaptervVersion = "0.9.9"
+    private var demoAdaptervVersion = "1.0.0"
     
     override var prefersStatusBarHidden: Bool {
         return true
