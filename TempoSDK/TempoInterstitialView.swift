@@ -56,6 +56,8 @@ public struct Metric : Codable {
     var os: String = "unknown"
     var sdk_version: String
     var adapter_version: String
+    var cpm: Float
+    
 }
 
 public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKScriptMessageHandler  {
@@ -75,6 +77,7 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
     var currentAdapterVersion: String?
     var currentParentViewController: UIViewController?
     var previousParentBGColor: UIColor?
+    var currentCpmFloor: Float?
 
     public func loadAd(interstitial:TempoInterstitial, isInterstitial: Bool, appId:String, adId:String?, cpmFloor:Float?, placementId: String?, sdkVersion: String?, adapterVersion: String?) {
         print("load url interstitial")
@@ -120,14 +123,14 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
         currentPlacementId = placementId
         currentSdkVersion = sdkVersion
         currentAdapterVersion = adapterVersion
-        let currentCPMFloor = cpmFloor ?? 0.0
+        currentCpmFloor = cpmFloor ?? 0.0
         self.addMetric(metricType: "AD_LOAD_REQUEST")
-        var components = URLComponents(string: "https://ads-api.tempoplatform.com/ad")!
+        var components = URLComponents(string: TempoConstants.ADS_API)!
         components.queryItems = [
             URLQueryItem(name: "uuid", value: currentUUID),  // this UUID is unique per ad load
             URLQueryItem(name: "ad_id", value: currentAdId),
             URLQueryItem(name: "app_id", value: appId),
-            URLQueryItem(name: "cpm_floor", value: String(describing: currentCPMFloor)),
+            URLQueryItem(name: "cpm", value: String(describing: currentCpmFloor)),
             URLQueryItem(name: "is_interstitial", value: String(currentIsInterstitial!)),
             URLQueryItem(name: "sdk_version", value: String(currentSdkVersion ?? "")),
             URLQueryItem(name: "adapter_version", value: String(currentAdapterVersion ?? "")),
@@ -291,7 +294,9 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
                             placement_id: currentPlacementId ?? "",
                             os: "iOS \(UIDevice.current.systemVersion)",
                             sdk_version: currentSdkVersion ?? "",
-                            adapter_version: currentAdapterVersion ?? "")
+                            adapter_version: currentAdapterVersion ?? "",
+                            cpm: currentCpmFloor ?? 0.0
+        )
         
         self.metricList.append(metric)
         
@@ -395,7 +400,7 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
                 }
                 
                 if let httpResponse = response as? HTTPURLResponse {
-                    print("Tempo status code: \(httpResponse.statusCode)")
+                    //print("Tempo status code: \(httpResponse.statusCode)")
                     
                     switch(httpResponse.statusCode)
                     {
