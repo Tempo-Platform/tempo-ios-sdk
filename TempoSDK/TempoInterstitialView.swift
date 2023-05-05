@@ -87,6 +87,14 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
         self.currentParentViewController!.view.addSubview(solidColorView)
         addMetric(metricType: "AD_SHOW")
         listener.onAdDisplayed(isInterstitial: self.currentIsInterstitial ?? true)
+        
+        // Create JS statement to find video element and play. Method return type not recognised by WebKit so we add null return.
+        let script = "var video = document.getElementById('video'); if (video) { video.play(); void(0)}"
+        webView.evaluateJavaScript(script) { (result, error) in
+            if let error = error {
+                print("Error playing video: \(error)")
+            }
+        }
     }
     
     public func closeAd(){
