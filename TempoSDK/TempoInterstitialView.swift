@@ -78,6 +78,7 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
     var currentParentViewController: UIViewController?
     var previousParentBGColor: UIColor?
     var currentCpmFloor: Float?
+    var hapticController = TempoHaptics()
 
     public func loadAd(interstitial:TempoInterstitial, isInterstitial: Bool, appId:String, adId:String?, cpmFloor:Float?, placementId: String?, sdkVersion: String?, adapterVersion: String?) {
         print("load url interstitial")
@@ -124,6 +125,7 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
         currentSdkVersion = sdkVersion
         currentAdapterVersion = adapterVersion
         currentCpmFloor = cpmFloor ?? 0.0
+        
         self.addMetric(metricType: "AD_LOAD_REQUEST")
         var components = URLComponents(string: TempoConstants.ADS_API)!
         components.queryItems = [
@@ -255,20 +257,27 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
     }
         
     public func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
+        
+        
         if(message.body as? String != nil){
-            self.addMetric(metricType: message.body as! String)
-        }
-        
-        if(message.body as? String == "TEMPO_CLOSE_AD"){
-            self.closeAd()
-        }
-        
-        if(message.body as? String == "TEMPO_ASSETS_LOADED"){
-            print("TEMPO_ASSETS_LOADED")
-        }
-        
-        if(message.body as? String == "TEMPO_VIDEO_LOADED"){
-            print("TEMPO_VIDEO_LOADED")
+            let bodyString = message.body as! String
+            // Haptics
+            if self.hapticController.refList.contains(bodyString) {
+                print(bodyString)
+                self.hapticController.hapticSwitch(hapticType: bodyString, intensity: 1.0)
+                return
+            } else if let data = message.body as? [String : Any],
+                      let hapticType = data["hapticType"] as? String,
+                      let intensity = data["intensity"] as? Float {
+                        self.hapticController.hapticSwitch(
+                            hapticType: hapticType,
+                            intensity: intensity)
+                return
+            }
+            // Metrics
+            else {
+                self.addMetric(metricType: message.body as! String)
+            }
         }
         
         if(message.body as? String == "TEMPO_IMAGES_LOADED"){
@@ -277,9 +286,33 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
             self.addMetric(metricType: "AD_LOAD_SUCCESS")
         }
         
+        // Controls
+        if(message.body as? String == "TEMPO_CLOSE_AD"){
+            self.closeAd()
+        }
+        
+        // General messaging
+        if(message.body as? String == "TEMPO_ASSETS_LOADED"){
+            print("TEMPO_ASSETS_LOADED")
+        }
+        if(message.body as? String == "TEMPO_VIDEO_LOADED"){
+            print("TEMPO_VIDEO_LOADED")
+        }
         if(message.body as? String == "TIMER_COMPLETED"){
             print("TIMER_COMPLETED")
         }
+        
+        
+        
+     
+        
+        
+        
+        if let data = message.body as? [String : Any],
+           let hapticType = data["hapticType"] as? String,
+           let intensity = data["intensity"] as? Float {
+            self.hapticController.hapticSwitch(hapticType: hapticType, intensity: intensity)
+                }
     }
 
     private func addMetric(metricType: String) {
