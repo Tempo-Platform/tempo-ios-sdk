@@ -147,7 +147,7 @@ public class TempoHaptics {
         case "TEMPO_HAPTIC_HEAVY": doImpactHeavy(intensityLevel: CGFloat(intensity)); break;
         case "TEMPO_HAPTIC_SOFT": doImpactSoft(intensityLevel: CGFloat(intensity)); break;
         case "TEMPO_HAPTIC_RIGID": doImpactRigid(intensityLevel: CGFloat(intensity)); break;
-        default: break;
+        default: doSelection(); break;
         }
     }
     
