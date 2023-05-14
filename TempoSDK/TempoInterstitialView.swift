@@ -257,7 +257,7 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
     }
         
     public func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
-        
+        //self.hapticController.doImpactHeavy(intensityLevel: 1) // test
         
         if(message.body as? String != nil){
             let bodyString = message.body as! String
