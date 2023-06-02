@@ -178,6 +178,8 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
                                         self.addMetric(metricType: "NO_FILL")
                                         didSomething = true
                                     } else if (statusString == "OK") {
+                                        
+                                        // Loads ad from URL with id reference
                                         if let id = jsonDict["id"] {
                                             if let idString = id as? String {
                                                 print("Tempo SDK: Got Ad ID from server. Response \(jsonDict).")
@@ -187,6 +189,13 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
                                                 self.webView.load(URLRequest(url: url))
                                                 didSomething = true
                                             }
+                                        }
+                                        
+                                        // Update CPM from Tempo backend
+                                        if let cpm = jsonDict["cpm"] {
+                                            //var old = self.currentCpmFloor!;
+                                            self.currentCpmFloor = cpm as? Float
+                                            //print("✅ New CPM = \(self.currentCpmFloor ?? 0) (\(old))")
                                         }
                                     }
                                 }
