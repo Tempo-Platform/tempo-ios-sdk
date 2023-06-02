@@ -351,7 +351,7 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
         // Prints out metrics types being sent in this push
         if(TempoConstants.IS_DEBUGGING)
         {
-            let outMetricList = backupUrl != nil ? TempoDataBackup.fileMetric[backupUrl!]: metricList
+            let outMetricList = backupUrl != nil ? TempoDataBackup.fileMetric[backupUrl!]: metricListCopy
             if(outMetricList != nil)
             {
                 var metricOutput = "Metrics: "
