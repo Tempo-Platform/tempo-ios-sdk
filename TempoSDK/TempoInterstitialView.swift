@@ -56,10 +56,13 @@ public struct Metric : Codable {
     var os: String = "unknown"
     var sdk_version: String
     var adapter_version: String
+    var cpm: Float
+    var adapter_type: String?
+    
 }
 
 public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKScriptMessageHandler  {
-    public var listener:TempoInterstitialListener!
+    public var listener:TempoInterstitialListener! // given value during init()
     //public var utcGenerator: TempoUtcGenerator!
     private var observation: NSKeyValueObservation?
     var solidColorView:FullScreenUIView!
@@ -75,9 +78,11 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
     var currentAdapterVersion: String?
     var currentParentViewController: UIViewController?
     var previousParentBGColor: UIColor?
+    var currentCpmFloor: Float?
+    var currentAdapterType: String?
 
     public func loadAd(interstitial:TempoInterstitial, isInterstitial: Bool, appId:String, adId:String?, cpmFloor:Float?, placementId: String?, sdkVersion: String?, adapterVersion: String?, htmlAdsURLOverride:String?) {
-        print("load url interstitial")
+        print("load url \(isInterstitial ? "INTERSTITIAL": "REWARDED")")
         self.setupWKWebview()
         self.loadUrl(isInterstitial:isInterstitial, appId:appId, adId:adId, cpmFloor:cpmFloor, placementId: placementId, sdkVersion: sdkVersion, adapterVersion: adapterVersion, htmlAdsURLOverride:htmlAdsURLOverride)
     }
@@ -107,7 +112,7 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
     }
     
     public func loadSpecificAd(isInterstitial: Bool, campaignId:String, htmlAdsURLOverride:String?) {
-        print("load specific url interstitial")
+        print("load specific url \(isInterstitial ? "INTERSTITIAL": "REWARDED")")
         self.setupWKWebview()
         currentUUID = "TEST"
         currentAdId = "TEST"
@@ -132,23 +137,31 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
         currentPlacementId = placementId
         currentSdkVersion = sdkVersion
         currentAdapterVersion = adapterVersion
-        let currentCPMFloor = cpmFloor ?? 0.0
+        currentCpmFloor = cpmFloor ?? 0.0
+        currentAdapterType = listener.onGetAdapterType()
         self.addMetric(metricType: "AD_LOAD_REQUEST")
-        var components = URLComponents(string: "https://ads-api.tempoplatform.com/ad")!
+        var components = URLComponents(string: TempoConstants.ADS_API)!
         components.queryItems = [
             URLQueryItem(name: "uuid", value: currentUUID),  // this UUID is unique per ad load
             URLQueryItem(name: "ad_id", value: currentAdId),
             URLQueryItem(name: "app_id", value: appId),
-            URLQueryItem(name: "cpm_floor", value: String(describing: currentCPMFloor)),
+            URLQueryItem(name: "cpm", value: String(describing: currentCpmFloor)),
             URLQueryItem(name: "is_interstitial", value: String(currentIsInterstitial!)),
             URLQueryItem(name: "sdk_version", value: String(currentSdkVersion ?? "")),
             URLQueryItem(name: "adapter_version", value: String(currentAdapterVersion ?? "")),
         ]
+        
+        if currentAdapterType != nil {
+            components.queryItems?.append(URLQueryItem(name: "adapter_type", value: currentAdapterType))
+        }
+        
         components.percentEncodedQuery = components.percentEncodedQuery?.replacingOccurrences(of: "+", with: "%2B")
         var request = URLRequest(url: components.url!)
         request.httpMethod = "GET"
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
 
+        //print("✅ URL ADS_API string: " + (components.url?.absoluteString ?? "❌ URL STRING ?!"))
+        
         let session = URLSession.shared
         let task = session.dataTask(with: request, completionHandler: { data, response, error -> Void in
             if error != nil || data == nil {
@@ -176,6 +189,8 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
                                         self.addMetric(metricType: "NO_FILL")
                                         didSomething = true
                                     } else if (statusString == "OK") {
+                                        
+                                        // Loads ad from URL with id reference
                                         if let id = jsonDict["id"] {
                                             if let idString = id as? String {
                                                 print("Tempo SDK: Got Ad ID from server. Response \(jsonDict).")
@@ -189,6 +204,13 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
                                                 self.webView.load(URLRequest(url: url))
                                                 didSomething = true
                                             }
+                                        }
+                                        
+                                        // Update CPM from Tempo backend
+                                        if let cpm = jsonDict["cpm"] {
+                                            //var old = self.currentCpmFloor!;
+                                            self.currentCpmFloor = cpm as? Float
+                                            //print("✅ New CPM = \(self.currentCpmFloor ?? 0) (\(old))")
                                         }
                                     }
                                 }
@@ -307,7 +329,11 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
                             placement_id: currentPlacementId ?? "",
                             os: "iOS \(UIDevice.current.systemVersion)",
                             sdk_version: currentSdkVersion ?? "",
-                            adapter_version: currentAdapterVersion ?? "")
+                            adapter_version: currentAdapterVersion ?? "",
+                            cpm: currentCpmFloor ?? 0.0,
+                            adapter_type: currentAdapterType
+                            
+        )
         
         self.metricList.append(metric)
         
@@ -349,7 +375,7 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
         // Prints out metrics types being sent in this push
         if(TempoConstants.IS_DEBUGGING)
         {
-            let outMetricList = backupUrl != nil ? TempoDataBackup.fileMetric[backupUrl!]: metricList
+            let outMetricList = backupUrl != nil ? TempoDataBackup.fileMetric[backupUrl!]: metricListCopy
             if(outMetricList != nil)
             {
                 var metricOutput = "Metrics: "
@@ -411,7 +437,7 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
                 }
                 
                 if let httpResponse = response as? HTTPURLResponse {
-                    print("Tempo status code: \(httpResponse.statusCode)")
+                    //print("Tempo status code: \(httpResponse.statusCode)")
                     
                     switch(httpResponse.statusCode)
                     {

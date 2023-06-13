@@ -3,6 +3,9 @@ import UIKit
 
 class ViewController: UIViewController, TempoInterstitialListener {
 
+    
+    
+    public static let TEST_APP_ID: String = "1"; // 1 for DEV, 8 for PROD
 
     var interstitialReady:Bool = false
     var interstitial:TempoInterstitial? = nil
@@ -18,7 +21,7 @@ class ViewController: UIViewController, TempoInterstitialListener {
     private var campaignId: String! = ""
     private var isInterstitial: Bool! = true
     
-    private var demoAdaptervVersion = "0.9.9"
+    private var demoAdaptervVersion = "1.0.0"
     
     override var prefersStatusBarHidden: Bool {
         return true
@@ -28,7 +31,7 @@ class ViewController: UIViewController, TempoInterstitialListener {
 //        view.backgroundColor = .gray
         super.viewDidLoad()
         self.modalPresentationStyle = .fullScreen
-        self.interstitial = TempoInterstitial(parentViewController:self, delegate:self, appId:"8")
+        self.interstitial = TempoInterstitial(parentViewController:self, delegate:self, appId: ViewController.TEST_APP_ID)
         initializeUIButtons();
         
 //        // For testing metric time functions
@@ -131,10 +134,14 @@ class ViewController: UIViewController, TempoInterstitialListener {
     }
     
     func onVersionExchange(sdkVersion: String) -> String? {
-        print("\(getType(isInterstitial: isInterstitial)) :: versionSwap")
+        print("\(getType(isInterstitial: isInterstitial)) :: version swap requested")
         return demoAdaptervVersion
     }
     
+    func onGetAdapterType() -> String? {
+        print("\(getType(isInterstitial: isInterstitial)) :: adapter type requested")
+        return nil;
+    }
     
     func getType(isInterstitial: Bool) -> String
     {
