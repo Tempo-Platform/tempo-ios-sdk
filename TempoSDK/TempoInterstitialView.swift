@@ -87,11 +87,20 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
         self.loadUrl(isInterstitial:isInterstitial, appId:appId, adId:adId, cpmFloor:cpmFloor, placementId: placementId, sdkVersion: sdkVersion, adapterVersion: adapterVersion)
     }
     
+    // Displays loaded ad
     public func showAd(parentViewController:UIViewController) {
         self.currentParentViewController = parentViewController
         self.currentParentViewController!.view.addSubview(solidColorView)
         addMetric(metricType: "AD_SHOW")
         listener.onAdDisplayed(isInterstitial: self.currentIsInterstitial ?? true)
+        
+        // Create JS statement to find video element and play. Method return type not recognised by WebKit so we add null return.
+        let script = "var video = document.getElementById('video'); if (video) { video.play(); void(0)}"
+        webView.evaluateJavaScript(script) { (result, error) in
+            if let error = error {
+                print("Error playing video: \(error)")
+            }
+        }
     }
     
     public func closeAd(){
@@ -221,6 +230,7 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
         self.addMetric(metricType: "AD_LOAD_FAILED")
     }
     
+    /// Creates the custom WKWebView including safe areas, background color and pulls custom configurations
     private func setupWKWebview() {
         var safeAreaTop: CGFloat
         var safeAreaBottom: CGFloat
@@ -251,6 +261,7 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
         solidColorView.addSubview(webView)
     }
     
+    /// Creates and returns a custom configuration for the WkWebView object
     private func getWKWebViewConfiguration() -> WKWebViewConfiguration {
         let userController = WKUserContentController()
         userController.add(self, name: "observer")
@@ -274,6 +285,7 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
         return configuration
     }
         
+    /// Create controller that provides a way for JavaScript to post messages to a web view.
     public func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
         if(message.body as? String != nil){
             self.addMetric(metricType: message.body as! String)
@@ -302,6 +314,7 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
         }
     }
 
+    /// Create a new Metric instance based on current ad's class properties, and adds to Metrics array
     private func addMetric(metricType: String) {
         let metric = Metric(metric_type: metricType,
                             ad_id: currentAdId,
@@ -327,7 +340,7 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
         }
     }
 
-    
+    /// Sends latest version of Metrics array to Tempo backend and then clears
     private func pushMetrics(backupUrl: URL?) {
         
         // Create the url with NSURL
