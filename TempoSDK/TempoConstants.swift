@@ -17,7 +17,7 @@ struct TempoConstants {
     
     static let METRIC_BACKUP_FOLDER = "metricJsons"
     static let METRIC_BACKUP_APPEND = ".tempo"
-    static let IS_DEBUGGING = true
+    static let IS_DEBUGGING = false
     static let IS_PROD = true
     static let SDK_VERSIONS = "1.0.5"
     static let METRIC_TIME_HEADER = "X-Timestamp"
