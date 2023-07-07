@@ -3,9 +3,7 @@ import UIKit
 
 class ViewController: UIViewController, TempoInterstitialListener {
 
-    
-    
-    public static let TEST_APP_ID: String = "1"; // 1 for DEV, 8 for PROD
+    public static let TEST_APP_ID: String = "8"; // 1 for DEV, 8 for PROD
 
     var interstitialReady:Bool = false
     var interstitial:TempoInterstitial? = nil
@@ -122,6 +120,12 @@ class ViewController: UIViewController, TempoInterstitialListener {
         print("\(getType(isInterstitial: isInterstitial)) :: adapter type requested")
         return nil;
     }
+    
+    func hasUserConsent() -> Bool? {
+        print("\(getType(isInterstitial: isInterstitial)) :: user consent requested")
+        return true;
+    }
+    
     
     func getType(isInterstitial: Bool) -> String
     {
