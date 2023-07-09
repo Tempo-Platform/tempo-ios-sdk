@@ -38,3 +38,4 @@ Backup[ ]of[ ]*.numbers/
 # Cocoapods
 Pods/
 *.xcworkspace
+.DS_Store
