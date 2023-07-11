@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1138BBB35E637CC1233F992F /* Pods_TempoSDKTester.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DEA3670491A8C0ACDC9CA5C2 /* Pods_TempoSDKTester.framework */; };
 		5A2EFC602857C36400959DCA /* .gitignore in Resources */ = {isa = PBXBuildFile; fileRef = 5A2EFC5F2857C36400959DCA /* .gitignore */; };
 		5A2EFC612857C73300959DCA /* TempoSDK.podspec in Resources */ = {isa = PBXBuildFile; fileRef = 5A2EFC4B2857AF3E00959DCA /* TempoSDK.podspec */; };
 		607FACD61AFB9204008FA782 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 607FACD51AFB9204008FA782 /* AppDelegate.swift */; };
@@ -14,14 +15,11 @@
 		607FACDB1AFB9204008FA782 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 607FACD91AFB9204008FA782 /* Main.storyboard */; };
 		607FACDD1AFB9204008FA782 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 607FACDC1AFB9204008FA782 /* Images.xcassets */; };
 		607FACE01AFB9204008FA782 /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 607FACDE1AFB9204008FA782 /* LaunchScreen.xib */; };
-		9B8D19E0A2BAC4018FB0FF51 /* Pods_TempoSDKTester.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 05BF95E8D785D6342B795EEB /* Pods_TempoSDKTester.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		05A9D1D472495A1B7B02E2E5 /* README.md */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = net.daringfireball.markdown; name = README.md; path = ../README.md; sourceTree = "<group>"; };
-		05BF95E8D785D6342B795EEB /* Pods_TempoSDKTester.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_TempoSDKTester.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		40AF08D7AD1BDDE0AA2A5A1F /* Pods-TempoSDKTester.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TempoSDKTester.release.xcconfig"; path = "Target Support Files/Pods-TempoSDKTester/Pods-TempoSDKTester.release.xcconfig"; sourceTree = "<group>"; };
-		5A2EFC4B2857AF3E00959DCA /* TempoSDK.podspec */ = {isa = PBXFileReference; explicitFileType = text.script.ruby; name = TempoSDK.podspec; path = ../TempoSDK.podspec; sourceTree = "<group>"; };
+		5A2EFC4B2857AF3E00959DCA /* TempoSDK.podspec */ = {isa = PBXFileReference; explicitFileType = text.script.ruby; name = TempoSDK.podspec; path = ../TempoSDK.podspec; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
 		5A2EFC5F2857C36400959DCA /* .gitignore */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = .gitignore; path = ../.gitignore; sourceTree = "<group>"; };
 		607FACD01AFB9204008FA782 /* TempoSDKTester.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TempoSDKTester.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		607FACD41AFB9204008FA782 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -30,7 +28,9 @@
 		607FACDA1AFB9204008FA782 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		607FACDC1AFB9204008FA782 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
 		607FACDF1AFB9204008FA782 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/LaunchScreen.xib; sourceTree = "<group>"; };
-		87BCB3139603F35A63BA2DBD /* Pods-TempoSDKTester.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TempoSDKTester.debug.xcconfig"; path = "Target Support Files/Pods-TempoSDKTester/Pods-TempoSDKTester.debug.xcconfig"; sourceTree = "<group>"; };
+		B2379C8D0921970A16E6CE2C /* Pods-TempoSDKTester.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TempoSDKTester.debug.xcconfig"; path = "Target Support Files/Pods-TempoSDKTester/Pods-TempoSDKTester.debug.xcconfig"; sourceTree = "<group>"; };
+		C4358E268DE103CE340D7FDB /* Pods-TempoSDKTester.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TempoSDKTester.release.xcconfig"; path = "Target Support Files/Pods-TempoSDKTester/Pods-TempoSDKTester.release.xcconfig"; sourceTree = "<group>"; };
+		DEA3670491A8C0ACDC9CA5C2 /* Pods_TempoSDKTester.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_TempoSDKTester.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		E0D7FB9987520D36E089428A /* LICENSE */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = LICENSE; path = ../LICENSE; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -39,13 +39,21 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				9B8D19E0A2BAC4018FB0FF51 /* Pods_TempoSDKTester.framework in Frameworks */,
+				1138BBB35E637CC1233F992F /* Pods_TempoSDKTester.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		0A2D593D0CCD291737034247 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				DEA3670491A8C0ACDC9CA5C2 /* Pods_TempoSDKTester.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		607FACC71AFB9204008FA782 = {
 			isa = PBXGroup;
 			children = (
@@ -56,7 +64,7 @@
 				607FACD21AFB9204008FA782 /* TempoSDKTester */,
 				607FACD11AFB9204008FA782 /* Products */,
 				9A9811840931ACAB00CE2DFC /* Pods */,
-				6645969868AD4977FCAAC4C7 /* Frameworks */,
+				0A2D593D0CCD291737034247 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -81,19 +89,11 @@
 			path = TempoSDKTester;
 			sourceTree = "<group>";
 		};
-		6645969868AD4977FCAAC4C7 /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-				05BF95E8D785D6342B795EEB /* Pods_TempoSDKTester.framework */,
-			);
-			name = Frameworks;
-			sourceTree = "<group>";
-		};
 		9A9811840931ACAB00CE2DFC /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				87BCB3139603F35A63BA2DBD /* Pods-TempoSDKTester.debug.xcconfig */,
-				40AF08D7AD1BDDE0AA2A5A1F /* Pods-TempoSDKTester.release.xcconfig */,
+				B2379C8D0921970A16E6CE2C /* Pods-TempoSDKTester.debug.xcconfig */,
+				C4358E268DE103CE340D7FDB /* Pods-TempoSDKTester.release.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -105,11 +105,11 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 607FACEF1AFB9204008FA782 /* Build configuration list for PBXNativeTarget "TempoSDKTester" */;
 			buildPhases = (
-				A8C29210CAB3C657E14B0E94 /* [CP] Check Pods Manifest.lock */,
+				F45EF71CC0E9E88301A14AFB /* [CP] Check Pods Manifest.lock */,
 				607FACCC1AFB9204008FA782 /* Sources */,
 				607FACCD1AFB9204008FA782 /* Frameworks */,
 				607FACCE1AFB9204008FA782 /* Resources */,
-				6F3EA34070F6B5F4613A53BD /* [CP] Embed Pods Frameworks */,
+				951E111FF62C15FBA39B8495 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -172,7 +172,7 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		6F3EA34070F6B5F4613A53BD /* [CP] Embed Pods Frameworks */ = {
+		951E111FF62C15FBA39B8495 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -190,7 +190,7 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-TempoSDKTester/Pods-TempoSDKTester-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		A8C29210CAB3C657E14B0E94 /* [CP] Check Pods Manifest.lock */ = {
+		F45EF71CC0E9E88301A14AFB /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -353,7 +353,7 @@
 		};
 		607FACF01AFB9204008FA782 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 87BCB3139603F35A63BA2DBD /* Pods-TempoSDKTester.debug.xcconfig */;
+			baseConfigurationReference = B2379C8D0921970A16E6CE2C /* Pods-TempoSDKTester.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "Apple Development";
@@ -375,7 +375,7 @@
 		};
 		607FACF11AFB9204008FA782 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 40AF08D7AD1BDDE0AA2A5A1F /* Pods-TempoSDKTester.release.xcconfig */;
+			baseConfigurationReference = C4358E268DE103CE340D7FDB /* Pods-TempoSDKTester.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "Apple Development";
