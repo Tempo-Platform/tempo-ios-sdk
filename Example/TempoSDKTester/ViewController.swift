@@ -1,41 +1,31 @@
 import TempoSDK
 import UIKit
 
-class ViewController: UIViewController, TempoInterstitialListener {
-
-    public static let TEST_APP_ID: String = "8"; // 5 for DEV, 8 for PROD
+class ViewController: UIViewController, TempoAdListener {
 
     var interstitialReady:Bool = false
-    var interstitial:TempoInterstitial? = nil
-    
+    var interstitial:TempoAdController? = nil
     
     @IBOutlet weak var loadAdButton: UIButton!
     @IBOutlet weak var showAdButton: UIButton!
     @IBOutlet weak var segmentedControl: UISegmentedControl!
 
-    private var campaignId: String! = ""
-    private var isInterstitial: Bool! = true
-    
-    private var demoAdaptervVersion = "1.1.0"
+    var campaignId: String! = ""
+    var isInterstitial: Bool! = true
+    var demoAdaptervVersion = DemoConstants.ADAP_VERSION
     
     override var prefersStatusBarHidden: Bool {
         return true
     }
 
     override func viewDidLoad() {
-//        view.backgroundColor = .gray
         super.viewDidLoad()
         self.modalPresentationStyle = .fullScreen
-        self.interstitial = TempoInterstitial(parentViewController:self, delegate:self, appId: ViewController.TEST_APP_ID)
+        self.interstitial = TempoAdController(parentViewController: self, delegate: self, appId: getAppId())
         initializeUIButtons();
-        
-//        // For testing metric time functions
-//        var deviceTime: Bool = false
-//        TempoUtcRetriever.getUTCTime(&deviceTime)
-//        print("API time? \(!deviceTime)")
     }
     
-    private func initializeUIButtons(){
+    func initializeUIButtons(){
         showAdButton.backgroundColor = UIColor(red: 0.9, green: 0.9, blue:0.9, alpha: 1.0)
         showAdButton.layer.cornerRadius = 5
         loadAdButton.backgroundColor = UIColor(red: 0.9, green: 0.9, blue:0.9, alpha: 1.0)
@@ -47,7 +37,7 @@ class ViewController: UIViewController, TempoInterstitialListener {
         closeKeyboard()
     }
     
-    private func closeKeyboard() {
+    func closeKeyboard() {
         self.view.endEditing(true)
     }
     
@@ -127,9 +117,13 @@ class ViewController: UIViewController, TempoInterstitialListener {
     }
     
     
-    func getType(isInterstitial: Bool) -> String
-    {
+    func getType(isInterstitial: Bool) -> String {
         return isInterstitial ? "INTERSTITIAL" : "REWARDED"
     }
+    
+    func getAppId() -> String {
+        return TempoSDK.Constants.IS_PROD ? "8" : "5";
+    }
+    
 }
 

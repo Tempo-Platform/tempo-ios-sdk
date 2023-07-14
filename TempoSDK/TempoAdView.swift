@@ -2,69 +2,12 @@ import Foundation
 import UIKit
 import WebKit
 
-class FullScreenWKWebView: WKWebView {
-    override var safeAreaInsets: UIEdgeInsets {
-        return UIEdgeInsets(top: 50, left: 0, bottom: 0, right: 0)
-    }
-}
 
-class FullScreenUIView: UIView {
-    override var safeAreaInsets: UIEdgeInsets {
-        return UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
-    }
-}
 
-@available(iOS 13.0, *)
-func getSafeAreaTop()->CGFloat{
-    let keyWindow = UIApplication.shared.connectedScenes
-        .filter({$0.activationState == .foregroundActive})
-        .map({$0 as? UIWindowScene})
-        .compactMap({$0})
-        .first?.windows
-        .filter({$0.isKeyWindow}).first
+public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessageHandler  {
     
-    return keyWindow?.safeAreaInsets.top ?? 0
-}
-
-@available(iOS 13.0, *)
-func getSafeAreaBottom()->CGFloat{
-    let keyWindow = UIApplication.shared.connectedScenes
-        .filter({$0.activationState == .foregroundActive})
-        .map({$0 as? UIWindowScene})
-        .compactMap({$0})
-        .first?.windows
-        .filter({$0.isKeyWindow}).first
-    
-    return keyWindow?.safeAreaInsets.bottom ?? 0
-}
-
-public struct Metric : Codable {
-    var metric_type: String?
-    var ad_id: String?
-    var app_id: String?
-    var timestamp: Int?
-    var is_interstitial: Bool?
-    var bundle_id: String = "unknown"
-    var campaign_id: String = "unknown"
-    var session_id: String = "unknown"
-    var location: String = "unknown"
-    var gender: String = "?"
-    var age_range: String = "unknown"
-    var income_range: String = "unknown"
-    var placement_id: String = "unknown"
-    var country_code: String? = TempoUserInfo.getIsoCountryCode2Digit()
-    var os: String = "unknown"
-    var sdk_version: String
-    var adapter_version: String
-    var cpm: Float
-    var adapter_type: String?
-    var consent: Bool?
-    var consent_type: String?
-    
-}
-
-public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKScriptMessageHandler  {
-    public var listener:TempoInterstitialListener! // given value during init()
+    // TempoInterstitialView
+    public var listener:TempoAdListener! // given value during init()
     //public var utcGenerator: TempoUtcGenerator!
     private var observation: NSKeyValueObservation?
     var solidColorView:FullScreenUIView!
@@ -86,13 +29,13 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
     var currentConsentType: String?
     var currentGeoLocation: String?
 
-    public func loadAd(interstitial:TempoInterstitial, isInterstitial: Bool, appId:String, adId:String?, cpmFloor:Float?, placementId: String?, sdkVersion: String?, adapterVersion: String?) {
+    public func loadAd(interstitial:TempoAdController, isInterstitial: Bool, appId:String, adId:String?, cpmFloor:Float?, placementId: String?, sdkVersion: String?, adapterVersion: String?) {
         print("load url \(isInterstitial ? "INTERSTITIAL": "REWARDED")")
         self.setupWKWebview()
         self.loadUrl(isInterstitial:isInterstitial, appId:appId, adId:adId, cpmFloor:cpmFloor, placementId: placementId, sdkVersion: sdkVersion, adapterVersion: adapterVersion)
     }
     
-    // Displays loaded ad
+    /// Displays loaded ad
     public func showAd(parentViewController:UIViewController) {
         self.currentParentViewController = parentViewController
         self.currentParentViewController!.view.addSubview(solidColorView)
@@ -117,7 +60,8 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
         listener.onAdClosed(isInterstitial: self.currentIsInterstitial ?? true)
     }
     
-    public func loadSpecificAd(isInterstitial: Bool, campaignId:String) {
+    /// Test function used to test specific campaign ID using dummy values fo other metrics
+    public func loadSpecificCampaignAd(isInterstitial: Bool, campaignId:String) {
         print("load specific url \(isInterstitial ? "INTERSTITIAL": "REWARDED")")
         self.setupWKWebview()
         currentUUID = "TEST"
@@ -167,7 +111,7 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
         request.httpMethod = "GET"
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
 
-        if(TempoConstants.IS_DEBUGGING) {
+        if(Constants.IS_TESTING) {
             print("✅ URL ADS_API string: " + (components.url?.absoluteString ?? "❌ URL STRING ?!"))
         }
         
@@ -378,7 +322,7 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
         request.httpBody = metricData // pass dictionary to data object and set it as request body
         
         // Prints out metrics types being sent in this push
-        if(TempoConstants.IS_DEBUGGING)
+        if(Constants.IS_TESTING)
         {
             let outMetricList = backupUrl != nil ? TempoDataBackup.fileMetric[backupUrl!]: metricListCopy
             if(outMetricList != nil)
@@ -395,7 +339,7 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
         // HTTP Headers
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
         request.addValue("application/json", forHTTPHeaderField: "Accept")
-        request.addValue(String(Int(Date().timeIntervalSince1970)), forHTTPHeaderField: TempoConstants.METRIC_TIME_HEADER)
+        request.addValue(String(Int(Date().timeIntervalSince1970)), forHTTPHeaderField: Constants.Web.METRIC_TIME_HEADER)
 
         // Create dataTask using the session object to send data to the server
         let task = session.dataTask(with: request, completionHandler: { data, response, error in
@@ -411,14 +355,14 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
             }
 
             // Output details of response
-            if(TempoConstants.IS_DEBUGGING)
+            if(Constants.IS_TESTING)
             {
                 do{
                     let dataDictionary = try JSONSerialization.jsonObject(with: data!, options: [])
                     print("Response dictionary is: \(dataDictionary)")
                     
                 } catch let error as NSError {
-                    if(TempoConstants.IS_DEBUGGING) {
+                    if(Constants.IS_TESTING) {
                         print("Error: \(error.localizedDescription)")
                     }
                 }
@@ -427,7 +371,7 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
             // If metrics were backeups - and were successfully resent - delete the file fro mdevice storage
             if(backupUrl != nil)
             {
-                if(TempoConstants.IS_DEBUGGING)
+                if(Constants.IS_TESTING)
                 {
                     print("Removing backup: \(backupUrl!) (x\(TempoDataBackup.fileMetric[backupUrl!]!.count))")
                 }
@@ -437,7 +381,7 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
             }
             else
             {
-                if(TempoConstants.IS_DEBUGGING) {
+                if(Constants.IS_TESTING) {
                     print("Standard Metric sent (x\(metricListCopy.count))")
                 }
                 
@@ -447,19 +391,19 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
                     switch(httpResponse.statusCode)
                     {
                     case 200:
-                        if(TempoConstants.IS_DEBUGGING)  {
+                        if(Constants.IS_TESTING)  {
                             print("📊 Passed metrics - do not backup: \(httpResponse.statusCode)")
                         }
                         break
                     case 400:
                         fallthrough
                     case 422:
-                        if(TempoConstants.IS_DEBUGGING)  {
+                        if(Constants.IS_TESTING)  {
                             print("📊 Passed/Bad metrics - do not backup: \(httpResponse.statusCode)")
                         }
                         break
                     default:
-                        if(TempoConstants.IS_DEBUGGING)  {
+                        if(Constants.IS_TESTING)  {
                             print("📊 Non-tempo related error - backup: \(httpResponse.statusCode)")
                         }
                         TempoDataBackup.sendData(metricsArray: metricListCopy)
@@ -491,17 +435,77 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
     }
     
     private func getAdsWebUrl(isInterstitial: Bool, campaignId: String) -> String! {
-        let urlDomain = TempoConstants.IS_PROD ? TempoConstants.ADS_DOM_URL_PROD : TempoConstants.ADS_DOM_URL_DEV
-        let adsWebUrl = "\(urlDomain)/\(isInterstitial ? TempoConstants.URL_INT : TempoConstants.URL_REW)/\(campaignId)/ios";
+        let urlDomain = Constants.IS_PROD ? Constants.Web.ADS_DOM_URL_PROD : Constants.Web.ADS_DOM_URL_DEV
+        let adsWebUrl = "\(urlDomain)/\(isInterstitial ? Constants.Web.URL_INT : Constants.Web.URL_REW)/\(campaignId)/ios";
         //print("🌏 \(adsWebUrl)")
         return adsWebUrl
     }
     
     private func getAdsApiUrl() -> String {
-        return TempoConstants.IS_PROD ? TempoConstants.ADS_API_URL_PROD : TempoConstants.ADS_API_URL_DEV;
+        return Constants.IS_PROD ? Constants.Web.ADS_API_URL_PROD : Constants.Web.ADS_API_URL_DEV;
     }
     
     private func getMetricsUrl() -> String {
-        return TempoConstants.IS_PROD ? TempoConstants.METRICS_URL_PROD : TempoConstants.METRICS_URL_DEV;
+        return Constants.IS_PROD ? Constants.Web.METRICS_URL_PROD : Constants.Web.METRICS_URL_DEV;
     }
+    
+    class FullScreenWKWebView: WKWebView {
+        override var safeAreaInsets: UIEdgeInsets {
+            return UIEdgeInsets(top: 50, left: 0, bottom: 0, right: 0)
+        }
+    }
+
+    class FullScreenUIView: UIView {
+        override var safeAreaInsets: UIEdgeInsets {
+            return UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
+        }
+    }
+
+    @available(iOS 13.0, *)
+    func getSafeAreaTop()->CGFloat {
+        let keyWindow = UIApplication.shared.connectedScenes
+            .filter({$0.activationState == .foregroundActive})
+            .map({$0 as? UIWindowScene})
+            .compactMap({$0})
+            .first?.windows
+            .filter({$0.isKeyWindow}).first
+        
+        return keyWindow?.safeAreaInsets.top ?? 0
+    }
+
+    @available(iOS 13.0, *)
+    func getSafeAreaBottom()->CGFloat {
+        let keyWindow = UIApplication.shared.connectedScenes
+            .filter({$0.activationState == .foregroundActive})
+            .map({$0 as? UIWindowScene})
+            .compactMap({$0})
+            .first?.windows
+            .filter({$0.isKeyWindow}).first
+        
+        return keyWindow?.safeAreaInsets.bottom ?? 0
+    }
+
+    //public struct Metric : Codable {
+    //    var metric_type: String?
+    //    var ad_id: String?
+    //    var app_id: String?
+    //    var timestamp: Int?
+    //    var is_interstitial: Bool?
+    //    var bundle_id: String = "unknown"
+    //    var campaign_id: String = "unknown"
+    //    var session_id: String = "unknown"
+    //    var location: String = "unknown"
+    //    var gender: String = "?"
+    //    var age_range: String = "unknown"
+    //    var income_range: String = "unknown"
+    //    var placement_id: String = "unknown"
+    //    var country_code: String? = TempoUserInfo.getIsoCountryCode2Digit()
+    //    var os: String = "unknown"
+    //    var sdk_version: String
+    //    var adapter_version: String
+    //    var cpm: Float
+    //    var adapter_type: String?
+    //    var consent: Bool?
+    //    var consent_type: String?
+    //}
 }
