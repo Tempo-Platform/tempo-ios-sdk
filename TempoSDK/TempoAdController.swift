@@ -30,9 +30,9 @@ public class TempoAdController: NSObject { // TempoInterstitial
         // Check version of SDK/Adapters
         adapterVersion = adView!.listener.onVersionExchange(sdkVersion: self.sdkVersion)
         
-        // Get Advertising ID (IDFA) // TODO: add proper IDFA alternative here if we don't have advertisingIdentifier
+        // Get Advertising ID (IDFA) // TODO: add proper IDFA alternative here if we don't have Ad ID
         let advertisingIdentifier: UUID = ASIdentifierManager().advertisingIdentifier
-        self.adId = (advertisingIdentifier.uuidString != "00000000-0000-0000-0000-000000000000") ? advertisingIdentifier.uuidString : nil
+        self.adId = advertisingIdentifier.uuidString != Constants.ZERO_AD_ID ? advertisingIdentifier.uuidString : nil
         
         // Check for backups
         adView?.checkHeldMetrics()
@@ -40,33 +40,40 @@ public class TempoAdController: NSObject { // TempoInterstitial
         print("TempoSDK: [SDK]\(sdkVersion)/[ADAP]\(adapterVersion ?? Constants.UNDEF) | AppID: \(self.appId ?? Constants.UNDEF)")
     }
     
+    /// Public LOAD method for mediation adapters to call
+    public func loadAd(isInterstitial: Bool, cpmFloor: Float?, placementId: String?) {
 
+        adView!.loadAd(
+            interstitial: self,
+            isInterstitial: isInterstitial,
+            appId: appId!,
+            adId: adId,
+            cpmFloor: cpmFloor,
+            placementId: placementId,
+            sdkVersion: sdkVersion,
+            adapterVersion: adapterVersion)
+    }
     
+    /// Public SHOW method for mediation adapters to call
+    public func showAd() {
+        adView!.showAd(parentViewController: parentViewController!)
+    }
+    
+    /// Public LOAD method for internal testing with specific campaign ID
     public func loadSpecificAd(isInterstitial: Bool, campaignId:String){
         adView!.loadSpecificCampaignAd(isInterstitial: isInterstitial, campaignId: campaignId)
     }
-    
-    public func loadAd(isInterstitial: Bool, cpmFloor: Float?, placementId: String?){
-
-        //interstitialView!.utcGenerator.resyncNtp()
-        adView!.loadAd(interstitial: self, isInterstitial: isInterstitial, appId: appId!, adId: adId, cpmFloor: cpmFloor, placementId: placementId, sdkVersion: sdkVersion, adapterVersion: adapterVersion )
-    }
-    
-    
-    public func showAd() { adView!.showAd(parentViewController: parentViewController!)  }
-    
-    public func closeAd(){   adView!.closeAd()    }
-    
-    
-    
-    
     
     // NEEDED ANYMORE???
     public func updateViewController(parentViewController: UIViewController?) {
         self.parentViewController = parentViewController
     }
-
     public func updateAppId(appId:String){
         self.appId = appId
     }
+    
+//    /// Public CLOSE method for mediation adapters to call
+//    public func closeAd(){
+//        adView!.closeAd()
+//    }
 }

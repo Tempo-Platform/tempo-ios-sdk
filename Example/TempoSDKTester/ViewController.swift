@@ -21,6 +21,8 @@ class ViewController: UIViewController, TempoAdListener {
     override func viewDidLoad() {
         super.viewDidLoad()
         self.modalPresentationStyle = .fullScreen
+        
+        // Inititalise Tempo SDK
         self.interstitial = TempoAdController(parentViewController: self, delegate: self, appId: getAppId())
         initializeUIButtons();
     }

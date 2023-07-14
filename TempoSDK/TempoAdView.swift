@@ -2,17 +2,30 @@ import Foundation
 import UIKit
 import WebKit
 
+class FullScreenWKWebView: WKWebView {
+    override var safeAreaInsets: UIEdgeInsets {
+        return UIEdgeInsets(top: 50, left: 0, bottom: 0, right: 0)
+    }
+}
 
+class FullScreenUIView: UIView {
+    override var safeAreaInsets: UIEdgeInsets {
+        return UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
+    }
+}
 
 public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessageHandler  {
     
-    // TempoInterstitialView
-    public var listener:TempoAdListener! // given value during init()
-    //public var utcGenerator: TempoUtcGenerator!
-    private var observation: NSKeyValueObservation?
-    var solidColorView:FullScreenUIView!
-    var webView:FullScreenWKWebView!
+    public var listener: TempoAdListener! // given value during init()
+    
+    var solidColorView: FullScreenUIView!
+    var webView: FullScreenWKWebView!
     var metricList: [Metric] = []
+    
+    var observation: NSKeyValueObservation?
+    var previousParentBGColor: UIColor?
+    
+    // Session instance properties
     var currentUUID: String?
     var currentAdId: String?
     var currentCampaignId: String?
@@ -22,24 +35,42 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
     var currentSdkVersion: String?
     var currentAdapterVersion: String?
     var currentParentViewController: UIViewController?
-    var previousParentBGColor: UIColor?
     var currentCpmFloor: Float?
     var currentAdapterType: String?
     var currentHasConsent: Bool?
     var currentConsentType: String?
     var currentGeoLocation: String?
-
+    
+    /// Prepares ad for current session (interstitial/reward)
     public func loadAd(interstitial:TempoAdController, isInterstitial: Bool, appId:String, adId:String?, cpmFloor:Float?, placementId: String?, sdkVersion: String?, adapterVersion: String?) {
-        print("load url \(isInterstitial ? "INTERSTITIAL": "REWARDED")")
+        TempoUtils.Say(msg: "loadAd() \(isInterstitial ? "INTERSTITIAL": "REWARDED")", absoluteDisplay: true)
+        
+        // Create WKWebView instance
         self.setupWKWebview()
-        self.loadUrl(isInterstitial:isInterstitial, appId:appId, adId:adId, cpmFloor:cpmFloor, placementId: placementId, sdkVersion: sdkVersion, adapterVersion: adapterVersion)
+        
+        // Update session values and create ad load metrics
+        currentUUID = UUID().uuidString
+        currentAdId = adId ?? "NONE"
+        currentAppId = appId
+        currentIsInterstitial = isInterstitial
+        currentPlacementId = placementId
+        currentSdkVersion = sdkVersion
+        currentAdapterVersion = adapterVersion
+        currentCpmFloor = cpmFloor ?? 0.0
+        currentAdapterType = listener.onGetAdapterType()
+        currentHasConsent = listener.hasUserConsent()
+        currentGeoLocation = "US"  // TODO: This will eventually need to be taken from mediation parameters
+        self.addMetric(metricType: Constants.MetricType.LOAD_REQUEST)
+        
+        // Create and send ad request with latest data
+        sendAdRequest()
     }
     
-    /// Displays loaded ad
+    /// Plays currently loaded ad for current session (interstitial/reward)
     public func showAd(parentViewController:UIViewController) {
         self.currentParentViewController = parentViewController
         self.currentParentViewController!.view.addSubview(solidColorView)
-        addMetric(metricType: "AD_SHOW")
+        addMetric(metricType: Constants.MetricType.SHOW)
         listener.onAdDisplayed(isInterstitial: self.currentIsInterstitial ?? true)
         
         // Create JS statement to find video element and play. Method return type not recognised by WebKit so we add null return.
@@ -51,7 +82,8 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
         }
     }
     
-    public func closeAd(){
+    /// Closes current WkWebView
+    public func closeAd() {
         solidColorView.removeFromSuperview()
         webView.removeFromSuperview()
         webView = nil
@@ -71,49 +103,23 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
         //let urlComponent = isInterstitial ? TempoConstants.URL_INT : TempoConstants.URL_REW
         self.addMetric(metricType: "CUSTOM_AD_LOAD_REQUEST")
         //let url = URL(string: "https://ads.tempoplatform.com/\(urlComponent)/\(campaignId)/ios")!
-        let url = URL(string: getAdsWebUrl(isInterstitial: isInterstitial, campaignId: campaignId))!
+        let url = URL(string: TempoUtils.getAdsWebUrl(isInterstitial: isInterstitial, campaignId: campaignId))!
         self.currentCampaignId = campaignId
         self.webView.load(URLRequest(url: url))
     }
     
-    private func loadUrl(isInterstitial: Bool, appId:String, adId:String?, cpmFloor:Float?, placementId: String?, sdkVersion: String?, adapterVersion: String?) {
-        currentUUID = UUID().uuidString
-        currentAdId = adId ?? "NONE"
-        currentAppId = appId
-        currentIsInterstitial = isInterstitial
-        currentPlacementId = placementId
-        currentSdkVersion = sdkVersion
-        currentAdapterVersion = adapterVersion
-        currentCpmFloor = cpmFloor ?? 0.0
-        currentAdapterType = listener.onGetAdapterType()
-        currentHasConsent = listener.hasUserConsent()
-        currentGeoLocation = "US"  // TODO: This will eventually need to be taken from mediation parameters
+    /// Generate REST-ADS-API web request with current session data
+    func sendAdRequest() {
+    
+        // Create request string
+        let components = createUrlComponents()
         
-        self.addMetric(metricType: "AD_LOAD_REQUEST")
-        var components = URLComponents(string: getAdsApiUrl())!
-        components.queryItems = [
-            URLQueryItem(name: "uuid", value: currentUUID),  // this UUID is unique per ad load
-            URLQueryItem(name: "ad_id", value: currentAdId),
-            URLQueryItem(name: "app_id", value: appId),
-            URLQueryItem(name: "cpm_floor", value: String(currentCpmFloor ?? 0.0)),
-            URLQueryItem(name: "location", value: currentGeoLocation),
-            URLQueryItem(name: "is_interstitial", value: String(currentIsInterstitial!)),
-            URLQueryItem(name: "sdk_version", value: String(currentSdkVersion ?? "")),
-            URLQueryItem(name: "adapter_version", value: String(currentAdapterVersion ?? "")),
-        ]
         
-        if currentAdapterType != nil {
-            components.queryItems?.append(URLQueryItem(name: "adapter_type", value: currentAdapterType))
-        }
-        
-        components.percentEncodedQuery = components.percentEncodedQuery?.replacingOccurrences(of: "+", with: "%2B")
         var request = URLRequest(url: components.url!)
         request.httpMethod = "GET"
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-
-        if(Constants.IS_TESTING) {
-            print("✅ URL ADS_API string: " + (components.url?.absoluteString ?? "❌ URL STRING ?!"))
-        }
+        
+        TempoUtils.Say(msg: "🌏 REST-ADS-API: " + (components.url?.absoluteString ?? "❌ URL STRING ?!"))
         
         let session = URLSession.shared
         let task = session.dataTask(with: request, completionHandler: { data, response, error -> Void in
@@ -136,18 +142,18 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
                         if let jsonDict = json as? Dictionary<String, Any> {
                             if let status = jsonDict["status"] {
                                 if let statusString = status as? String {
-                                    if statusString == "NO_FILL" {
+                                    if statusString == Constants.NO_FILL {
                                         self.listener.onAdFetchFailed(isInterstitial: self.currentIsInterstitial ?? true)
                                         print("Tempo SDK: Failed loading the Ad. Received NO_FILL response from API.")
-                                        self.addMetric(metricType: "NO_FILL")
+                                        self.addMetric(metricType: Constants.NO_FILL)
                                         validResponse = true
-                                    } else if (statusString == "OK") {
+                                    } else if (statusString == Constants.OK) {
                                         
                                         // Loads ad from URL with id reference
                                         if let id = jsonDict["id"] {
                                             if let idString = id as? String {
                                                 print("Tempo SDK: Got Ad ID from server. Response \(jsonDict).")
-                                                let url = URL(string: self.getAdsWebUrl(isInterstitial: self.currentIsInterstitial!, campaignId: idString))!
+                                                let url = URL(string: TempoUtils.getAdsWebUrl(isInterstitial: self.currentIsInterstitial!, campaignId: idString))!
                                                 self.currentCampaignId = idString
                                                 self.webView.load(URLRequest(url: url))
                                                 validResponse = true
@@ -171,14 +177,45 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
         task.resume()
     }
     
-    private func sendAdFetchFailed() {
+    /// Create URL components with current ad data for REST-ADS-API web request
+    func createUrlComponents() -> URLComponents {
+        
+        // Get URL domain/path
+        var components = URLComponents(string: TempoUtils.getAdsApiUrl())!
+        
+        // Add URL parameters
+        components.queryItems = [
+            URLQueryItem(name: "uuid", value: currentUUID),  // this UUID is unique per ad load
+            URLQueryItem(name: "ad_id", value: currentAdId),
+            URLQueryItem(name: "app_id", value: currentAppId),
+            URLQueryItem(name: "cpm_floor", value: String(currentCpmFloor ?? 0.0)),
+            URLQueryItem(name: "location", value: currentGeoLocation),
+            URLQueryItem(name: "is_interstitial", value: String(currentIsInterstitial!)),
+            URLQueryItem(name: "sdk_version", value: String(currentSdkVersion ?? "")),
+            URLQueryItem(name: "adapter_version", value: String(currentAdapterVersion ?? "")),
+        ]
+        
+        // Only ad adapter_type if value exists or cause invalid response
+        if currentAdapterType != nil {
+            components.queryItems?.append(URLQueryItem(name: "adapter_type", value: currentAdapterType))
+        }
+        
+        // Clean any '+' references with safe '%2B'
+        components.percentEncodedQuery = components.percentEncodedQuery?.replacingOccurrences(of: "+", with: "%2B")
+        
+        return components
+    }
+    
+    func sendAdFetchFailed() {
         self.listener.onAdFetchFailed(isInterstitial: self.currentIsInterstitial ?? true)
         print("Tempo SDK: Failed loading the Ad. Reason unknown.")
-        self.addMetric(metricType: "AD_LOAD_FAILED")
+        self.addMetric(metricType: Constants.MetricType.LOAD_FAILED)
     }
     
     /// Creates the custom WKWebView including safe areas, background color and pulls custom configurations
     private func setupWKWebview() {
+        
+        print("💥💥💥💥💥")
         var safeAreaTop: CGFloat
         var safeAreaBottom: CGFloat
         if #available(iOS 13.0, *) {
@@ -215,10 +252,10 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
         
         // Create script that locks scalability and add to WK content controller
         let lockScaleSource: String = "var meta = document.createElement('meta');" +
-            "meta.name = 'viewport';" +
-            "meta.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no';" +
-            "var head = document.getElementsByTagName('head')[0];" +
-            "head.appendChild(meta);"
+        "meta.name = 'viewport';" +
+        "meta.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no';" +
+        "var head = document.getElementsByTagName('head')[0];" +
+        "head.appendChild(meta);"
         let lockScaleScript: WKUserScript = WKUserScript(source: lockScaleSource, injectionTime: .atDocumentEnd, forMainFrameOnly: true)
         userController.addUserScript(lockScaleScript)
         
@@ -226,41 +263,42 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
         configuration.userContentController = userController
         configuration.allowsInlineMediaPlayback = true
         if #available(iOS 10.0, *) {
-           configuration.mediaTypesRequiringUserActionForPlayback = []
+            configuration.mediaTypesRequiringUserActionForPlayback = []
         }
-    
+        
         return configuration
     }
-        
+    
     /// Create controller that provides a way for JavaScript to post messages to a web view.
     public func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
-        if(message.body as? String != nil){
-            self.addMetric(metricType: message.body as! String)
-        }
         
-        if(message.body as? String == "TEMPO_CLOSE_AD"){
-            self.closeAd()
-        }
-        
-        if(message.body as? String == "TEMPO_ASSETS_LOADED"){
-            print("TEMPO_ASSETS_LOADED")
-        }
-        
-        if(message.body as? String == "TEMPO_VIDEO_LOADED"){
-            print("TEMPO_VIDEO_LOADED")
-        }
-        
-        if(message.body as? String == "TEMPO_IMAGES_LOADED"){
-            print("TEMPO_IMAGES_LOADED")
-            listener.onAdFetchSucceeded(isInterstitial: self.currentIsInterstitial ?? true)
-            self.addMetric(metricType: "AD_LOAD_SUCCESS")
-        }
-        
-        if(message.body as? String == "TIMER_COMPLETED"){
-            print("TIMER_COMPLETED")
+        // Make sure body is at least a String
+        if(message.body as? String != nil) {
+            
+            let webMsg = message.body as! String;
+            
+            // Send metric for web message
+            self.addMetric(metricType: webMsg)
+           
+            // Can close ad
+            if(webMsg == Constants.MetricType.CLOSE_AD){
+                self.closeAd()
+            }
+            
+            // Output metric message
+            if(Constants.MetricType.METRIC_OUTPUT_TYPES.contains(webMsg))
+            {
+                print(webMsg)
+            }
+            
+            // Show success when content load
+            if(webMsg == Constants.MetricType.IMAGES_LOADED) {
+                listener.onAdFetchSucceeded(isInterstitial: self.currentIsInterstitial ?? true)
+                self.addMetric(metricType: Constants.MetricType.LOAD_SUCCESS)
+            }
         }
     }
-
+    
     /// Create a new Metric instance based on current ad's class properties, and adds to Metrics array
     private func addMetric(metricType: String) {
         let metric = Metric(metric_type: metricType,
@@ -280,22 +318,20 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
                             adapter_type: currentAdapterType,
                             consent: currentHasConsent,
                             consent_type: nil
-                            
-                            
         )
         
         self.metricList.append(metric)
         
-        if (["AD_SHOW", "AD_LOAD_REQUEST", "TIMER_COMPLETED"].contains(metricType)) {
+        if (Constants.MetricType.METRIC_SEND_NOW.contains(metricType)) {
             pushMetrics(backupUrl: nil)
         }
     }
-
+    
     /// Sends latest version of Metrics array to Tempo backend and then clears
     private func pushMetrics(backupUrl: URL?) {
         
         // Create the url with NSURL
-        let url = URL(string: getMetricsUrl())!
+        let url = URL(string: TempoUtils.getMetricsUrl())!
         
         // Create the session object
         let session = URLSession.shared
@@ -340,7 +376,7 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
         request.addValue("application/json", forHTTPHeaderField: "Accept")
         request.addValue(String(Int(Date().timeIntervalSince1970)), forHTTPHeaderField: Constants.Web.METRIC_TIME_HEADER)
-
+        
         // Create dataTask using the session object to send data to the server
         let task = session.dataTask(with: request, completionHandler: { data, response, error in
             guard error == nil else {
@@ -353,7 +389,7 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
                 }
                 return
             }
-
+            
             // Output details of response
             if(Constants.IS_TESTING)
             {
@@ -434,35 +470,8 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
         }
     }
     
-    private func getAdsWebUrl(isInterstitial: Bool, campaignId: String) -> String! {
-        let urlDomain = Constants.IS_PROD ? Constants.Web.ADS_DOM_URL_PROD : Constants.Web.ADS_DOM_URL_DEV
-        let adsWebUrl = "\(urlDomain)/\(isInterstitial ? Constants.Web.URL_INT : Constants.Web.URL_REW)/\(campaignId)/ios";
-        //print("🌏 \(adsWebUrl)")
-        return adsWebUrl
-    }
-    
-    private func getAdsApiUrl() -> String {
-        return Constants.IS_PROD ? Constants.Web.ADS_API_URL_PROD : Constants.Web.ADS_API_URL_DEV;
-    }
-    
-    private func getMetricsUrl() -> String {
-        return Constants.IS_PROD ? Constants.Web.METRICS_URL_PROD : Constants.Web.METRICS_URL_DEV;
-    }
-    
-    class FullScreenWKWebView: WKWebView {
-        override var safeAreaInsets: UIEdgeInsets {
-            return UIEdgeInsets(top: 50, left: 0, bottom: 0, right: 0)
-        }
-    }
-
-    class FullScreenUIView: UIView {
-        override var safeAreaInsets: UIEdgeInsets {
-            return UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
-        }
-    }
-
     @available(iOS 13.0, *)
-    func getSafeAreaTop()->CGFloat {
+    func getSafeAreaTop() -> CGFloat {
         let keyWindow = UIApplication.shared.connectedScenes
             .filter({$0.activationState == .foregroundActive})
             .map({$0 as? UIWindowScene})
@@ -472,9 +481,9 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
         
         return keyWindow?.safeAreaInsets.top ?? 0
     }
-
+    
     @available(iOS 13.0, *)
-    func getSafeAreaBottom()->CGFloat {
+    func getSafeAreaBottom() -> CGFloat {
         let keyWindow = UIApplication.shared.connectedScenes
             .filter({$0.activationState == .foregroundActive})
             .map({$0 as? UIWindowScene})
@@ -484,28 +493,4 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
         
         return keyWindow?.safeAreaInsets.bottom ?? 0
     }
-
-    //public struct Metric : Codable {
-    //    var metric_type: String?
-    //    var ad_id: String?
-    //    var app_id: String?
-    //    var timestamp: Int?
-    //    var is_interstitial: Bool?
-    //    var bundle_id: String = "unknown"
-    //    var campaign_id: String = "unknown"
-    //    var session_id: String = "unknown"
-    //    var location: String = "unknown"
-    //    var gender: String = "?"
-    //    var age_range: String = "unknown"
-    //    var income_range: String = "unknown"
-    //    var placement_id: String = "unknown"
-    //    var country_code: String? = TempoUserInfo.getIsoCountryCode2Digit()
-    //    var os: String = "unknown"
-    //    var sdk_version: String
-    //    var adapter_version: String
-    //    var cpm: Float
-    //    var adapter_type: String?
-    //    var consent: Bool?
-    //    var consent_type: String?
-    //}
 }
