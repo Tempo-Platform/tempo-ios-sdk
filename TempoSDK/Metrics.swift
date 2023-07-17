@@ -109,7 +109,7 @@ public class Metrics {
 }
 
 
-internal struct Metric : Codable {
+public struct Metric : Codable {
     var metric_type: String?
     var ad_id: String?
     var app_id: String?
