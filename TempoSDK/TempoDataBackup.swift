@@ -17,7 +17,7 @@ public class TempoDataBackup
     }
     
     /// Adds Metric JSON array as data file to device's backup folder
-    public static func sendData(metricsArray: [Metric]?) {
+    internal static func sendData(metricsArray: [Metric]?) {
         
         if(backupsAtMax)
         {
@@ -177,7 +177,7 @@ public class TempoDataBackup
         }
     }
     
-    public static func checkHeldMetrics(completion: @escaping (inout [Metric], URL) -> Void) {
+    internal static func checkHeldMetrics(completion: @escaping (inout [Metric], URL) -> Void) {
         // See if check has already been called
         if(readyForCheck) {
             // Request creation of backup metrics dictionary

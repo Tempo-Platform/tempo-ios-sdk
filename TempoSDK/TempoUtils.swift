@@ -58,7 +58,7 @@ public class TempoUtils {
     public static func getAdsWebUrl(isInterstitial: Bool, campaignId: String) -> String! {
         let urlDomain = Constants.IS_PROD ? Constants.Web.ADS_DOM_URL_PROD : Constants.Web.ADS_DOM_URL_DEV
         let adsWebUrl = "\(urlDomain)/\(isInterstitial ? Constants.Web.URL_INT : Constants.Web.URL_REW)/\(campaignId)/ios";
-        //print("🌏 \(adsWebUrl)")
+        Say(msg: "🌏 WEB URL: \(adsWebUrl)")
         return adsWebUrl
     }
     

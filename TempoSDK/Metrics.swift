@@ -8,7 +8,6 @@ public class Metrics {
         
         // Create the url with NSURL
         let url = URL(string: TempoUtils.getMetricsUrl())!
-        print("🌏 \(url)")
         
         // Create the session object
         let session = URLSession.shared
@@ -40,12 +39,11 @@ public class Metrics {
         {
             var metricOutput = "Metrics: "
             for metric in outMetricList!{
-                metricOutput += "\n  - \(metric.metric_type ?? "<TYPE_UNKNOWN>") | \(metric.sdk_version)/\(metric.adapter_version)"
+                metricOutput += "\n  - \(metric.metric_type ?? "<TYPE_UNKNOWN>")"
             }
             TempoUtils.Say(msg: "📊 \(metricOutput)")
             TempoUtils.Say(msg: "📊 Payload: " + String(data: metricData ?? Data(), encoding: .utf8)!)
         }
-        
         
         // HTTP Headers
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -56,23 +54,23 @@ public class Metrics {
         let task = session.dataTask(with: request, completionHandler: { data, response, error in
             guard error == nil else {
                 if(backupUrl == nil) {
-                    print("Data did not send, creating backup")
+                    TempoUtils.Warn(msg: "Data did not send, creating backup")
                     TempoDataBackup.sendData(metricsArray: metricListCopy)
                 }
                 else{
-                    print("Data did not send, keeping backup: \(backupUrl!)")
+                    TempoUtils.Warn(msg:"Data did not send, keeping backup: \(backupUrl!)")
                 }
                 return
             }
             
-            // Output details of response
-            do{
-                let dataDictionary = try JSONSerialization.jsonObject(with: data!, options: [])
-                TempoUtils.Say(msg: "Response dictionary is: \(dataDictionary)")
-                
-            } catch let error as NSError {
-                TempoUtils.Say(msg: "Error: \(error.localizedDescription)")
-            }
+//            // Output details of response TODO: Harmless - "The data couldn’t be read because it isn’t in the correct format"
+//            do{
+//                let dataDictionary = try JSONSerialization.jsonObject(with: data!, options: [])
+//                TempoUtils.Say(msg: "Response dictionary is: \(dataDictionary)")
+//
+//            } catch let error as NSError {
+//                TempoUtils.Say(msg: "Error: \(error.localizedDescription)")
+//            }
             
             // If metrics were backeups - and were successfully resent - delete the file from device storage before sending again in case rules have changed
             if(backupUrl != nil)
@@ -82,8 +80,6 @@ public class Metrics {
                 // Remove metricList from device storage
                 TempoDataBackup.removeSpecificMetricList(backupUrl: backupUrl!)
             }
-            
-            TempoUtils.Say(msg: "Standard Metric sent (x\(metricListCopy.count))")
             
             if let httpResponse = response as? HTTPURLResponse {
                 //print("Tempo status code: \(httpResponse.statusCode)")
@@ -101,7 +97,7 @@ public class Metrics {
                     TempoUtils.Say(msg: "📊 Passed/Bad metrics - do not backup: \(httpResponse.statusCode)")
                     break
                 default:
-                    TempoUtils.Say(msg: "📊 Non-tempo related error - backup: \(httpResponse.statusCode)")
+                    TempoUtils.Say(msg: "📊 Non-Tempo related error - backup: \(httpResponse.statusCode)")
                     TempoDataBackup.sendData(metricsArray: metricListCopy)
                 }
             }

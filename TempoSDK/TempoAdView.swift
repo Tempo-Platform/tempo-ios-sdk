@@ -179,7 +179,7 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
                                         // Loads ad from URL with id reference
                                         if let id = jsonDict["id"] {
                                             if let idString = id as? String {
-                                                print("Tempo SDK: Got Ad ID from server. Response \(jsonDict).")
+                                                TempoUtils.Say(msg: "Ad Received \(jsonDict).")
                                                 let url = URL(string: TempoUtils.getAdsWebUrl(isInterstitial: self.isInterstitial!, campaignId: idString))!
                                                 self.campaignId = idString
                                                 self.webView.load(URLRequest(url: url))
@@ -329,7 +329,7 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
         let metric = Metric(metric_type: metricType,
                             ad_id: self.adId,
                             app_id: self.appId,
-                            //timestamp: Int(Date().timeIntervalSince1970 * 1000),
+                            timestamp: Int(Date().timeIntervalSince1970 * 1000),
                             is_interstitial: self.isInterstitial,
                             bundle_id: Bundle.main.bundleIdentifier!,
                             campaign_id: self.campaignId ?? "",
