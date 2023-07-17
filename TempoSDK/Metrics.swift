@@ -1,10 +1,11 @@
 import Foundation
+import TempoSDK
 
 public class Metrics {
    
     
     /// Sends latest version of Metrics array to Tempo backend and then clears
-    internal static func pushMetrics(currentMetrics: inout [Metric], backupUrl: URL?) {
+    public static func pushMetrics(currentMetrics: inout [Metric], backupUrl: URL?) {
         
         // Create the url with NSURL
         let url = URL(string: TempoUtils.getMetricsUrl())!

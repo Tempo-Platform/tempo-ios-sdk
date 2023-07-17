@@ -177,7 +177,7 @@ public class TempoDataBackup
         }
     }
     
-    internal static func checkHeldMetrics(completion: @escaping (inout [Metric], URL) -> Void) {
+    public static func checkHeldMetrics(completion: @escaping (inout [Metric], URL) -> Void) {
         // See if check has already been called
         if(readyForCheck) {
             // Request creation of backup metrics dictionary
