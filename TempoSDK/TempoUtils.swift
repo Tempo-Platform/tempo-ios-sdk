@@ -71,4 +71,9 @@ public class TempoUtils {
     public static func getMetricsUrl() -> String {
         return Constants.IS_PROD ? Constants.Web.METRICS_URL_PROD : Constants.Web.METRICS_URL_DEV;
     }
+    
+    /// Retuns string of 'INTERSTITIAL' or 'REWARDED' for debugging purposes
+    public static func getAdTypeString(isInterstitial: Bool) -> String {
+        return isInterstitial ? "INTERSTITIAL": "REWARDED"
+    }
 }

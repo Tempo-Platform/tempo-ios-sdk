@@ -3,8 +3,8 @@ import UIKit
 
 class ViewController: UIViewController, TempoAdListener {
 
-    var interstitialReady:Bool = false
-    var interstitial:TempoAdController? = nil
+    var interstitialReady: Bool = false
+    var interstitial: TempoAdController? = nil
     
     @IBOutlet weak var loadAdButton: UIButton!
     @IBOutlet weak var showAdButton: UIButton!
@@ -23,7 +23,7 @@ class ViewController: UIViewController, TempoAdListener {
         self.modalPresentationStyle = .fullScreen
         
         // Inititalise Tempo SDK
-        self.interstitial = TempoAdController(parentViewController: self, delegate: self, appId: getAppId())
+        self.interstitial = TempoAdController(tempoAdListener: self, appId: getAppId())
         initializeUIButtons();
     }
     
@@ -70,7 +70,7 @@ class ViewController: UIViewController, TempoAdListener {
     @IBAction func showAd(_ sender: Any) {
         print("Showing Ad now")
         closeKeyboard()
-        interstitial?.showAd()
+        interstitial?.showAd(parentViewController: self)
     }
     
     
@@ -82,45 +82,40 @@ class ViewController: UIViewController, TempoAdListener {
     }
     
     func onAdFetchSucceeded(isInterstitial: Bool) {
-        print("\(getType(isInterstitial: isInterstitial)) :: ready")
+        print("\(TempoUtils.getAdTypeString(isInterstitial: isInterstitial)) :: ready")
         setInterstitialReady(true)
     }
     
     func onAdFetchFailed(isInterstitial: Bool) {
-        print("\(getType(isInterstitial: isInterstitial)) :: failed")
+        print("\(TempoUtils.getAdTypeString(isInterstitial: isInterstitial)) :: failed")
     }
     
     func onAdClosed(isInterstitial: Bool) {
-        print("\(getType(isInterstitial: isInterstitial)) :: close")
+        print("\(TempoUtils.getAdTypeString(isInterstitial: isInterstitial)) :: close")
     }
     
     func onAdDisplayed(isInterstitial: Bool) {
-        print("\(getType(isInterstitial: isInterstitial)) :: displayed")
+        print("\(TempoUtils.getAdTypeString(isInterstitial: isInterstitial)) :: displayed")
         showAdButton.isEnabled = false
     }
 
     func onAdClicked(isInterstitial: Bool) {
-        print("\(getType(isInterstitial: isInterstitial)) :: clicked")
+        print("\(TempoUtils.getAdTypeString(isInterstitial: isInterstitial)) :: clicked")
     }
     
     func onVersionExchange(sdkVersion: String) -> String? {
-        print("\(getType(isInterstitial: isInterstitial)) :: version swap requested")
+        print("\(TempoUtils.getAdTypeString(isInterstitial: isInterstitial)) :: version swap requested")
         return demoAdaptervVersion
     }
     
     func onGetAdapterType() -> String? {
-        print("\(getType(isInterstitial: isInterstitial)) :: adapter type requested")
+        print("\(TempoUtils.getAdTypeString(isInterstitial: isInterstitial)) :: adapter type requested")
         return nil;
     }
     
     func hasUserConsent() -> Bool? {
-        print("\(getType(isInterstitial: isInterstitial)) :: user consent requested")
+        print("\(TempoUtils.getAdTypeString(isInterstitial: isInterstitial)) :: user consent requested")
         return true;
-    }
-    
-    
-    func getType(isInterstitial: Bool) -> String {
-        return isInterstitial ? "INTERSTITIAL" : "REWARDED"
     }
     
     func getAppId() -> String {

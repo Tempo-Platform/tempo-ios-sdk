@@ -176,4 +176,25 @@ public class TempoDataBackup
             print("Error while attempting to clear backup folder: \(error)")
         }
     }
+    
+    public static func checkHeldMetrics(completion: @escaping (inout [Metric], URL) -> Void) {
+        // See if check has already been called
+        if(readyForCheck) {
+            // Request creation of backup metrics dictionary
+            initCheck()
+            //print("Resending: \(TempoDataBackup.fileMetric.count)")
+            
+            var emptyArray: [Metric] = []
+            
+            // Cycles through each stored arrays and resends
+            for url in fileMetric.keys
+            {
+                //pushMetrics(backupUrl: url)
+                completion(&emptyArray, url)
+            }
+            
+            // Prevents from being checked again this session. If network is failing, no point retrying during this session
+            readyForCheck = false
+        }
+    }
 }

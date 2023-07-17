@@ -10,12 +10,22 @@ public struct Constants {
     static let OK = "OK"
     static let UNDEF = "UNDEFINED"
     static let ZERO_AD_ID = "00000000-0000-0000-0000-000000000000"
+    static let TEMP_GEO_US = "US"
     
     struct Backup {
         static let METRIC_BACKUP_FOLDER = "metricJsons"
         static let METRIC_BACKUP_APPEND = ".tempo"
         static let MAX_BACKUPS: Int = 100
         static let EXPIRY_DAYS: Int = 7
+    }
+    
+    struct JS {
+        static let JS_FORCE_PLAY = "var video = document.getElementById('video'); if (video) { video.play(); void(0)}"
+        static let LOCK_SCALE_SOURCE = "var meta = document.createElement('meta');" +
+        "meta.name = 'viewport';" +
+        "meta.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no';" +
+        "var head = document.getElementsByTagName('head')[0];" +
+        "head.appendChild(meta);"
     }
     
     struct Web {
@@ -28,6 +38,18 @@ public struct Constants {
         static let URL_INT = "interstitial"
         static let URL_REW = "campaign"
         static let METRIC_TIME_HEADER = "X-Timestamp"
+    }
+    
+    struct URL {
+        static let UUID = "uuid"
+        static let AD_ID = "ad_id"
+        static let APP_ID = "app_id"
+        static let CPM_FLOOR = "cpm_floor"
+        static let LOCATION = "location"
+        static let IS_INTERSTITIAL = "is_interstitial"
+        static let SDK_VERSION = "sdk_version"
+        static let ADAPTER_VERSION = "adapter_version"
+        static let ADAPTER_TYPE = "adapter_type"
     }
     
     struct MetricType {
