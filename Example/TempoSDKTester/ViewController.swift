@@ -22,7 +22,7 @@ class ViewController: UIViewController, TempoAdListener {
         self.modalPresentationStyle = .fullScreen
         
         // Inititalise Tempo SDK
-        TempoDataBackup.initCheck()
+        TempoDataBackup.checkHeldMetrics(completion: Metrics.pushMetrics)
         initializeUIButtons();
     }
     
