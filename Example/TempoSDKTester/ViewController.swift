@@ -12,7 +12,6 @@ class ViewController: UIViewController, TempoAdListener {
 
     var campaignId: String! = ""
     var isInterstitial: Bool! = true
-    var demoAdaptervVersion = DemoConstants.ADAP_VERSION
     
     override var prefersStatusBarHidden: Bool {
         return true
@@ -23,7 +22,7 @@ class ViewController: UIViewController, TempoAdListener {
         self.modalPresentationStyle = .fullScreen
         
         // Inititalise Tempo SDK
-        self.interstitial = TempoAdController(tempoAdListener: self, appId: getAppId())
+        TempoDataBackup.initCheck()
         initializeUIButtons();
     }
     
@@ -58,9 +57,13 @@ class ViewController: UIViewController, TempoAdListener {
     @IBAction func loadAd(_ sender: Any) {
         print("Loading Ad now")
         closeKeyboard()
-        loadAdButton.setTitle("Loading..", for: .normal)
+        loadAdButton.setTitle("Loading..." , for: .normal)
         loadAdButton.isEnabled = false
         if (campaignId == "") {
+            if(interstitial == nil)
+            {
+                self.interstitial = TempoAdController(tempoAdListener: self, appId: getAppId())
+            }
             interstitial?.loadAd(isInterstitial: isInterstitial, cpmFloor: 25.0, placementId: "XCODE")
         } else {
             interstitial?.loadSpecificAd(isInterstitial: isInterstitial, campaignId: campaignId)
@@ -81,34 +84,34 @@ class ViewController: UIViewController, TempoAdListener {
         showAdButton.isEnabled = true
     }
     
-    func onAdFetchSucceeded(isInterstitial: Bool) {
+    func onTempoAdFetchSucceeded(isInterstitial: Bool) {
         print("\(TempoUtils.getAdTypeString(isInterstitial: isInterstitial)) :: ready")
         setInterstitialReady(true)
     }
     
-    func onAdFetchFailed(isInterstitial: Bool) {
+    func onTempoAdFetchFailed(isInterstitial: Bool) {
         print("\(TempoUtils.getAdTypeString(isInterstitial: isInterstitial)) :: failed")
     }
     
-    func onAdClosed(isInterstitial: Bool) {
+    func onTempoAdClosed(isInterstitial: Bool) {
         print("\(TempoUtils.getAdTypeString(isInterstitial: isInterstitial)) :: close")
     }
     
-    func onAdDisplayed(isInterstitial: Bool) {
+    func onTempoAdDisplayed(isInterstitial: Bool) {
         print("\(TempoUtils.getAdTypeString(isInterstitial: isInterstitial)) :: displayed")
         showAdButton.isEnabled = false
     }
 
-    func onAdClicked(isInterstitial: Bool) {
+    func onTempoAdClicked(isInterstitial: Bool) {
         print("\(TempoUtils.getAdTypeString(isInterstitial: isInterstitial)) :: clicked")
     }
     
-    func onVersionExchange(sdkVersion: String) -> String? {
-        print("\(TempoUtils.getAdTypeString(isInterstitial: isInterstitial)) :: version swap requested")
-        return demoAdaptervVersion
+    func getTempoAdapterVersion() -> String? {
+        print("\(TempoUtils.getAdTypeString(isInterstitial: isInterstitial)) :: version requested")
+        return DemoConstants.ADAP_VERSION
     }
     
-    func onGetAdapterType() -> String? {
+    func getTempoAdapterType() -> String? {
         print("\(TempoUtils.getAdTypeString(isInterstitial: isInterstitial)) :: adapter type requested")
         return nil;
     }

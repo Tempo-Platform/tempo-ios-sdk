@@ -80,6 +80,11 @@ public class TempoDataBackup
             return
         }
         
+        if(contents.count == 0) {
+            TempoUtils.Say(msg: "✅ No Backups! [\(contents.count)]")
+            return
+        }
+        
         // Check backups are not at full capacity
         if(contents.count > Constants.Backup.MAX_BACKUPS) {
             TempoUtils.Warn(msg: "❌ Max Backups! [\(contents.count)]")
