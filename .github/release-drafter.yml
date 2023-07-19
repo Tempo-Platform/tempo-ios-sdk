@@ -32,12 +32,14 @@ autolabeler:
   - label: "feature"
     branch:
       - "/feature\/.+/"
+      - "/feat\/.+/"
   - label: "enhancement"
     branch:
       - "/enhancement\/.+/"
   - label: "fix"
     branch:
       - "/fix\/.+/"
+      - "/bugfix\/.+/"
   - label: "refactor"
     branch:
       - "/refactor\/.+/"
