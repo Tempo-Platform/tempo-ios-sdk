@@ -1,0 +1,33 @@
+name: Release to CocoaPods
+
+on:
+  release:
+    types:
+      - published
+
+permissions:
+  contents: read
+
+env:
+  PODSPEC_PATH: ./TempoSDK.podspec
+
+jobs:
+  validate-update-podspec:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Lint Podspec
+        run: |
+          pod spec lint ${{ env.PODSPEC_PATH }}
+
+      # Update the semantic version number in the .TempoSDK.podspec file
+      - name: Update Version
+        shell: pwsh
+        run: |
+          $version = "'${{ github.event.release.tag_name }}'"
+          $podspec = Get-Content "$env:PODSPEC_PATH"
+          $podspec = $podspec -replace '^(.*spec.version.*)(''.*'')$', "`$1$version"
+          $podspec | Set-Content -Path "$env:PODSPEC_PATH" -Force
