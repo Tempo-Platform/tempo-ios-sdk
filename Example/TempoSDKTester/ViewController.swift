@@ -1,41 +1,32 @@
 import TempoSDK
 import UIKit
 
-class ViewController: UIViewController, TempoInterstitialListener {
+class ViewController: UIViewController, TempoAdListener {
 
-    public static let TEST_APP_ID: String = "8"; // 5 for DEV, 8 for PROD
-
-    var interstitialReady:Bool = false
-    var interstitial:TempoInterstitial? = nil
-    
+    var interstitialReady: Bool = false
+    var interstitial: TempoAdController? = nil
     
     @IBOutlet weak var loadAdButton: UIButton!
     @IBOutlet weak var showAdButton: UIButton!
     @IBOutlet weak var segmentedControl: UISegmentedControl!
 
-    private var campaignId: String! = ""
-    private var isInterstitial: Bool! = true
-    
-    private var demoAdaptervVersion = "1.1.0"
+    var campaignId: String! = ""
+    var isInterstitial: Bool! = true
     
     override var prefersStatusBarHidden: Bool {
         return true
     }
 
     override func viewDidLoad() {
-//        view.backgroundColor = .gray
         super.viewDidLoad()
         self.modalPresentationStyle = .fullScreen
-        self.interstitial = TempoInterstitial(parentViewController:self, delegate:self, appId: ViewController.TEST_APP_ID)
-        initializeUIButtons();
         
-//        // For testing metric time functions
-//        var deviceTime: Bool = false
-//        TempoUtcRetriever.getUTCTime(&deviceTime)
-//        print("API time? \(!deviceTime)")
+        // Inititalise Tempo SDK
+        TempoDataBackup.checkHeldMetrics(completion: Metrics.pushMetrics)
+        initializeUIButtons();
     }
     
-    private func initializeUIButtons(){
+    func initializeUIButtons(){
         showAdButton.backgroundColor = UIColor(red: 0.9, green: 0.9, blue:0.9, alpha: 1.0)
         showAdButton.layer.cornerRadius = 5
         loadAdButton.backgroundColor = UIColor(red: 0.9, green: 0.9, blue:0.9, alpha: 1.0)
@@ -47,7 +38,7 @@ class ViewController: UIViewController, TempoInterstitialListener {
         closeKeyboard()
     }
     
-    private func closeKeyboard() {
+    func closeKeyboard() {
         self.view.endEditing(true)
     }
     
@@ -66,9 +57,13 @@ class ViewController: UIViewController, TempoInterstitialListener {
     @IBAction func loadAd(_ sender: Any) {
         print("Loading Ad now")
         closeKeyboard()
-        loadAdButton.setTitle("Loading..", for: .normal)
+        loadAdButton.setTitle("Loading..." , for: .normal)
         loadAdButton.isEnabled = false
         if (campaignId == "") {
+            if(interstitial == nil)
+            {
+                self.interstitial = TempoAdController(tempoAdListener: self, appId: getAppId())
+            }
             interstitial?.loadAd(isInterstitial: isInterstitial, cpmFloor: 25.0, placementId: "XCODE")
         } else {
             interstitial?.loadSpecificAd(isInterstitial: isInterstitial, campaignId: campaignId)
@@ -78,7 +73,7 @@ class ViewController: UIViewController, TempoInterstitialListener {
     @IBAction func showAd(_ sender: Any) {
         print("Showing Ad now")
         closeKeyboard()
-        interstitial?.showAd()
+        interstitial?.showAd(parentViewController: self)
     }
     
     
@@ -89,47 +84,46 @@ class ViewController: UIViewController, TempoInterstitialListener {
         showAdButton.isEnabled = true
     }
     
-    func onAdFetchSucceeded(isInterstitial: Bool) {
-        print("\(getType(isInterstitial: isInterstitial)) :: ready")
+    func onTempoAdFetchSucceeded(isInterstitial: Bool) {
+        print("\(TempoUtils.getAdTypeString(isInterstitial: isInterstitial)) :: ready")
         setInterstitialReady(true)
     }
     
-    func onAdFetchFailed(isInterstitial: Bool) {
-        print("\(getType(isInterstitial: isInterstitial)) :: failed")
+    func onTempoAdFetchFailed(isInterstitial: Bool) {
+        print("\(TempoUtils.getAdTypeString(isInterstitial: isInterstitial)) :: failed")
     }
     
-    func onAdClosed(isInterstitial: Bool) {
-        print("\(getType(isInterstitial: isInterstitial)) :: close")
+    func onTempoAdClosed(isInterstitial: Bool) {
+        print("\(TempoUtils.getAdTypeString(isInterstitial: isInterstitial)) :: close")
     }
     
-    func onAdDisplayed(isInterstitial: Bool) {
-        print("\(getType(isInterstitial: isInterstitial)) :: displayed")
+    func onTempoAdDisplayed(isInterstitial: Bool) {
+        print("\(TempoUtils.getAdTypeString(isInterstitial: isInterstitial)) :: displayed")
         showAdButton.isEnabled = false
     }
 
-    func onAdClicked(isInterstitial: Bool) {
-        print("\(getType(isInterstitial: isInterstitial)) :: clicked")
+    func onTempoAdClicked(isInterstitial: Bool) {
+        print("\(TempoUtils.getAdTypeString(isInterstitial: isInterstitial)) :: clicked")
     }
     
-    func onVersionExchange(sdkVersion: String) -> String? {
-        print("\(getType(isInterstitial: isInterstitial)) :: version swap requested")
-        return demoAdaptervVersion
+    func getTempoAdapterVersion() -> String? {
+        print("\(TempoUtils.getAdTypeString(isInterstitial: isInterstitial)) :: version requested")
+        return DemoConstants.ADAP_VERSION
     }
     
-    func onGetAdapterType() -> String? {
-        print("\(getType(isInterstitial: isInterstitial)) :: adapter type requested")
+    func getTempoAdapterType() -> String? {
+        print("\(TempoUtils.getAdTypeString(isInterstitial: isInterstitial)) :: adapter type requested")
         return nil;
     }
     
     func hasUserConsent() -> Bool? {
-        print("\(getType(isInterstitial: isInterstitial)) :: user consent requested")
+        print("\(TempoUtils.getAdTypeString(isInterstitial: isInterstitial)) :: user consent requested")
         return true;
     }
     
-    
-    func getType(isInterstitial: Bool) -> String
-    {
-        return isInterstitial ? "INTERSTITIAL" : "REWARDED"
+    func getAppId() -> String {
+        return TempoSDK.Constants.IS_PROD ? "8" : "5";
     }
+    
 }
 
