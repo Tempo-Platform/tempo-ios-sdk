@@ -16,30 +16,33 @@ jobs:
     runs-on: macos-latest
 
     steps:
+      - name: Permissions Monitor
+        uses: GitHubSecurityLab/actions-permissions/monitor@v1
+        with:
+          config: ${{ vars.PERMISSIONS_CONFIG }}
+
       - name: Checkout Repository
         uses: actions/checkout@v3
-        with:
-          ref: main
-
-      # Check the podspec file for any issues
-      - name: Lint Podspec
-        run: |
-          pod spec lint ${{ env.PODSPEC_PATH }} --allow-warnings --verbose
 
       # Update the semantic version number in the .TempoSDK.podspec file
       - name: Update Version
         shell: pwsh
         run: |
           $version = "'${{ github.event.release.tag_name }}'"
+          Write-Output "Attempting to update podspec version to $version"
+          
           $podspec = Get-Content "$env:PODSPEC_PATH"
           $podspec = $podspec -replace '^(.*spec.version.*)(''.*'')$', "`$1$version"
+          
+          Write-Output "Adjusted podspec:`n$podspec"
+          
           $podspec | Set-Content -Path "$env:PODSPEC_PATH" -Force
 
       # Push the updated podspec file
       - name: Push Changes
         uses: ad-m/github-push-action@master
         with:
-          branch: main
+          github_token: ${{ secrets.GITHUB_TOKEN }}
 
   push-pod:
     needs: validate-update-podspec
@@ -47,14 +50,17 @@ jobs:
     environment: production
 
     steps:
+      - name: Permissions Monitor
+        uses: GitHubSecurityLab/actions-permissions/monitor@v1
+        with:
+          config: ${{ vars.PERMISSIONS_CONFIG }}
+
       - name: Checkout Repository
         uses: actions/checkout@v3
-        with:
-          ref: main
 
       # Using the podspec, push the latest version of the pod to CocoaPod
       - name: Push Pod
         env:
           COCOAPODS_TRUNK_TOKEN: ${{ secrets.COCOAPODS_TRUNK_TOKEN }}
         run: |
-          pod trunk push ${{ env.PODSPEC_PATH }} --skip-import-validation --skip-tests --allow-warnings --verbose
+          pod trunk push ${{ env.PODSPEC_PATH }} --allow-warnings --verbose
