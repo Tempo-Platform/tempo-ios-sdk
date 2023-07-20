@@ -13,7 +13,7 @@ Pod::Spec.new do |spec|
   spec.license          = { :type => 'MIT', :file => 'LICENSE' }
   spec.homepage         = 'https://github.com/Tempo-Platform/tempo-ios-sdk'
   spec.readme           = 'https://github.com/Tempo-Platform/tempo-ios-sdk/blob/main/README.md'
-  spec.source           = { :git => 'https://github.com/Tempo-Platform/tempo-ios-sdk.git', :tag => s.version.to_s }
+  spec.source           = { :git => 'https://github.com/Tempo-Platform/tempo-ios-sdk.git', :tag => spec.version.to_s }
   spec.summary          = 'Tempo SDK to show payable ads'
 
   spec.ios.deployment_target = '11.0'
