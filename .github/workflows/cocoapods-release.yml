@@ -18,6 +18,8 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
+        with:
+          ref: main
 
       # Check the podspec file for any issues
       - name: Lint Podspec
@@ -51,3 +53,18 @@ jobs:
         uses: ad-m/github-push-action@master
         with:
           branch: main
+
+  push-pod:
+    needs: validate-update-podspec
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+        with:
+          ref: main
+
+      # Using the podspec, push the latest version of the pod to CocoaPod
+      - name: Push Pod
+        run: |
+          pod trunk push --allow-warnings --verbose
