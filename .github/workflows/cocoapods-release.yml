@@ -24,7 +24,7 @@ jobs:
       # Check the podspec file for any issues
       - name: Lint Podspec
         run: |
-          pod spec lint
+          pod spec lint ${{ env.PODSPEC_PATH }} --allow-warnings --verbose
 
       # Update the semantic version number in the .TempoSDK.podspec file
       - name: Update Version
@@ -66,5 +66,7 @@ jobs:
 
       # Using the podspec, push the latest version of the pod to CocoaPod
       - name: Push Pod
+        env:
+          COCOAPODS_TRUNK_TOKEN: ${{ secrets.COCOAPODS_TRUNK_TOKEN }}
         run: |
-          pod trunk push --allow-warnings --verbose
+          pod trunk push ${{ env.PODSPEC_PATH }} --allow-warnings --verbose
