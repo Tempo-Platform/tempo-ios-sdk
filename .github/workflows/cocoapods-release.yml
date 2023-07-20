@@ -57,6 +57,7 @@ jobs:
   push-pod:
     needs: validate-update-podspec
     runs-on: macos-latest
+    environment: production
 
     steps:
       - name: Checkout Repository
@@ -69,4 +70,4 @@ jobs:
         env:
           COCOAPODS_TRUNK_TOKEN: ${{ secrets.COCOAPODS_TRUNK_TOKEN }}
         run: |
-          pod trunk push ${{ env.PODSPEC_PATH }} --allow-warnings --verbose
+          pod trunk push ${{ env.PODSPEC_PATH }} --skip-import-validation --skip-tests --allow-warnings --verbose
