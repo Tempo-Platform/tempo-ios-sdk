@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - main
+    paths-ignore:
+      - TempoSDK.podspec
 
   # pull_request event is required for autolabeler
   pull_request:

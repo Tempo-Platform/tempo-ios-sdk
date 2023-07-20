@@ -6,7 +6,7 @@ on:
       - published
 
 permissions:
-  contents: read
+  contents: write
 
 env:
   PODSPEC_PATH: ./TempoSDK.podspec
@@ -19,9 +19,10 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
+      # Check the podspec file for any issues
       - name: Lint Podspec
         run: |
-          pod spec lint ${{ env.PODSPEC_PATH }}
+          pod spec lint
 
       # Update the semantic version number in the .TempoSDK.podspec file
       - name: Update Version
@@ -31,3 +32,22 @@ jobs:
           $podspec = Get-Content "$env:PODSPEC_PATH"
           $podspec = $podspec -replace '^(.*spec.version.*)(''.*'')$', "`$1$version"
           $podspec | Set-Content -Path "$env:PODSPEC_PATH" -Force
+
+      # Checks to see if the .podspec needs to be pushed
+      - name: Diff .podspec
+        shell: pwsh
+        run: |
+          $diff = git diff --name-only ${{ env.PODSPEC_PATH }}
+          if ($Null -ne $diff) {
+              Write-Output "diff=true" >> $env:GITHUB_OUTPUT
+          }
+          else {
+              Write-Output "diff=false" >> $env:GITHUB_OUTPUT
+          }
+
+      # Push the formatted files if required
+      - name: Push Changes
+        if: ${{ env.diff == 'true' }}
+        uses: ad-m/github-push-action@master
+        with:
+          branch: main
