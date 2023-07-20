@@ -13,6 +13,11 @@ TempoSDK is a library containing the code that handles the display of ad content
 - [Source Control](#source-control)
     * [Branching](#branching)
     * [Pull Requests](#pull-requests)
+- [CI/CD](#cicd)
+    * [Release Drafter](#release-drafter)
+        + [On Pull Request Open, Re-Opened or Synchronize](#on-pull-request-open-re-opened-or-synchronize)
+        + [On Push to Master](#on-push-to-master)
+    * [Publishing](#publishing)
 
 ## Example App
 
@@ -73,3 +78,34 @@ The last part of the commit message is a brief description of the changes.
 [About Pull Requests | GitHub](https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/about-pull-requests)
 
 Before merging our branch into development or master, we **must** create a pull request in the repository.
+
+## CI/CD
+
+### Release Drafter
+
+The release-drafter.yml workflow is the mechanism by which a release number tag is generated for pod releases of the tempo-ios-sdk repo. This tag is then used when pushing pods to the CocoaPods Trunk.
+
+This is all accomplished by the release-drafter workflow running in the following scenarios:
+
+#### On Pull Request Open, Re-Opened or Synchronize
+
+Whenever a pull request is created, the release drafter workflow runs it's [autolabeler](https://github.com/release-drafter/release-drafter#autolabeler) functionality which adds [labels](https://docs.github.com/en/issues/using-labels-and-milestones-to-track-work/managing-labels) to the pull request based on the branch name.
+
+Versions numbers and their associated branch name patterns and labels are as follows:
+
+| [Version Number Increment](https://semver.org/) | Branch Name                                                                         | Generated Label                            |
+|-------------------------------------------------|-------------------------------------------------------------------------------------|--------------------------------------------|
+| Major (1.X.X)                                   | N/A                                                                                 | breaking                                   |
+| Minor (X.1.X)                                   | "feature/..."<br>"feat/..."<br>"enhancement/..."<br>"enhance/..."<br>"refactor/..." | feature<br><br>enhancement<br><br>refactor |
+| Patch (X.X.1)                                   | "fix/..."<br>"bugfix/..."<br>"chore/..."                                            | fix<br><br>chore                           |
+
+#### On Push to Master
+
+When a pull request is closed and pushed to master, release drafter will either create a new release or append the currently opened draft release with the following:
+* A bump to the required version
+* Details around the closed pull request under specific headings
+* Contributor details
+
+### Publishing
+
+Once you are satisfied with a release, publish it to then trigger the push to CocoaPods.

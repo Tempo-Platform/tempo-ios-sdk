@@ -36,6 +36,7 @@ autolabeler:
   - label: "enhancement"
     branch:
       - "/enhancement\/.+/"
+      - "/enhance\/.+/"
   - label: "fix"
     branch:
       - "/fix\/.+/"
