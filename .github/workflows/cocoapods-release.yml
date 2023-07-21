@@ -48,6 +48,7 @@ jobs:
       - name: Push Changes
         uses: ad-m/github-push-action@master
         with:
+          branch: main
           github_token: ${{ secrets.REPO_WRITE_PAT }}
           force_with_lease: true
 
