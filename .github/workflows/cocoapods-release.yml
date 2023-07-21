@@ -20,8 +20,9 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
         with:
+          ref: main
+          fetch-depth: 0
           token: ${{ secrets.REPO_WRITE_PAT }}
-          persist-credentials: false
 
       # Update the semantic version number in the .TempoSDK.podspec file
       - name: Update Version
@@ -48,7 +49,6 @@ jobs:
       - name: Push Changes
         uses: ad-m/github-push-action@master
         with:
-          branch: main
           github_token: ${{ secrets.REPO_WRITE_PAT }}
           force_with_lease: true
 
