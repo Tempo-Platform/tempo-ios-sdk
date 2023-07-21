@@ -12,7 +12,7 @@ env:
   PODSPEC_PATH: ./TempoSDK.podspec
 
 jobs:
-  validate-update-podspec:
+  update-podspec:
     runs-on: ubuntu-latest
     environment: production
 
