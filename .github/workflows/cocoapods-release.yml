@@ -16,11 +16,6 @@ jobs:
     runs-on: macos-latest
 
     steps:
-      - name: Permissions Monitor
-        uses: GitHubSecurityLab/actions-permissions/monitor@v1
-        with:
-          config: ${{ vars.PERMISSIONS_CONFIG }}
-
       - name: Checkout Repository
         uses: actions/checkout@v3
 
@@ -38,6 +33,13 @@ jobs:
           
           $podspec | Set-Content -Path "$env:PODSPEC_PATH" -Force
 
+      # Stage and commit the updated .podspec file
+      - name: Stage & Commit
+        run: |
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git commit $env:PODSPEC_PATH -m "Updated podspec version"
+
       # Push the updated podspec file
       - name: Push Changes
         uses: ad-m/github-push-action@master
@@ -50,11 +52,6 @@ jobs:
     environment: production
 
     steps:
-      - name: Permissions Monitor
-        uses: GitHubSecurityLab/actions-permissions/monitor@v1
-        with:
-          config: ${{ vars.PERMISSIONS_CONFIG }}
-
       - name: Checkout Repository
         uses: actions/checkout@v3
 
