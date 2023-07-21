@@ -17,6 +17,7 @@ jobs:
     environment: production
 
     steps:
+      # Checkout main branch, with full history using PAT
       - name: Checkout Repository
         uses: actions/checkout@v3
         with:
@@ -45,7 +46,7 @@ jobs:
           git config --local user.name "github-actions[bot]"
           git commit ${{ env.PODSPEC_PATH }} -m "Updated podspec version"
 
-      # Push the updated podspec file
+      # Force push the updated podspec file using PAT to bypass branch protection
       - name: Push Changes
         uses: ad-m/github-push-action@master
         with:
@@ -60,6 +61,9 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
+        with:
+          ref: main
+          fetch-depth: 0
 
       # Using the podspec, push the latest version of the pod to CocoaPod
       - name: Push Pod
