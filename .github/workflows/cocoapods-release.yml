@@ -20,6 +20,8 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
         with:
+          ref: main
+          fetch-depth: 0
           token: ${{ secrets.REPO_WRITE_PAT }}
 
       # Update the semantic version number in the .TempoSDK.podspec file
