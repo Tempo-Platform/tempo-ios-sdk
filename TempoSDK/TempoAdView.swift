@@ -118,7 +118,7 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
         //let url = URL(string: "https://ads.tempoplatform.com/\(urlComponent)/\(campaignId)/ios")!
         let url = URL(string: TempoUtils.getFullWebUrl(isInterstitial: isInterstitial, campaignId: campaignId))!
         //self.campaignId = campaignId
-        self.campaignId = TempoUtils.checkForTestCampaign(isInterstitial: self.isInterstitial!, campaignId: campaignId)
+        self.campaignId = TempoUtils.checkForTestCampaign(campaignId: campaignId)
         self.webView.load(URLRequest(url: url))
     }
     
@@ -180,7 +180,7 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
                                                 //let url = URL(string: TempoUtils.getAdsWebUrl(isInterstitial: self.isInterstitial!, campaignId: idString))!
                                                 let url = URL(string: TempoUtils.getFullWebUrl(isInterstitial: self.isInterstitial!, campaignId: idString))!
                                                 //self.campaignId = idString
-                                                self.campaignId = TempoUtils.checkForTestCampaign(isInterstitial: self.isInterstitial!, campaignId: idString)
+                                                self.campaignId = TempoUtils.checkForTestCampaign(campaignId: idString)
                                                 self.webView.load(URLRequest(url: url))
                                                 validResponse = true
                                             }

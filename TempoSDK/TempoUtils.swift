@@ -8,7 +8,7 @@ public class TempoUtils {
     
     /// Log for URGENT output with 💥 marker - not to be used in production
     public static func Shout(msg: String) {
-        if(Constants.IS_TESTING) {
+        if(Constants.isTesting) {
             print("💥 TempoSDK: \(msg)");
         }
     }
@@ -17,14 +17,14 @@ public class TempoUtils {
     public static func Shout(msg: String, absoluteDisplay: Bool) {
         if (absoluteDisplay) {
             print("💥 TempoSDK: \(msg)");
-        } else if (Constants.IS_TESTING) {
+        } else if (Constants.isTesting) {
             // Nothing - muted
         }
     }
 
     /// Log for general test  output -, never shows in production
     public static func Say(msg: String) {
-        if(Constants.IS_TESTING) {
+        if(Constants.isTesting) {
             print("TempoSDK: \(msg)");
         }
     }
@@ -33,14 +33,14 @@ public class TempoUtils {
     public static func Say(msg: String, absoluteDisplay: Bool) {
         if (absoluteDisplay) {
             print("TempoSDK: \(msg)");
-        } else if (Constants.IS_TESTING) {
+        } else if (Constants.isTesting) {
             // Nothing - muted
         }
     }
     
     /// Log for WARNING output with 💥 marker - not to be used in production
     public static func Warn(msg: String) {
-        if(Constants.IS_TESTING) {
+        if(Constants.isTesting) {
             print("⚠️ TempoSDK: \(msg)");
         }
     }
@@ -49,14 +49,14 @@ public class TempoUtils {
     public static func Warn(msg: String, absoluteDisplay: Bool) {
         if (absoluteDisplay) {
             print("⚠️ TempoSDK: \(msg)");
-        } else if (Constants.IS_TESTING) {
+        } else if (Constants.isTesting) {
             // Nothing - muted
         }
     }
     
     /// Returns HTML-ADS url based on current environment and adType/campaignID parameters
     public static func getAdsWebUrl(isInterstitial: Bool, campaignId: String) -> String! {
-        let urlDomain = Constants.IS_PROD ? Constants.Web.ADS_DOM_URL_PROD : Constants.Web.ADS_DOM_URL_DEV
+        let urlDomain = Constants.isProd ? Constants.Web.ADS_DOM_URL_PROD : Constants.Web.ADS_DOM_URL_DEV
         let adsWebUrl = "\(urlDomain)/\(isInterstitial ? Constants.Web.URL_INT : Constants.Web.URL_REW)/\(campaignId)/ios";
         Say(msg: "🌏 WEB URL: \(adsWebUrl)")
         return adsWebUrl
@@ -67,7 +67,7 @@ public class TempoUtils {
     public static func getFullWebUrl(isInterstitial: Bool, campaignId: String) -> String {
         var webAdUrl: String
         
-        let checkedCampaignId = checkForTestCampaign(isInterstitial: isInterstitial, campaignId: campaignId)
+        let checkedCampaignId = checkForTestCampaign(campaignId: campaignId)
         
         if(isInterstitial) {
             webAdUrl = "\(getInterstitialUrl())/\(checkedCampaignId!)"
@@ -81,26 +81,23 @@ public class TempoUtils {
         return webAdUrl
     }
     
-    
-    internal static func checkForTestCampaign(isInterstitial: Bool, campaignId: String!) -> String! {
+    internal static func checkForTestCampaign(campaignId: String!) -> String! {
         
-        if (isInterstitial) {
-            if Constants.customCampaignIdForInterstitial == nil {
-                return campaignId
-            }
-            return Constants.isTestingCustomCampaignIdsForInterstitialAds ? Constants.customCampaignIdForInterstitial : campaignId
-        } else {
-            if Constants.customCampaignIdForRewarded == nil {
-                return campaignId
-            }
-            return Constants.isTestingCustomCampaignIdsForRewardedAds ? Constants.customCampaignIdForRewarded : campaignId
+        let customCampaignTrimmed: String? = TempoTesting.instance?.customCampaignId?.trimmingCharacters(in: .whitespacesAndNewlines)
+        let invalidString = customCampaignTrimmed?.isEmpty ?? true
+        //print("💥 customCampaignTrimmed: \(customCampaignTrimmed ?? "NOTHING") | invalidString: \(invalidString)")
+     
+        if (!invalidString && (TempoTesting.instance?.isTestingCustomCampaigns ?? false)) {
+            return TempoTesting.instance?.customCampaignId
         }
+        
+        return campaignId
     }
     
     public static func getRewardedUrl() -> String {
-        if(Constants.isTestingDeployVersion && Constants.currentDeployVersion != nil) {
+        if((TempoTesting.instance?.isTestingDeployVersion ?? false) && TempoTesting.instance?.currentDeployVersion != nil) {
             let deployPreviewUrl = Constants.Web.ADS_DOM_PREFIX_URL_PREVIEW +
-            Constants.currentDeployVersion! +
+            (TempoTesting.instance?.currentDeployVersion)! +
             Constants.Web.ADS_DOM_APPENDIX_URL_PREVIEW +
             Constants.Web.URL_REW
             
@@ -109,7 +106,7 @@ public class TempoUtils {
             return deployPreviewUrl
         }
         
-        if Constants.IS_PROD {
+        if Constants.isProd {
             return "\(Constants.Web.ADS_DOM_URL_PROD)/\(Constants.Web.URL_REW)"
         }
         else {
@@ -118,9 +115,9 @@ public class TempoUtils {
     }
     
     public static func getInterstitialUrl() -> String {
-        if(Constants.isTestingDeployVersion && Constants.currentDeployVersion != nil) {
+        if((TempoTesting.instance?.isTestingDeployVersion ?? false) && TempoTesting.instance?.currentDeployVersion != nil) {
             let deployPreviewUrl = Constants.Web.ADS_DOM_PREFIX_URL_PREVIEW +
-            Constants.currentDeployVersion! +
+            (TempoTesting.instance?.currentDeployVersion)! +
             Constants.Web.ADS_DOM_APPENDIX_URL_PREVIEW +
             Constants.Web.URL_INT
             
@@ -129,7 +126,7 @@ public class TempoUtils {
             return deployPreviewUrl
         }
         
-        if Constants.IS_PROD {
+        if Constants.isProd {
             return "\(Constants.Web.ADS_DOM_URL_PROD)/\(Constants.Web.URL_INT)"
         }
         else {
@@ -139,12 +136,12 @@ public class TempoUtils {
     
     /// Returns REST-ADS-API url based on current environment
     public static func getAdsApiUrl() -> String {
-        return Constants.IS_PROD ? Constants.Web.ADS_API_URL_PROD : Constants.Web.ADS_API_URL_DEV;
+        return Constants.isProd ? Constants.Web.ADS_API_URL_PROD : Constants.Web.ADS_API_URL_DEV;
     }
     
     /// Returns METRICS url based on current environment
     public static func getMetricsUrl() -> String {
-        return Constants.IS_PROD ? Constants.Web.METRICS_URL_PROD : Constants.Web.METRICS_URL_DEV;
+        return Constants.isProd ? Constants.Web.METRICS_URL_PROD : Constants.Web.METRICS_URL_DEV;
     }
     
     /// Retuns string of 'INTERSTITIAL' or 'REWARDED' for debugging purposes

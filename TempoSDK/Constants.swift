@@ -2,14 +2,8 @@
 
 public struct Constants {
     
-    public static var IS_PROD: Bool = true
-    public static var IS_TESTING: Bool = false
-    public static var isTestingDeployVersion: Bool = false
-    public static var currentDeployVersion: String?
-    public static var customCampaignIdForInterstitial: String?
-    public static var customCampaignIdForRewarded: String?
-    public static var isTestingCustomCampaignIdsForInterstitialAds: Bool = false
-    public static var isTestingCustomCampaignIdsForRewardedAds: Bool = false
+    public static var isProd: Bool = false
+    public static var isTesting: Bool = false
     
     public static let SDK_VERSIONS = "1.2.0"
 

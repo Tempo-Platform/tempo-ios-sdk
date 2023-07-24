@@ -122,7 +122,7 @@ class ViewController: UIViewController, TempoAdListener {
     }
     
     func getAppId() -> String {
-        return TempoSDK.Constants.IS_PROD ? "8" : "5";
+        return TempoSDK.Constants.isProd ? "8" : "5";
     }
     
 }
