@@ -39,4 +39,8 @@ public class TempoTesting {
     public func activateCustomCampaigns(activate: Bool) -> Void {
         isTestingCustomCampaigns = activate
     }
+    
+    public func updateCustomCampaignId(campaignId: String) -> Void {
+        customCampaignId = campaignId
+    }
 }
