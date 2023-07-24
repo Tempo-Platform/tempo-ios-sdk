@@ -67,7 +67,7 @@ public class TempoUtils {
     public static func getFullWebUrl(isInterstitial: Bool, campaignId: String) -> String {
         var webAdUrl: String
         
-        var checkedCampaignId = checkForTestCampaign(isInterstitial: isInterstitial, campaignId: campaignId)
+        let checkedCampaignId = checkForTestCampaign(isInterstitial: isInterstitial, campaignId: campaignId)
         
         if(isInterstitial) {
             webAdUrl = "\(getInterstitialUrl())/\(checkedCampaignId!)"
@@ -99,7 +99,7 @@ public class TempoUtils {
     
     public static func getRewardedUrl() -> String {
         if(Constants.isTestingDeployVersion && Constants.currentDeployVersion != nil) {
-            var deployPreviewUrl = Constants.Web.ADS_DOM_PREFIX_URL_PREVIEW +
+            let deployPreviewUrl = Constants.Web.ADS_DOM_PREFIX_URL_PREVIEW +
             Constants.currentDeployVersion! +
             Constants.Web.ADS_DOM_APPENDIX_URL_PREVIEW +
             Constants.Web.URL_REW
@@ -119,7 +119,7 @@ public class TempoUtils {
     
     public static func getInterstitialUrl() -> String {
         if(Constants.isTestingDeployVersion && Constants.currentDeployVersion != nil) {
-            var deployPreviewUrl = Constants.Web.ADS_DOM_PREFIX_URL_PREVIEW +
+            let deployPreviewUrl = Constants.Web.ADS_DOM_PREFIX_URL_PREVIEW +
             Constants.currentDeployVersion! +
             Constants.Web.ADS_DOM_APPENDIX_URL_PREVIEW +
             Constants.Web.URL_INT
