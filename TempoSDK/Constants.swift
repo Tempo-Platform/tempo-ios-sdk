@@ -2,8 +2,14 @@
 
 public struct Constants {
     
-    public static let IS_PROD = true
-    public static let IS_TESTING = false
+    public static var IS_PROD: Bool = true
+    public static var IS_TESTING: Bool = false
+    public static var isTestingDeployVersion: Bool = false
+    public static var currentDeployVersion: String?
+    public static var customCampaignIdForInterstitial: String?
+    public static var customCampaignIdForRewarded: String?
+    public static var isTestingCustomCampaignIdsForInterstitialAds: Bool = false
+    public static var isTestingCustomCampaignIdsForRewardedAds: Bool = false
     
     public static let SDK_VERSIONS = "1.2.0"
 
@@ -33,9 +39,13 @@ public struct Constants {
         static let METRICS_URL_PROD = "https://metric-api.tempoplatform.com/metrics" // PROD
         static let ADS_API_URL_PROD = "https://ads-api.tempoplatform.com/ad" // PROD
         static let ADS_DOM_URL_PROD = "https://ads.tempoplatform.com" // PROD
+        
         static let METRICS_URL_DEV = "https://metric-api.dev.tempoplatform.com/metrics" // DEV
         static let ADS_API_URL_DEV = "https://ads-api.dev.tempoplatform.com/ad" // DEV
         static let ADS_DOM_URL_DEV = "https://development--tempo-html-ads.netlify.app" // DEV
+        
+        static let ADS_DOM_PREFIX_URL_PREVIEW = "https://deploy-preview-" // DEPLOY PREVIEW
+        static let ADS_DOM_APPENDIX_URL_PREVIEW = "--tempo-html-ads.netlify.app/" // DEPLOY PREVIEW
         static let URL_INT = "interstitial"
         static let URL_REW = "campaign"
         static let HTTP_METHOD_POST = "POST"

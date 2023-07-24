@@ -62,6 +62,81 @@ public class TempoUtils {
         return adsWebUrl
     }
     
+    
+    
+    public static func getFullWebUrl(isInterstitial: Bool, campaignId: String) -> String {
+        var webAdUrl: String
+        
+        var checkedCampaignId = checkForTestCampaign(isInterstitial: isInterstitial, campaignId: campaignId)
+        
+        if(isInterstitial) {
+            webAdUrl = "\(getInterstitialUrl())/\(checkedCampaignId!)"
+        }
+        else {
+            webAdUrl = "\(getRewardedUrl())/\(checkedCampaignId!)"
+        }
+        
+        TempoUtils.Shout(msg: "🌏 Web URL: \(webAdUrl)")
+        
+        return webAdUrl
+    }
+    
+    
+    internal static func checkForTestCampaign(isInterstitial: Bool, campaignId: String!) -> String! {
+        
+        if (isInterstitial) {
+            if Constants.customCampaignIdForInterstitial == nil {
+                return campaignId
+            }
+            return Constants.isTestingCustomCampaignIdsForInterstitialAds ? Constants.customCampaignIdForInterstitial : campaignId
+        } else {
+            if Constants.customCampaignIdForRewarded == nil {
+                return campaignId
+            }
+            return Constants.isTestingCustomCampaignIdsForRewardedAds ? Constants.customCampaignIdForRewarded : campaignId
+        }
+    }
+    
+    public static func getRewardedUrl() -> String {
+        if(Constants.isTestingDeployVersion && Constants.currentDeployVersion != nil) {
+            var deployPreviewUrl = Constants.Web.ADS_DOM_PREFIX_URL_PREVIEW +
+            Constants.currentDeployVersion! +
+            Constants.Web.ADS_DOM_APPENDIX_URL_PREVIEW +
+            Constants.Web.URL_REW
+            
+            TempoUtils.Say(msg: "DeployPreview (R) URL = \(deployPreviewUrl)")
+            
+            return deployPreviewUrl
+        }
+        
+        if Constants.IS_PROD {
+            return "\(Constants.Web.ADS_DOM_URL_PROD)/\(Constants.Web.URL_REW)"
+        }
+        else {
+            return "\(Constants.Web.ADS_DOM_URL_DEV)/\(Constants.Web.URL_REW)"
+        }
+    }
+    
+    public static func getInterstitialUrl() -> String {
+        if(Constants.isTestingDeployVersion && Constants.currentDeployVersion != nil) {
+            var deployPreviewUrl = Constants.Web.ADS_DOM_PREFIX_URL_PREVIEW +
+            Constants.currentDeployVersion! +
+            Constants.Web.ADS_DOM_APPENDIX_URL_PREVIEW +
+            Constants.Web.URL_INT
+            
+            TempoUtils.Say(msg: "DeployPreview (R) URL = \(deployPreviewUrl)")
+            
+            return deployPreviewUrl
+        }
+        
+        if Constants.IS_PROD {
+            return "\(Constants.Web.ADS_DOM_URL_PROD)/\(Constants.Web.URL_INT)"
+        }
+        else {
+            return "\(Constants.Web.ADS_DOM_URL_DEV)/\(Constants.Web.URL_INT)"
+        }
+    }
+    
     /// Returns REST-ADS-API url based on current environment
     public static func getAdsApiUrl() -> String {
         return Constants.IS_PROD ? Constants.Web.ADS_API_URL_PROD : Constants.Web.ADS_API_URL_DEV;
