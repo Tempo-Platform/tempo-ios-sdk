@@ -93,11 +93,11 @@ Whenever a pull request is created, the release drafter workflow runs it's [auto
 
 Versions numbers and their associated branch name patterns and labels are as follows:
 
-| [Version Number Increment](https://semver.org/) | Branch Name                                                                         | Generated Label                            |
-|-------------------------------------------------|-------------------------------------------------------------------------------------|--------------------------------------------|
-| Major (1.X.X)                                   | N/A                                                                                 | breaking                                   |
-| Minor (X.1.X)                                   | "feature/..."<br>"feat/..."<br>"enhancement/..."<br>"enhance/..."<br>"refactor/..." | feature<br><br>enhancement<br><br>refactor |
-| Patch (X.X.1)                                   | "fix/..."<br>"bugfix/..."<br>"chore/..."                                            | fix<br><br>chore                           |
+| [Version Number Increment](https://semver.org/) | Branch Name                                                                                                                                                                | Generated Label                                            |
+|-------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------|
+| Major (1.X.X)                                   | N/A                                                                                                                                                                        | breaking                                                   |
+| Minor (X.1.X)                                   | "feature/..."<br>"feature-..."<br>"feat/..."<br>"feat-..."<br>"enhancement/..."<br>"enhancement-..."<br>"enhance/..."<br>"enhance-..."<br>"refactor/..."<br>"refactor-..." | feature<br><br><br><br>enhancement<br><br><br><br>refactor |
+| Patch (X.X.1)                                   | "fix/..."<br>"fix-..."<br>"bugfix/..."<br>"bugfix-..."<br>"chore/..."<br>"chore-..."                                                                                       | fix<br><br><br><br>chore                                   |
 
 #### On Push to Master
 
