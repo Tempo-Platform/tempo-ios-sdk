@@ -31,22 +31,22 @@ version-resolver:
 autolabeler:
   - label: "feature"
     branch:
-      - "/feature\/.+/"
-      - "/feat\/.+/"
+      - "/feature[\/|-].+/"
+      - "/feat[\/|-].+/"
   - label: "enhancement"
     branch:
-      - "/enhancement\/.+/"
-      - "/enhance\/.+/"
+      - "/enhancement[\/|-].+/"
+      - "/enhance[\/|-].+/"
   - label: "fix"
     branch:
-      - "/fix\/.+/"
-      - "/bugfix\/.+/"
+      - "/fix[\/|-].+/"
+      - "/bugfix[\/|-].+/"
   - label: "refactor"
     branch:
-      - "/refactor\/.+/"
+      - "/refactor[\/|-].+/"
   - label: "chore"
     branch:
-      - "/chore\/.+/"
+      - "/chore[\/|-].+/"
 template: |
   ## What's Changed
 
