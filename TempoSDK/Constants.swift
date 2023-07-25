@@ -2,10 +2,10 @@
 
 public struct Constants {
     
-    public static var isProd: Bool = true
-    public static var isTesting: Bool = false
+    public static var isProd: Bool = false
+    public static var isTesting: Bool = true
     
-    public static let SDK_VERSIONS = "1.2.0-rc.6"
+    public static let SDK_VERSIONS = "1.2.0-rc.7"
 
     static let NO_FILL = "NO_FILL"
     static let OK = "OK"
