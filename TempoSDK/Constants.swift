@@ -5,7 +5,7 @@ public struct Constants {
     public static let IS_PROD = true
     public static let IS_TESTING = false
     
-    public static let SDK_VERSIONS = "1.1.1"
+    public static let SDK_VERSIONS = "1.1.13"
     static let NO_FILL = "NO_FILL"
     static let OK = "OK"
     static let UNDEF = "UNDEFINED"
