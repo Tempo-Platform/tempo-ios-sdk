@@ -1,6 +1,5 @@
 #
-# Be sure to run `pod lib lint TempoSDK.podspec' to ensure this is a
-# valid spec before submitting.
+# Run `pod lib lint TempoSDK.podspec' to validate the spec after any changes
 #
 # To learn more about a Podspec see https://guides.cocoapods.org/syntax/podspec.html
 #
@@ -18,10 +17,9 @@ Pod::Spec.new do |spec|
 
   spec.ios.deployment_target = '11.0'
 
-  spec.source_files  = "TempoSDK/**/*.{h,m,swift}"
+  spec.source_files  = 'TempoSDK/**/*.{h,m,swift}'
   
   spec.tvos.pod_target_xcconfig  = { 'EXCLUDED_ARCHS[sdk=appletvsimulator*]' => 'arm64', }
   spec.tvos.user_target_xcconfig = { 'EXCLUDED_ARCHS[sdk=appletvsimulator*]' => 'arm64' }
   spec.pod_target_xcconfig       = { 'PRODUCT_BUNDLE_IDENTIFIER': 'com.tempoplatform.sdk' }
-
 end
