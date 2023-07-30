@@ -2,11 +2,10 @@
 
 public struct Constants {
     
-    public static var isProd: Bool = false
-    public static var isTesting: Bool = true
+    public static let IS_PROD = true
+    public static let IS_TESTING = false
     
-    public static let SDK_VERSIONS = "1.2.0-rc.7"
-
+    public static let SDK_VERSIONS = "1.1.13"
     static let NO_FILL = "NO_FILL"
     static let OK = "OK"
     static let UNDEF = "UNDEFINED"
@@ -33,13 +32,9 @@ public struct Constants {
         static let METRICS_URL_PROD = "https://metric-api.tempoplatform.com/metrics" // PROD
         static let ADS_API_URL_PROD = "https://ads-api.tempoplatform.com/ad" // PROD
         static let ADS_DOM_URL_PROD = "https://ads.tempoplatform.com" // PROD
-        
         static let METRICS_URL_DEV = "https://metric-api.dev.tempoplatform.com/metrics" // DEV
         static let ADS_API_URL_DEV = "https://ads-api.dev.tempoplatform.com/ad" // DEV
         static let ADS_DOM_URL_DEV = "https://development--tempo-html-ads.netlify.app" // DEV
-        
-        static let ADS_DOM_PREFIX_URL_PREVIEW = "https://deploy-preview-" // DEPLOY PREVIEW
-        static let ADS_DOM_APPENDIX_URL_PREVIEW = "--tempo-html-ads.netlify.app/" // DEPLOY PREVIEW
         static let URL_INT = "interstitial"
         static let URL_REW = "campaign"
         static let HTTP_METHOD_POST = "POST"
