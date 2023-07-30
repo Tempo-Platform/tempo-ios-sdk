@@ -70,7 +70,7 @@ public struct Constants {
         static let METRIC_SEND_NOW = [SHOW, LOAD_REQUEST, TIMER_COMPLETED]
     }
     
-    // testable variables
+    // Testable variables
     public static var isProd = true
     public static var isTesting = false
     
