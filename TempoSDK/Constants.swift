@@ -2,9 +2,6 @@
 
 public struct Constants {
     
-    public static let IS_PROD = true
-    public static let IS_TESTING = false
-    
     public static let SDK_VERSIONS = "1.1.13"
     static let NO_FILL = "NO_FILL"
     static let OK = "OK"
@@ -70,5 +67,9 @@ public struct Constants {
         static let METRIC_OUTPUT_TYPES = [ASSETS_LOADED, VIDEO_LOADED, TIMER_COMPLETED, IMAGES_LOADED]
         static let METRIC_SEND_NOW = [SHOW, LOAD_REQUEST, TIMER_COMPLETED]
     }
+    
+    // testable variables
+    public static var isProd = true
+    public static var isTesting = false
     
 }
