@@ -24,6 +24,8 @@ env:
 jobs:
   update-release-draft:
     permissions:
+      # Required to create a GitHub release
+      contents: write
       # Required for autolabeler
       pull-requests: write
 
