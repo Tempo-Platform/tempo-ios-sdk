@@ -14,7 +14,7 @@ on:
     types: [opened, reopened, synchronize]
 
 permissions:
-  # Required to update version files
+  # Required to create a GitHub release & update version files
   contents: write
 
 env:
@@ -24,8 +24,6 @@ env:
 jobs:
   update-release-draft:
     permissions:
-      # Required to create a github release
-      contents: write
       # Required for autolabeler
       pull-requests: write
 
