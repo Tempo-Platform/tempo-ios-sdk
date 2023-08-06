@@ -32,7 +32,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: release-drafter/release-drafter@v5
+      # Create or update the Release OR add a label to the Pull Request
+      - name: Release Drafter
+        id: release-drafter
+        uses: release-drafter/release-drafter@v5
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
