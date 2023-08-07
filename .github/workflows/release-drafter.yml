@@ -96,13 +96,7 @@ jobs:
           $outcome = $diff ? "true" : "false"
           Write-Output "git diff outcome: $outcome"
           
-          Write-Output "diff=$outcome" >> $env:GITHUB_OUTPUT
-
-      - name: env diff debug
-        shell: pwsh
-        run: |
-          Write-Output "env.diff: ${{ env.diff }}"
-          Write-Output "env.diff type: $( ${{ env.diff }}.GetType() )"
+          Write-Output "diff=$outcome" >> $env:GITHUB_ENV
 
       # Stage and commit the updated files
       - name: Stage & Commit
