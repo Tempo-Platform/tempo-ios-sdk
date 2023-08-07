@@ -91,7 +91,11 @@ jobs:
         shell: pwsh
         run: |
           $diff = git diff --name-only
+          Write-Output "git diff: $diff"
+          
           $outcome = $diff ? "true" : "false"
+          Write-Output "git diff outcome: $outcome"
+          
           Write-Output "diff=$outcome" >> $env:GITHUB_OUTPUT
 
       # Stage and commit the updated files
