@@ -23,13 +23,14 @@ env:
 
 jobs:
   update-release-draft:
+    runs-on: ubuntu-latest
     permissions:
       # Required to create a GitHub release
       contents: write
       # Required for autolabeler
       pull-requests: write
-
-    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.set-version.outputs.version }}
 
     steps:
       # Create or update the Release OR add a label to the Pull Request
@@ -84,17 +85,26 @@ jobs:
           
           Write-Output "Adjusted Constants.swift:`n$constants"
           $constants | Set-Content -Path "$env:CONSTANTS_PATH" -Force
-      
 
-      # Stage and commit the updated .podspec file
+      # Checks to see if a push needs to take place
+      - name: Git diff
+        shell: pwsh
+        run: |
+          $diff = git diff --name-only
+          $outcome = $diff ? "true" : "false"
+          Write-Output "diff=$outcome" >> $env:GITHUB_OUTPUT
+
+      # Stage and commit the updated files
       - name: Stage & Commit
+        if: env.diff == 'true'
         run: |
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
           git commit -a -m "Updated .podspec & Constants.swift versions"
 
-      # Force push the updated podspec file using PAT to bypass branch protection
+      # Force push the files using PAT to bypass branch protection
       - name: Push Changes
+        if: env.diff == 'true'
         uses: ad-m/github-push-action@master
         with:
           github_token: ${{ secrets.REPO_WRITE_PAT }}
