@@ -98,9 +98,15 @@ jobs:
           
           Write-Output "diff=$outcome" >> $env:GITHUB_OUTPUT
 
+      - name: env diff debug
+        shell: pwsh
+        run: |
+          Write-Output "env.diff: ${{ env.diff }}"
+          Write-Output "env.diff type: $( ${{ env.diff }}.GetType() )"
+
       # Stage and commit the updated files
       - name: Stage & Commit
-        if: ${{ env.diff == 'true' }}
+        if: env.diff == 'true'
         run: |
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
@@ -108,7 +114,7 @@ jobs:
 
       # Force push the files using PAT to bypass branch protection
       - name: Push Changes
-        if: ${{ env.diff == 'true' }}
+        if: env.diff == 'true'
         uses: ad-m/github-push-action@master
         with:
           github_token: ${{ secrets.REPO_WRITE_PAT }}
