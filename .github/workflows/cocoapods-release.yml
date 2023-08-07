@@ -10,7 +10,6 @@ permissions:
 
 jobs:
   push-pod:
-    needs: update-podspec
     runs-on: macos-latest
     environment: production
 
