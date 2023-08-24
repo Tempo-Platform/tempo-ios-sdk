@@ -7,6 +7,7 @@ on:
     paths-ignore:
       - TempoSDK.podspec
       - TempoSDK/Constants.swift
+      - README.md
 
   # pull_request event is required for autolabeler
   pull_request:
