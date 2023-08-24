@@ -91,10 +91,14 @@ class ViewController: UIViewController, TempoAdListener {
     
     func onTempoAdFetchFailed(isInterstitial: Bool) {
         print("\(TempoUtils.getAdTypeString(isInterstitial: isInterstitial)) :: failed")
+        setInterstitialReady(true)
+        showAdButton.isEnabled = false
     }
     
     func onTempoAdClosed(isInterstitial: Bool) {
         print("\(TempoUtils.getAdTypeString(isInterstitial: isInterstitial)) :: close")
+        setInterstitialReady(true)
+        showAdButton.isEnabled = false
     }
     
     func onTempoAdDisplayed(isInterstitial: Bool) {
