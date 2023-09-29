@@ -9,7 +9,9 @@ class ViewController: UIViewController, TempoAdListener {
     @IBOutlet weak var loadAdButton: UIButton!
     @IBOutlet weak var showAdButton: UIButton!
     @IBOutlet weak var segmentedControl: UISegmentedControl!
-
+    @IBOutlet weak var checkLocationConsentButton: UIButton!
+    @IBOutlet weak var requestLocationConsentButton: UIButton!
+    
     var campaignId: String! = ""
     var isInterstitial: Bool! = true
     
@@ -74,6 +76,13 @@ class ViewController: UIViewController, TempoAdListener {
         print("Showing Ad now")
         closeKeyboard()
         interstitial?.showAd(parentViewController: self)
+    }
+    
+    
+    @IBAction func checkLocConsent(_ sender: Any) {
+    }
+    
+    @IBAction func requestLocConsent(_ sender: Any) {
     }
     
     
