@@ -135,7 +135,7 @@
 				TargetAttributes = {
 					607FACCF1AFB9204008FA782 = {
 						CreatedOnToolsVersion = 6.3.1;
-						DevelopmentTeam = 5W4JSF4BTN;
+						DevelopmentTeam = GULURF5GWL;
 						LastSwiftMigration = 1340;
 						ProvisioningStyle = Automatic;
 					};
@@ -363,7 +363,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 5W4JSF4BTN;
+				DEVELOPMENT_TEAM = GULURF5GWL;
 				INFOPLIST_FILE = TempoSDKTester/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
@@ -385,7 +385,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 5W4JSF4BTN;
+				DEVELOPMENT_TEAM = GULURF5GWL;
 				INFOPLIST_FILE = TempoSDKTester/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";

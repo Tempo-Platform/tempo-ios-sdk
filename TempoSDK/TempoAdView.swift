@@ -3,6 +3,29 @@ import UIKit
 import WebKit
 import AdSupport
 
+class FullScreenWKWebView: WKWebView {
+    
+    override var safeAreaInsets: UIEdgeInsets {
+        return UIEdgeInsets(top: 50, left: 0, bottom: 0, right: 0)
+    }
+    
+    override init(frame: CGRect, configuration: WKWebViewConfiguration) {
+        super.init(frame: frame, configuration: configuration)
+        self.scrollView.isScrollEnabled = false
+        self.scrollView.bounces = false
+        self.allowsBackForwardNavigationGestures = true
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+}
+
+class FullScreenUIView: UIView {
+    override var safeAreaInsets: UIEdgeInsets {
+        return UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
+    }
+}
 
 public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessageHandler  {
     
@@ -59,6 +82,8 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
         TempoUtils.Say(msg: "loadAd() \(TempoUtils.getAdTypeString(isInterstitial: isInterstitial))", absoluteDisplay: true)
         
         // Create WKWebView instance
+        
+        print("👉👉👉👉👉👉👉👉👉 1")
         self.setupWKWebview()
         
         // Update session values from paramters
@@ -80,6 +105,8 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
     /// Plays currently loaded ad for current session (interstitial/reward)
     public func showAd(parentVC: UIViewController?) {
         if(solidColorView != nil) {
+            
+            print("👉👉👉👉👉👉👉👉 isScrollEnabled (show): \(webView.scrollView.isScrollEnabled)")
             adState = AdState.showing
             
             // Update parent VC
@@ -257,33 +284,70 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
     /// Creates the custom WKWebView including safe areas, background color and pulls custom configurations
     private func setupWKWebview() {
         
-        var safeAreaTop: CGFloat
-        var safeAreaBottom: CGFloat
+        
+        print("👉👉👉👉👉👉👉👉👉 SAFE 2")
+        var safeAreaTop: CGFloat = 0.0
+        var safeAreaBottom: CGFloat = 0.0
+        
         if #available(iOS 13.0, *) {
             safeAreaTop = getSafeAreaTop()
             safeAreaBottom = getSafeAreaBottom()
-        } else {
-            safeAreaTop = 0.0
-            safeAreaBottom = 0.0
         }
-        webView = FullScreenWKWebView(frame: CGRect(
+        print("👉👉👉👉👉👉👉👉👉 SAFE 3")
+        
+        let webViewFrame = CGRect(
             x: 0,
             y: safeAreaTop,
             width: UIScreen.main.bounds.width,
             height: UIScreen.main.bounds.height - safeAreaTop - safeAreaBottom
-        ), configuration: self.getWKWebViewConfiguration())
+        )
+        
+        let configuration = getWKWebViewConfiguration()
+        
+        webView = FullScreenWKWebView(frame: webViewFrame, configuration: configuration)
         webView.scrollView.bounces = false
+//        webView.scrollView.showsHorizontalScrollIndicator = false
+//        webView.scrollView.isPagingEnabled = false
+        print("👉👉👉👉👉👉👉👉 isScrollEnabled: \(webView.scrollView.isScrollEnabled)")
+        
         
         if #available(iOS 11.0, *) {
             webView.scrollView.contentInsetAdjustmentBehavior = .never
         }
+        
         webView.navigationDelegate = self
         webView.allowsBackForwardNavigationGestures = true
-        solidColorView = FullScreenUIView(frame: CGRect( x: 0, y: 0, width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height))
         
-        // ".black/#000" treated as transparent in Unity so making it a 'pseudo-black'
-        solidColorView.backgroundColor = UIColor(red: 0.01, green: 0.01, blue:0.01, alpha: 1)
+        solidColorView = FullScreenUIView(frame: UIScreen.main.bounds)
+        solidColorView.backgroundColor = UIColor(red: 0.01, green: 0.01, blue: 0.01, alpha: 1)
         solidColorView.addSubview(webView)
+        
+        
+        
+        
+        
+        
+        
+        
+        
+//        webView = FullScreenWKWebView(frame: CGRect(
+//            x: 0,
+//            y: safeAreaTop,
+//            width: UIScreen.main.bounds.width,
+//            height: UIScreen.main.bounds.height - safeAreaTop - safeAreaBottom
+//        ), configuration: self.getWKWebViewConfiguration())
+//        webView.scrollView.bounces = false
+//        
+//        if #available(iOS 11.0, *) {
+//            webView.scrollView.contentInsetAdjustmentBehavior = .never
+//        }
+//        webView.navigationDelegate = self
+//        webView.allowsBackForwardNavigationGestures = true
+//        solidColorView = FullScreenUIView(frame: CGRect( x: 0, y: 0, width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height))
+//        
+//        // ".black/#000" treated as transparent in Unity so making it a 'pseudo-black'
+//        solidColorView.backgroundColor = UIColor(red: 0.01, green: 0.01, blue:0.01, alpha: 1)
+//        solidColorView.addSubview(webView)
     }
     
     /// Creates and returns a custom configuration for the WkWebView object
@@ -293,7 +357,7 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
         let lockScaleScript: WKUserScript = WKUserScript(
             source: Constants.JS.LOCK_SCALE_SOURCE,
             injectionTime: .atDocumentEnd,
-            forMainFrameOnly: true)
+            forMainFrameOnly: false)
         
         let userController = WKUserContentController()
         userController.add(self, name: "observer")
@@ -302,9 +366,15 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
         let configuration = WKWebViewConfiguration()
         configuration.userContentController = userController
         configuration.allowsInlineMediaPlayback = true
+        
         if #available(iOS 10.0, *) {
             configuration.mediaTypesRequiringUserActionForPlayback = []
         }
+        
+//        // Please explain
+//        if #available(iOS 13.0, *) {
+//            configuration.defaultWebpagePreferences.preferredContentMode = .mobile
+//        }
         
         return configuration
     }
@@ -433,14 +503,3 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
     }
 }
 
-class FullScreenWKWebView: WKWebView {
-    override var safeAreaInsets: UIEdgeInsets {
-        return UIEdgeInsets(top: 50, left: 0, bottom: 0, right: 0)
-    }
-}
-
-class FullScreenUIView: UIView {
-    override var safeAreaInsets: UIEdgeInsets {
-        return UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
-    }
-}
