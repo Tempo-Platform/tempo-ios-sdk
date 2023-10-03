@@ -3,8 +3,8 @@ import UIKit
 
 class ViewController: UIViewController, TempoAdListener {
 
-    var interstitialReady: Bool = false
-    var interstitial: TempoAdController? = nil
+    var adControllerReady: Bool = false
+    var adController: TempoAdController? = nil
     
     @IBOutlet weak var loadAdButton: UIButton!
     @IBOutlet weak var showAdButton: UIButton!
@@ -57,37 +57,64 @@ class ViewController: UIViewController, TempoAdListener {
     }
     
     @IBAction func loadAd(_ sender: Any) {
-        print("Loading Ad now")
+        let startTime = Date().timeIntervalSince1970 * 1000
+        print("Loading Ad now: \(Date().timeIntervalSince1970 * 1000)")
+        print("Time taken: \(Date().timeIntervalSince1970 * 1000 - startTime)")
+        
         closeKeyboard()
         loadAdButton.setTitle("Loading..." , for: .normal)
         loadAdButton.isEnabled = false
         if (campaignId == "") {
-            if(interstitial == nil)
+            if(adController == nil)
             {
-                self.interstitial = TempoAdController(tempoAdListener: self, appId: getAppId())
+                self.adController = TempoAdController(tempoAdListener: self, appId: getAppId())
+                self.adController!.checkLocationConsentAndLoad(isInterstitial: isInterstitial, cpmFloor: 25.0, placementId: "XCODE")
+            } else{
+                adController?.loadAd(isInterstitial: isInterstitial, cpmFloor: 25.0, placementId: "XCODE")
             }
-            interstitial?.loadAd(isInterstitial: isInterstitial, cpmFloor: 25.0, placementId: "XCODE")
         } else {
-            interstitial?.loadSpecificAd(isInterstitial: isInterstitial, campaignId: campaignId)
+            adController?.loadSpecificAd(isInterstitial: isInterstitial, campaignId: campaignId)
         }
     }
+    
+    // Define a function that takes your loadAd function as an argument
+    public func loadAdWithCustomLogic(adLoader: (Bool, Float?, String?) -> Void) {
+        // You can perform some custom logic here before loading the ad
+        let isInterstitial = isInterstitial ?? false
+        let cpmFloor: Float? = 25.0
+        let placementId = "XCODE"
+        
+        // Call the provided adLoader function
+        adLoader(isInterstitial, cpmFloor, placementId)
+        
+        // You can also do additional work after loading the ad, if needed
+        print("Custom logic after loading ad")
+    }
+    
+    
+    func loadInterstitialAds() {
+        adController?.loadAd(isInterstitial: isInterstitial, cpmFloor: 25.0, placementId: "XCODE")
+    }
+    
 
     @IBAction func showAd(_ sender: Any) {
         print("Showing Ad now")
         closeKeyboard()
-        interstitial?.showAd(parentViewController: self)
+        adController?.showAd(parentViewController: self)
     }
     
     
     @IBAction func checkLocConsent(_ sender: Any) {
+        //TempoUtils.hasLocationServicesConsent()
     }
     
     @IBAction func requestLocConsent(_ sender: Any) {
+        TempoUtils.requestLocation()
     }
     
     
     func setInterstitialReady(_ ready:Bool){
-        interstitialReady = ready
+        adControllerReady = ready
         loadAdButton.setTitle("Load Ad", for: .normal)
         loadAdButton.isEnabled = true
         showAdButton.isEnabled = true
