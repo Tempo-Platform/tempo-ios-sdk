@@ -120,4 +120,5 @@ public struct Metric : Codable {
     var adapter_type: String?
     var consent: Bool?
     var consent_type: String?
+    var location_consent: String = ""
 }

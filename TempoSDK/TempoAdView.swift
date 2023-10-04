@@ -32,7 +32,7 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
     
     enum AdState { case dormant, loading, showing }
     var adState: AdState! = AdState.dormant
-    var listener: TempoAdListener! // given value during init()
+    var listener: TempoAdListener!
     var adapterVersion: String!
     var parentVC: UIViewController?
     var appId: String!
@@ -56,7 +56,7 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
     var consent: Bool?
     var currentConsentType: String?
     var geo: String?
-    
+    public var locationConsent: String = Constants.LocationConsent.NONE.rawValue
 
     public init(listener: TempoAdListener, appId: String) {
         super.init(nibName: nil, bundle: nil)
@@ -394,7 +394,8 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
                             cpm: self.cpmFloor ?? 0.0,
                             adapter_type: self.adapterType,
                             consent: self.consent,
-                            consent_type: nil
+                            consent_type: nil,
+                            location_consent: locationConsent
         )
         
         self.metricList.append(metric)
