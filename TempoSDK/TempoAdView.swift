@@ -7,7 +7,7 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
     
     enum AdState { case dormant, loading, showing }
     var adState: AdState! = AdState.dormant
-    var listener: TempoAdListener! // given value during init()
+    var listener: TempoAdListener!
     var adapterVersion: String!
     var parentVC: UIViewController?
     var appId: String!
@@ -45,15 +45,6 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
         consent = self.listener.hasUserConsent()
         adId = getAdId()
     }
-    
-//    public func hasLocationServicesConsent() {
-//        let tempoLoc = TempoLocation()
-//        tempoLoc.checkLocationServicesConsent(completion: self.handleLocationConsent)
-//    }
-//    
-//    public func handleLocationConsent(consentType: Constants.LocationConsent) {
-//        locationConsent = consentType.rawValue
-//    }
     
     // Ingore requirement to implement required initializer ‘init(coder:) in it.
     @available(*, unavailable, message: "Nibs are unsupported")
