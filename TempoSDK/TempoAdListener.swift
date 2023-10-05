@@ -11,6 +11,9 @@ public protocol TempoAdListener {
     // Called when an ad goes full screen.
     func onTempoAdDisplayed(isInterstitial: Bool)
     
+    // Called when ad fails, need to differentiate adNotReady from other failures
+    func onTempoAdShowFailed(isInterstitial: Bool, adNotReady: Bool)
+    
     // Called when an ad is clicked.
     func onTempoAdClicked(isInterstitial: Bool)  // TODO: actually monitor clicks and call this callback
     
