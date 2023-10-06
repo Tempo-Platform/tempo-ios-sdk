@@ -65,13 +65,13 @@ class ViewController: UIViewController, TempoAdListener {
         loadAdButton.setTitle("Loading..." , for: .normal)
         loadAdButton.isEnabled = false
         if (campaignId == "") {
-            if(adController == nil)
-            {
+            if(adController == nil)  {
                 self.adController = TempoAdController(tempoAdListener: self, appId: getAppId())
-                self.adController!.checkLocationConsentAndLoad(isInterstitial: isInterstitial, cpmFloor: 25.0, placementId: "XCODE")
-            } else{
-                adController?.loadAd(isInterstitial: isInterstitial, cpmFloor: 25.0, placementId: "XCODE")
             }
+            
+            self.adController!.checkLocationConsentAndLoad(isInterstitial: isInterstitial, cpmFloor: 25.0, placementId: "XCODE_1")
+            //adController?.loadAd(isInterstitial: isInterstitial, cpmFloor: 25.0, placementId: "XCODE")
+            
         } else {
             adController?.loadSpecificAd(isInterstitial: isInterstitial, campaignId: campaignId)
         }
@@ -125,8 +125,8 @@ class ViewController: UIViewController, TempoAdListener {
         setInterstitialReady(true)
     }
     
-    func onTempoAdFetchFailed(isInterstitial: Bool) {
-        print("\(TempoUtils.getAdTypeString(isInterstitial: isInterstitial)) :: failed")
+    func onTempoAdFetchFailed(isInterstitial: Bool, reason: String?) {
+        print("\(TempoUtils.getAdTypeString(isInterstitial: isInterstitial)) :: load failed \(reason ?? "uknown")")
         setInterstitialReady(true)
         showAdButton.isEnabled = false
     }
@@ -154,6 +154,10 @@ class ViewController: UIViewController, TempoAdListener {
     func getTempoAdapterType() -> String? {
         print("\(TempoUtils.getAdTypeString(isInterstitial: isInterstitial)) :: adapter type requested")
         return nil;
+    }
+    
+    func onTempoAdShowFailed(isInterstitial: Bool, reason: String?) {
+        print("\(TempoUtils.getAdTypeString(isInterstitial: isInterstitial)) :: show failed: \(reason ?? "uknown")")
     }
     
     func hasUserConsent() -> Bool? {
