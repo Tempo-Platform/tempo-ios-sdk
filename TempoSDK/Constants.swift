@@ -2,7 +2,7 @@
 
 public struct Constants {
     
-    public static let SDK_VERSIONS = "1.3.1-rc.0"
+    public static let SDK_VERSIONS = "1.3.1-rc.1"
     static let NO_FILL = "NO_FILL"
     static let OK = "OK"
     static let UNDEF = "UNDEFINED"
@@ -59,6 +59,7 @@ public struct Constants {
         static let LOAD_REQUEST = "AD_LOAD_REQUEST"
         static let CUST_LOAD_REQUEST = "CUSTOM_AD_LOAD_REQUEST"
         static let SHOW = "AD_SHOW"
+        static let SHOW_FAIL = "AD_SHOW_FAILED"
         static let LOAD_FAILED = "AD_LOAD_FAILED"
         static let LOAD_SUCCESS = "AD_LOAD_SUCCESS"
         static let CLOSE_AD = "TEMPO_CLOSE_AD"

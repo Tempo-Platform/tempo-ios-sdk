@@ -109,12 +109,13 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
     /// Plays currently loaded ad for current session (interstitial/reward)
     public func showAd(parentVC: UIViewController?) {
  
-        // Update parent VC, kill if still nil
-        self.parentVC = parentVC
+        // Update parent VC with received value
+        self.parentVC = nil
+        //self.parentVC = parentVC
                 
         // Make sure parentVC/webview are not nil
         if(self.parentVC == nil || self.webView == nil || self.webViewWithBackground == nil) {
-            listener.onTempoAdShowFailed(isInterstitial: self.isInterstitial, adNotReady: false)
+            self.sendAdShowFailed(reason: "unexpected null object")
             self.closeAd()
             return
         }
@@ -217,8 +218,8 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
                             if let status = jsonDict["status"] {
                                 if let statusString = status as? String {
                                     if statusString == Constants.NO_FILL {
-                                        self.listener.onTempoAdFetchFailed(isInterstitial: self.isInterstitial)
                                         print("Tempo SDK: Failed loading the Ad. Received NO_FILL response from API.")
+                                        self.listener.onTempoAdFetchFailed(isInterstitial: self.isInterstitial, reason: Constants.NO_FILL)
                                         self.addMetric(metricType: Constants.NO_FILL)
                                         validResponse = true
                                     } else if (statusString == Constants.OK) {
@@ -227,9 +228,7 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
                                         if let id = jsonDict["id"] {
                                             if let idString = id as? String {
                                                 TempoUtils.Say(msg: "Ad Received \(jsonDict).")
-                                                //let url = URL(string: TempoUtils.getAdsWebUrl(isInterstitial: self.isInterstitial!, campaignId: idString))!
                                                 let url = URL(string: TempoUtils.getFullWebUrl(isInterstitial: self.isInterstitial, campaignId: idString))!
-                                                //self.campaignId = idString
                                                 self.campaignId = TempoUtils.checkForTestCampaign(campaignId: idString)
                                                 self.webView.load(URLRequest(url: url))
                                                 validResponse = true
@@ -286,10 +285,20 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
         return components
     }
     
-    func sendAdFetchFailed(reason: String) {
-        print("Tempo SDK: Failed loading the Ad. \(reason).")
-        self.listener.onTempoAdFetchFailed(isInterstitial: self.isInterstitial)
+    // Combines fetch fail callback and metric send
+    func sendAdFetchFailed(reason: String?) {
+        let endTag = reason?.isEmpty == true ? "" : ": \(reason!)"
+        print("Tempo SDK: Failed loading the Ad\(endTag)")
         self.addMetric(metricType: Constants.MetricType.LOAD_FAILED)
+        self.listener.onTempoAdFetchFailed(isInterstitial: self.isInterstitial, reason: reason)
+    }
+    
+    // Combines show fail callback and metric send
+    func sendAdShowFailed(reason: String?) {
+        let endTag = reason?.isEmpty == true ? "" : ": \(reason!)"
+        print("Tempo SDK: Failed showing the Ad\(endTag)")
+        self.addMetric(metricType: Constants.MetricType.SHOW_FAIL)
+        self.listener.onTempoAdShowFailed(isInterstitial: self.isInterstitial, reason: reason)
     }
 
     /// Creates the custom WKWebView including safe areas, background color and pulls custom configurations
@@ -420,6 +429,7 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
         }
     }
     
+    /// Calculate gap at top needed based on device ttype
     @available(iOS 13.0, *)
     func getSafeAreaTop() -> CGFloat {
         let keyWindow = UIApplication.shared.connectedScenes
@@ -432,6 +442,7 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
         return keyWindow?.safeAreaInsets.top ?? 0
     }
     
+    /// Calculate gap at bottom needed based on device ttype
     @available(iOS 13.0, *)
     func getSafeAreaBottom() -> CGFloat {
         let keyWindow = UIApplication.shared.connectedScenes
@@ -451,11 +462,11 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
         // Invoke failure callbacks
         if(adState == AdState.loading)
         {
-            listener.onTempoAdFetchFailed(isInterstitial: self.isInterstitial)
+            self.sendAdFetchFailed(reason: "WKWebView navigation failure")
         }
         else if(adState == AdState.showing)
         {
-            listener.onTempoAdShowFailed(isInterstitial: false, adNotReady: false)
+            self.sendAdShowFailed(reason: "WKWebView navigation failure")
 
             // Close the iOS WebView - this should return to original view this was called against
             closeAd()
@@ -464,19 +475,19 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
     
     /// WebView fail delegate (ProvisionalNavigation)
     public func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
-        TempoUtils.Shout(msg: "❌❌❌ didFailProvisionalNavigation FAILURE")
+        TempoUtils.Shout(msg: "❌ didFailProvisionalNavigation FAILURE")
         abortTempo()
     }
     
     /// WebView fail delegate (General fail)
     public func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
-        TempoUtils.Shout(msg: "❌❌❌ didFail FAILURE")
+        TempoUtils.Shout(msg: "❌ didFail FAILURE")
         abortTempo()
     }
     
     /// WebView success delegate
     public func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
-        TempoUtils.Say(msg: "🎉🥳🎈 didFinish SUCCESS")
+        TempoUtils.Say(msg: "✅ didFinish SUCCESS")
     }
 }
 

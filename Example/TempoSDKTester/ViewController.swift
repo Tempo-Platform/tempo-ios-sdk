@@ -3,9 +3,6 @@ import UIKit
 
 class ViewController: UIViewController, TempoAdListener {
 
-    
-
-
     var adControllerReady: Bool = false
     var adController: TempoAdController? = nil
     
@@ -72,7 +69,7 @@ class ViewController: UIViewController, TempoAdListener {
                 self.adController = TempoAdController(tempoAdListener: self, appId: getAppId())
             }
             
-            self.adController!.checkLocationConsentAndLoad(isInterstitial: isInterstitial, cpmFloor: 25.0, placementId: "XCODE")
+            self.adController!.checkLocationConsentAndLoad(isInterstitial: isInterstitial, cpmFloor: 25.0, placementId: "XCODE_1")
             //adController?.loadAd(isInterstitial: isInterstitial, cpmFloor: 25.0, placementId: "XCODE")
             
         } else {
@@ -128,8 +125,8 @@ class ViewController: UIViewController, TempoAdListener {
         setInterstitialReady(true)
     }
     
-    func onTempoAdFetchFailed(isInterstitial: Bool) {
-        print("\(TempoUtils.getAdTypeString(isInterstitial: isInterstitial)) :: load failed")
+    func onTempoAdFetchFailed(isInterstitial: Bool, reason: String?) {
+        print("\(TempoUtils.getAdTypeString(isInterstitial: isInterstitial)) :: load failed \(reason ?? "uknown")")
         setInterstitialReady(true)
         showAdButton.isEnabled = false
     }
@@ -159,8 +156,8 @@ class ViewController: UIViewController, TempoAdListener {
         return nil;
     }
     
-    func onTempoAdShowFailed(isInterstitial: Bool, adNotReady: Bool) {
-        print("\(TempoUtils.getAdTypeString(isInterstitial: isInterstitial)) :: show failed: \(adNotReady)")
+    func onTempoAdShowFailed(isInterstitial: Bool, reason: String?) {
+        print("\(TempoUtils.getAdTypeString(isInterstitial: isInterstitial)) :: show failed: \(reason ?? "uknown")")
     }
     
     func hasUserConsent() -> Bool? {
