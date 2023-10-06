@@ -59,8 +59,8 @@ public struct Constants {
         static let LOAD_REQUEST = "AD_LOAD_REQUEST"
         static let CUST_LOAD_REQUEST = "CUSTOM_AD_LOAD_REQUEST"
         static let SHOW = "AD_SHOW"
-        static let SHOW_FAIL = "AD_SHOW_FAILED"
-        static let LOAD_FAILED = "AD_LOAD_FAILED"
+        static let SHOW_FAIL = "AD_SHOW_FAIL"
+        static let LOAD_FAILED = "AD_LOAD_FAIL"
         static let LOAD_SUCCESS = "AD_LOAD_SUCCESS"
         static let CLOSE_AD = "TEMPO_CLOSE_AD"
         static let ASSETS_LOADED = "TEMPO_ASSETS_LOADED"
@@ -79,6 +79,6 @@ public struct Constants {
     
     // Testable variables
     public static var isProd = true
-    public static var isTesting = true
+    public static var isTesting = false
     
 }

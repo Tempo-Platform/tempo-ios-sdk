@@ -110,8 +110,7 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
     public func showAd(parentVC: UIViewController?) {
  
         // Update parent VC with received value
-        self.parentVC = nil
-        //self.parentVC = parentVC
+        self.parentVC = parentVC
                 
         // Make sure parentVC/webview are not nil
         if(self.parentVC == nil || self.webView == nil || self.webViewWithBackground == nil) {
