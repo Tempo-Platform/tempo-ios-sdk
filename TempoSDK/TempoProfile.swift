@@ -21,9 +21,130 @@ public class TempoProfile: NSObject, CLLocationManagerDelegate { //TODO: Make cl
     
     public func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         TempoUtils.Say(msg: "👉👉👉 didUpdateLocations: \(locations.count)")
-        if locations.first != nil {
-            locManager.stopUpdatingLocation()
+        //        if locations.first != nil {
+        //            locManager.stopUpdatingLocation()
+        //        }
+        //
+        if let location = locations.last {
+            
+            // Reverse geocoding to get the state
+            let geocoder = CLGeocoder()
+            geocoder.reverseGeocodeLocation(location) { (placemarks, error) in
+                if let error = error {
+                    print("Reverse geocoding failed with error: \(error.localizedDescription)")
+                    return
+                }
+                
+                if let placemark = placemarks?.first {
+                    if let state = placemark.name {
+                        print("name: \t\t\t\t\t\(state)")
+                    }
+                    else {
+                        print("name: \t\t\t\t\t[UNAVAILABLE]")
+                    }
+                    
+                    if let state = placemark.thoroughfare {
+                        print("thoroughfare: \t\t\t\(state)")
+                    }
+                    else {
+                        print("thoroughfare: \t\t\t[UNAVAILABLE]")
+                    }
+                    
+                    if let state = placemark.subThoroughfare {
+                        print("subThoroughfare: \t\t\(state)")
+                    }
+                    else {
+                        print("subThoroughfare: [UNAVAILABLE]")
+                    }
+                    
+                    
+                    if let state = placemark.locality {
+                        print("locality: \t\t\t\t\(state)")
+                    }
+                    else {
+                        print("locality: \t\t\t\t[UNAVAILABLE]")
+                    }
+                    
+                    
+                    if let state = placemark.subLocality {
+                        print("subLocality: \t\t\t\(state)")
+                    }
+                    else {
+                        print("subLocality: \t\t\t[UNAVAILABLE]")
+                    }
+                    
+                    
+                    if let state = placemark.administrativeArea {
+                        print("administrativeArea: \t\(state) <---------------- STATE")
+                    }
+                    else {
+                        print("administrativeArea: \t[UNAVAILABLE]")
+                    }
+                    
+                    
+                    if let state = placemark.subAdministrativeArea {
+                        print("subAdministrativeArea: \t\(state)")
+                    }
+                    else {
+                        print("subAdministrativeArea: \t[UNAVAILABLE]")
+                    }
+                    
+                    
+                    if let state = placemark.postalCode {
+                        print("postalCode: \t\t\t\(state)")
+                    }
+                    else {
+                        print("postalCode: \t\t\t[UNAVAILABLE]")
+                    }
+                    
+                    
+                    if let state = placemark.isoCountryCode {
+                        print("isoCountryCode: \t\t\(state)")
+                    }
+                    else {
+                        print("isoCountryCode: \t\t[UNAVAILABLE]")
+                    }
+                    
+                    
+                    if let state = placemark.country {
+                        print("country: \t\t\t\t\(state)")
+                    }
+                    else {
+                        print("country: \t\t\t\t[UNAVAILABLE]")
+                    }
+                    
+                    
+                    if let state = placemark.inlandWater {
+                        print("inlandWater: \t\t\t\(state)")
+                    }
+                    else {
+                        print("inlandWater: \t\t\t[UNAVAILABLE]")
+                    }
+                    
+                    
+                    if let state = placemark.ocean {
+                        print("ocean: \t\t\t\t\t\(state)")
+                    }
+                    else {
+                        print("ocean: \t\t\t\t\t[UNAVAILABLE]")
+                    }
+                    
+                    
+                    if let state = placemark.areasOfInterest {
+                        print("areasOfInterest: \t\t\(state)")
+                    }
+                    else {
+                        print("areasOfInterest: \t\t[UNAVAILABLE]")
+                    }
+                }
+                
+                
+            }
         }
+        
+        
+        
+        
     }
     
     /// Public function for prompting consent (used for testing)
