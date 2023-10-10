@@ -4,16 +4,17 @@ import CoreLocation
 public class TempoProfile: NSObject, CLLocationManagerDelegate { //TODO: Make class internal/private/default(none)?
     var locManager = CLLocationManager()
     var location: CLLocation?
+    static var locData: LocationData?
     
     override init() {
         super.init()
         if #available(iOS 14.0, *) {
+            if(TempoProfile.locData == nil) {
+                TempoProfile.locData = LocationData()
+            }
+            
             TempoUtils.Say(msg: "🥶🥶🥶 TempoProfile.init()")
             locManager.delegate = self
-            //requestLocationConsent()
-            //            locManager.requestWhenInUseAuthorization()
-            //            locManager.requestLocation()
-            //locManager.desiredAccuracy = kCLLocationAccuracyBest
             locManager.requestWhenInUseAuthorization()
             locManager.requestLocation()
         }
@@ -21,10 +22,12 @@ public class TempoProfile: NSObject, CLLocationManagerDelegate { //TODO: Make cl
     
     public func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         TempoUtils.Say(msg: "👉👉👉 didUpdateLocations: \(locations.count)")
-        //        if locations.first != nil {
-        //            locManager.stopUpdatingLocation()
-        //        }
-        //
+        
+        
+        if locations.first != nil {
+            locManager.stopUpdatingLocation() // TODO: Needed if I'm doing spot checks?
+        }
+        
         if let location = locations.last {
             
             // Reverse geocoding to get the state
@@ -76,6 +79,7 @@ public class TempoProfile: NSObject, CLLocationManagerDelegate { //TODO: Make cl
                     
                     if let state = placemark.administrativeArea {
                         print("administrativeArea: \t\(state) <---------------- STATE")
+                        TempoProfile.locData?.state = placemark.administrativeArea
                     }
                     else {
                         print("administrativeArea: \t[UNAVAILABLE]")
@@ -92,6 +96,7 @@ public class TempoProfile: NSObject, CLLocationManagerDelegate { //TODO: Make cl
                     
                     if let state = placemark.postalCode {
                         print("postalCode: \t\t\t\(state)")
+                        TempoProfile.locData?.postcode = placemark.postalCode
                     }
                     else {
                         print("postalCode: \t\t\t[UNAVAILABLE]")
@@ -141,10 +146,6 @@ public class TempoProfile: NSObject, CLLocationManagerDelegate { //TODO: Make cl
                 
             }
         }
-        
-        
-        
-        
     }
     
     /// Public function for prompting consent (used for testing)
@@ -169,12 +170,12 @@ public class TempoProfile: NSObject, CLLocationManagerDelegate { //TODO: Make cl
 
     /// Main public function for running a consent check - escaping completion function for running loadAds when value found
     public func checkLocationServicesConsent (
-        completion: @escaping (LocationData, Bool, Float?, String?) -> Void,
+        completion: @escaping (Bool, Float?, String?) -> Void,
         isInterstitial: Bool,
         cpmFloor: Float?,
         placementId: String?) {
 
-            var ld = LocationData()
+            //var ld = LocationData()
             // CLLocationManager.authorizationStatus can cause UI unresponsiveness if invoked on the main thread.
             DispatchQueue.global().async {
 
@@ -190,19 +191,20 @@ public class TempoProfile: NSObject, CLLocationManagerDelegate { //TODO: Make cl
                         if #available(iOS 14.0, *) {
                             // iOS 14 intro precise/general options
                             if self.locManager.accuracyAuthorization == .reducedAccuracy {
-                                ld.location_consent = Constants.LocationConsent.GENERAL.rawValue
+                                
+                                TempoProfile.locData?.location_consent = Constants.LocationConsent.GENERAL.rawValue
                                 //self.myRequestLocation(consentType: Constants.LocationConsent.GENERAL)
-                                completion(ld, isInterstitial, cpmFloor, placementId)
+                                completion(isInterstitial, cpmFloor, placementId)
                                 return
                             } else {
-                                ld.location_consent = Constants.LocationConsent.PRECISE.rawValue
+                                TempoProfile.locData?.location_consent = Constants.LocationConsent.PRECISE.rawValue
                                 //self.myRequestLocation(consentType: Constants.LocationConsent.PRECISE)
-                                completion(ld, isInterstitial, cpmFloor, placementId)
+                                completion(isInterstitial, cpmFloor, placementId)
                                 return
                             }
                         } else {
                             // Pre-iOS 14 considered precise
-                            completion(ld, isInterstitial, cpmFloor, placementId)
+                            completion(isInterstitial, cpmFloor, placementId)
                             return
                         }
                     case .restricted, .denied:
@@ -217,9 +219,8 @@ public class TempoProfile: NSObject, CLLocationManagerDelegate { //TODO: Make cl
                 }
 
                 // If we reach here = Constants.LocationConsent.None
-                var ld = LocationData()
-                ld.location_consent = Constants.LocationConsent.NONE.rawValue
-                completion(ld, isInterstitial, cpmFloor, placementId)
+                TempoProfile.locData?.location_consent = Constants.LocationConsent.NONE.rawValue
+                completion(isInterstitial, cpmFloor, placementId)
             }
         }
 

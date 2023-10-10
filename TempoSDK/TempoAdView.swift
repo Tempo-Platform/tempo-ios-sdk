@@ -420,7 +420,7 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
                             consent: self.consent,
                             consent_type: nil,
                             location_consent: self.locationConsent ?? "",
-                            location_data: self.locationData ?? nil
+                            location_data: TempoProfile.locData ?? nil
                             
         )
         

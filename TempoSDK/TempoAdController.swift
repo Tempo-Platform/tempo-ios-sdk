@@ -45,10 +45,10 @@ public class TempoAdController: NSObject {
     }
     
     /// Consent callback handler that updates global value for metrics and loads ad
-    public func handleLocationConsentAndLoadAd(locData: LocationData, isInterstitial: Bool, cpmFloor: Float?, placementId: String?) {
-        adView?.locationConsent = locData.location_consent ?? ""
-        adView?.locationData = locData
-        TempoUtils.Say(msg: "TempoLocationConsent: \(locData)")
+    public func handleLocationConsentAndLoadAd(isInterstitial: Bool, cpmFloor: Float?, placementId: String?) {
+        adView?.locationConsent = TempoProfile.locData?.location_consent ?? ""
+        //adView?.locationData = locData
+        TempoUtils.Say(msg: "TempoLocationConsent: \(TempoProfile.locData?.location_consent ?? "???")")
         
         DispatchQueue.main.async {
             self.loadAd(isInterstitial: isInterstitial, cpmFloor: cpmFloor, placementId: placementId)
