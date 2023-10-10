@@ -56,7 +56,8 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
     var consent: Bool?
     var currentConsentType: String?
     var geo: String?
-    public var locationConsent: String = Constants.LocationConsent.NONE.rawValue
+    public var locationConsent: String?
+    var locationData: LocationData?
 
     public init(listener: TempoAdListener, appId: String) {
         super.init(nibName: nil, bundle: nil)
@@ -418,7 +419,9 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
                             adapter_type: self.adapterType,
                             consent: self.consent,
                             consent_type: nil,
-                            location_consent: locationConsent
+                            location_consent: self.locationConsent ?? "",
+                            location_data: self.locationData ?? nil
+                            
         )
         
         self.metricList.append(metric)

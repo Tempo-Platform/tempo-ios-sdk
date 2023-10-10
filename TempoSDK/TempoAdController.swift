@@ -8,6 +8,8 @@ public class TempoAdController: NSObject {
     
     static var isInitialised: Bool = false
     public var adView: TempoAdView?
+    public var locationData: LocationData? = nil
+    static var tempoProfile: TempoProfile? = nil
     
     public init(tempoAdListener: TempoAdListener, appId: String!) {
         super.init()
@@ -28,6 +30,8 @@ public class TempoAdController: NSObject {
     
     /// Public LOAD function for mediation adapters to call
     public func loadAd(isInterstitial: Bool, cpmFloor: Float?, placementId: String?) {
+        
+        // Load ad when checks are done
         adView!.loadAd (
             isInterstitial: isInterstitial,
             cpmFloor: cpmFloor,
@@ -36,14 +40,16 @@ public class TempoAdController: NSObject {
     
     /// Creates TempoLocation object and calls checker function with handler callback
     public func checkLocationConsentAndLoad(isInterstitial: Bool, cpmFloor: Float?, placementId: String?) {
-        let tempoLoc = TempoLocation()
-        tempoLoc.checkLocationServicesConsent(completion: self.handleLocationConsentAndLoadAd, isInterstitial: isInterstitial, cpmFloor: cpmFloor, placementId: placementId)
+        TempoAdController.tempoProfile = TempoProfile()
+        TempoAdController.tempoProfile?.checkLocationServicesConsent(completion: self.handleLocationConsentAndLoadAd, isInterstitial: isInterstitial, cpmFloor: cpmFloor, placementId: placementId)
     }
     
     /// Consent callback handler that updates global value for metrics and loads ad
-    public func handleLocationConsentAndLoadAd(consentType: Constants.LocationConsent, isInterstitial: Bool, cpmFloor: Float?, placementId: String?) {
-        adView?.locationConsent = consentType.rawValue
-        TempoUtils.Say(msg: "TempoLocationConsent: \(consentType.rawValue)")
+    public func handleLocationConsentAndLoadAd(locData: LocationData, isInterstitial: Bool, cpmFloor: Float?, placementId: String?) {
+        adView?.locationConsent = locData.location_consent ?? ""
+        adView?.locationData = locData
+        TempoUtils.Say(msg: "TempoLocationConsent: \(locData)")
+        
         DispatchQueue.main.async {
             self.loadAd(isInterstitial: isInterstitial, cpmFloor: cpmFloor, placementId: placementId)
         }

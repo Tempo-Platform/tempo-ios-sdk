@@ -105,7 +105,7 @@ class ViewController: UIViewController, TempoAdListener {
     
     
     @IBAction func checkLocConsent(_ sender: Any) {
-        //TempoUtils.hasLocationServicesConsent()
+       
     }
     
     @IBAction func requestLocConsent(_ sender: Any) {

@@ -151,8 +151,8 @@ public class TempoUtils {
     }
     
     public static func requestLocation() {
-        let tempoLoc = TempoLocation()
-        tempoLoc.requestLocationConsent()
+        let tempoProfile = TempoProfile()
+        tempoProfile.requestLocationConsent()
     }
     
 //    public static func hasLocationServicesConsent() {
