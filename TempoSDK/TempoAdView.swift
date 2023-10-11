@@ -148,6 +148,7 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
         webView?.removeFromSuperview()
         webView = nil
         webViewWithBackground = nil
+        pushHeldMetricsWithUpdatedLocationData()
         Metrics.pushMetrics(currentMetrics: &metricList, backupUrl: nil)
         listener?.onTempoAdClosed(isInterstitial: self.isInterstitial)
     }
@@ -394,6 +395,7 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
             
             // Show success when content load
             if(webMsg == Constants.MetricType.IMAGES_LOADED) {
+                print("🥳 IMAGES_LOADED = onTempoAdFetchSucceeded")
                 listener.onTempoAdFetchSucceeded(isInterstitial: self.isInterstitial)
                 self.addMetric(metricType: Constants.MetricType.LOAD_SUCCESS)
             }
@@ -426,10 +428,55 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
         
         self.metricList.append(metric)
         
+        // Hold if still waiting for profile LocationData (or if consent != NONE)
+        var validState = TempoProfile.locationState != LocationState.UNCHECKED && TempoProfile.locationState != LocationState.CHECKING
+        if(!validState && TempoProfile.locData?.lc != Constants.LocationConsent.NONE.rawValue) {
+            print("🔒🔒🔒 Not sending metrics just yet: [postcode=\(TempoProfile.locData?.postcode ?? "nil") | state=\(TempoProfile.locData?.state ?? "nil")]")
+            return
+        }
         
         if (Constants.MetricType.METRIC_SEND_NOW.contains(metricType)) {
             Metrics.pushMetrics(currentMetrics: &metricList, backupUrl: nil)
         }
+    }
+    
+    
+    func pushHeldMetricsWithUpdatedLocationData() {
+       
+        for (index, _) in metricList.enumerated() {
+            
+            if(metricList[index].location_consent == "") {
+                metricList[index].location_consent = Constants.LocationConsent.NONE.rawValue
+            }
+            
+            if(metricList[index].location_consent != Constants.LocationConsent.NONE.rawValue) {
+                // Confirm postcode has a value
+                let prePostcode = metricList[index].location_data?.postcode
+                if let currentPostcode = TempoProfile.locData?.postcode, !currentPostcode.isEmpty {
+                    metricList[index].location_data?.postcode = currentPostcode
+                } else {
+                    metricList[index].location_data?.postcode = nil
+                }
+                
+                // Confirm state has a value
+                let preState = metricList[index].location_data?.state
+                if let currentState = TempoProfile.locData?.state, !currentState.isEmpty {
+                    metricList[index].location_data?.state = currentState
+                } else {
+                    metricList[index].location_data?.state = nil
+                }
+                
+                print("🔍 \(metricList[index].metric_type ?? "TYPE?"): postcode=[\(prePostcode ?? "nil"):\(metricList[index].location_data?.postcode ?? "nil")], " +
+                      "state=[\(preState ?? "nil"):\(metricList[index].location_data?.state ?? "nil")]")
+            }
+            else {
+                print("🔍 \(metricList[index].metric_type ?? "TYPE?"): was not change as permission was NONE at time of capture")
+                
+            }
+            
+        }
+        
+        Metrics.pushMetrics(currentMetrics: &metricList, backupUrl: nil)
     }
     
     /// Calculate gap at top needed based on device ttype

@@ -40,13 +40,20 @@ public class TempoAdController: NSObject {
     
     /// Creates TempoLocation object and calls checker function with handler callback
     public func checkLocationConsentAndLoad(isInterstitial: Bool, cpmFloor: Float?, placementId: String?) {
-        tempoProfile = TempoProfile()
-        tempoProfile?.checkLocConsent(completion: self.handleLocationConsentAndLoadAd, isInterstitial: isInterstitial, cpmFloor: cpmFloor, placementId: placementId)
+        if(adView != nil) {
+            tempoProfile = TempoProfile(adView: adView!)
+            tempoProfile?.checkLocConsent(completion: self.handleLocationConsentAndLoadAd, isInterstitial: isInterstitial, cpmFloor: cpmFloor, placementId: placementId)
+        } else {
+            TempoUtils.Shout(msg: "AdView was nil, could not continue with ad load")
+        }
     }
     
     /// Consent callback handler that updates global value for metrics and loads ad
     public func handleLocationConsentAndLoadAd(isInterstitial: Bool, cpmFloor: Float?, placementId: String?) {
+        
+        // Update the local variable (classic 'current_x' type)
         adView?.locationConsent = TempoProfile.locData?.lc ?? ""
+        
         //adView?.locationData = locData
         TempoUtils.Say(msg: "TempoLocationConsent: \(TempoProfile.locData?.lc ?? "???")")
         

@@ -52,11 +52,12 @@ class ViewController: UIViewController, TempoAdListener {
         closeKeyboard()
         adController?.showAd(parentViewController: self)
     }
+    
     @IBAction func checkLocConsent(_ sender: Any) {
-        print("🤷‍♂️ updateColor")
+        print("🤷‍♂️ updateColor / requestLocationDirectly")
+        TempoUtils.requestLocationDirectly(listener: self)
         updateColor()
     }
-    
     @IBAction func requestLocConsent(_ sender: Any) {
         //TempoUtils.requestLocation()
         print("🤷‍♂️ requestWhenInUseAuthorization (button)")

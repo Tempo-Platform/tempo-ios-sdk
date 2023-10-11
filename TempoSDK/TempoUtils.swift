@@ -150,8 +150,9 @@ public class TempoUtils {
         return isInterstitial ? "INTERSTITIAL": "REWARDED"
     }
     
-    public static func requestLocation() {
-        let tempoProfile = TempoProfile()
+    public static func requestLocationDirectly(listener: TempoAdListener) {
+        let tempView =  TempoAdView(listener: listener, appId: "")
+        let tempoProfile = TempoProfile(adView:  tempView )
         tempoProfile.requestLocationConsentNowAsTesting()
     }
     
