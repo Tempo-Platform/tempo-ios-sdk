@@ -426,6 +426,7 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
         
         self.metricList.append(metric)
         
+        
         if (Constants.MetricType.METRIC_SEND_NOW.contains(metricType)) {
             Metrics.pushMetrics(currentMetrics: &metricList, backupUrl: nil)
         }

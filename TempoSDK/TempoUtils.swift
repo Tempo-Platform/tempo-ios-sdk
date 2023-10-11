@@ -152,7 +152,7 @@ public class TempoUtils {
     
     public static func requestLocation() {
         let tempoProfile = TempoProfile()
-        tempoProfile.requestLocationConsent()
+        tempoProfile.requestLocationConsentNowAsTesting()
     }
     
 //    public static func hasLocationServicesConsent() {

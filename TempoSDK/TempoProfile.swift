@@ -2,31 +2,137 @@ import Foundation
 import CoreLocation
 
 public class TempoProfile: NSObject, CLLocationManagerDelegate { //TODO: Make class internal/private/default(none)?
-    var locManager = CLLocationManager()
-    var location: CLLocation?
+    
+    // This instance's location manager delegate
+    let locManager = CLLocationManager()
+    let requestOnLoad_testing = false
+    
+    // The static that can be retrieved at any time during the SDK's usage
     static var locData: LocationData?
     
     override init() {
         super.init()
         if #available(iOS 14.0, *) {
+            
+            // Create a new locData object for the static reference if first initialisation
             if(TempoProfile.locData == nil) {
                 TempoProfile.locData = LocationData()
             }
             
-            TempoUtils.Say(msg: "🥶🥶🥶 TempoProfile.init()")
+            // Assign manager delegate
             locManager.delegate = self
-            locManager.requestWhenInUseAuthorization()
-            locManager.requestLocation()
+            
+            // For testing, loads when initialised
+            if(requestOnLoad_testing) {
+                locManager.requestWhenInUseAuthorization()
+                locManager.startUpdatingLocation()
+                locManager.requestLocation()
+            }
         }
     }
     
+    /// Main public function for running a consent check - escaping completion function for running loadAds when value found
+    public func checkLocConsent (
+        completion: @escaping (Bool, Float?, String?) -> Void,
+        isInterstitial: Bool,
+        cpmFloor: Float?,
+        placementId: String?) {
+
+            // CLLocationManager.authorizationStatus can cause UI unresponsiveness if invoked on the main thread.
+            DispatchQueue.global().async {
+
+                // Make sure location servics are available
+                if CLLocationManager.locationServicesEnabled() {
+
+                    // get authorisation status
+                    let authStatus = self.getLocAuthStatus()
+
+                    switch (authStatus) {
+                    case .authorizedAlways, .authorizedWhenInUse:
+                        print("Access - always or authorizedWhenInUse")
+                        if #available(iOS 14.0, *) {
+                            
+                            // iOS 14 intro precise/general options
+                            if self.locManager.accuracyAuthorization == .reducedAccuracy {
+                                // Update LocationData singleton as GENERAL
+                                TempoProfile.locData?.lc = Constants.LocationConsent.GENERAL.rawValue
+                                completion(isInterstitial, cpmFloor, placementId)
+                                return
+                            } else {
+                                    // Update LocationData singleton as PRECISE
+                                TempoProfile.locData?.lc = Constants.LocationConsent.PRECISE.rawValue
+                                completion(isInterstitial, cpmFloor, placementId)
+                                return
+                            }
+                        } else {
+                            // Update LocationData singleton as PRECISE (pre-iOS 14 considered precise)
+                            TempoProfile.locData?.lc = Constants.LocationConsent.PRECISE.rawValue
+                            completion(isInterstitial, cpmFloor, placementId)
+                            return
+                        }
+                    case .restricted, .denied:
+                        print("No access - restricted or denied")
+                    case .notDetermined:
+                        print("No access - notDetermined")
+                    @unknown default:
+                        print("Unknown authorization status")
+                    }
+                } else {
+                    print("Location services not enabled")
+                }
+                
+                // Update LocationData singleton as GENERAL
+                TempoProfile.locData?.lc = Constants.LocationConsent.NONE.rawValue
+                completion(isInterstitial, cpmFloor, placementId)
+            }
+        }
+
+    /// Get CLAuthorizationStatus location consent value
+    private func getLocAuthStatus() -> CLAuthorizationStatus {
+        var locationAuthorizationStatus : CLAuthorizationStatus
+        if #available(iOS 14.0, *) {
+            locationAuthorizationStatus =  locManager.authorizationStatus
+        } else {
+            // Fallback for earlier versions
+            locationAuthorizationStatus = CLLocationManager.authorizationStatus()
+        }
+        return locationAuthorizationStatus
+    }
+    
+    /// Public function for prompting consent (used for testing)
+    public func requestLocationConsentNowAsTesting() {
+        TempoUtils.Say(msg: "🪲🪲🪲 requestLocationConsent")
+        locManager.requestWhenInUseAuthorization()
+        locManager.requestLocation()
+    }
+
+    /// Location Manager callback: didChangeAuthorization
+    public func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
+        TempoUtils.Say(msg: "👉👉👉 didChangeAuthorization: \((status as CLAuthorizationStatus).rawValue)")
+        if status == .authorizedWhenInUse {
+            TempoUtils.Say(msg: "🤷‍♂️🤷‍♂️🤷‍♂️ status == .authorizedWhenInUse (do something?)")
+            // do stuff
+            TempoUtils.Say(msg: "🤷‍♂️🤷‍♂️🤷‍♂️ status Part II \(CLLocationManager.isMonitoringAvailable(for: CLBeaconRegion.self))|\(CLLocationManager.isRangingAvailable())")
+            locManager.desiredAccuracy = kCLLocationAccuracyHundredMeters
+            //locManager.startUpdatingLocation()
+            locManager.requestLocation()
+//            if CLLocationManager.isMonitoringAvailable(for: CLBeaconRegion.self) { // TODO: Could these help?
+//                if CLLocationManager.isRangingAvailable() {
+//                    // do stuff
+//                    TempoUtils.Say(msg: "🤷‍♂️🤷‍♂️🤷‍♂️ status Part II")
+//                    locManager.startUpdatingLocation()
+//                }
+//            }
+        }
+    }
+
+    /// Location Manager callback: didUpdateLocations
     public func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         TempoUtils.Say(msg: "👉👉👉 didUpdateLocations: \(locations.count)")
         
-        
-        if locations.first != nil {
-            locManager.stopUpdatingLocation() // TODO: Needed if I'm doing spot checks?
-        }
+//        if locations.first != nil {
+//            locManager.stopUpdatingLocation() // TODO: Needed if I'm doing spot checks?
+//        }
         
         if let location = locations.last {
             
@@ -147,84 +253,9 @@ public class TempoProfile: NSObject, CLLocationManagerDelegate { //TODO: Make cl
             }
         }
     }
-    
-    /// Public function for prompting consent (used for testing)
-    public func requestLocationConsent() {
-
-        TempoUtils.Say(msg: "🙏🙏🙏 requestLocationConsent")
-        locManager.requestWhenInUseAuthorization()
-        locManager.requestLocation()
-    }
-
-    /// Get CLAuthorizationStatus location consent value
-    private func getLocationAuthorisationStatus() -> CLAuthorizationStatus {
-        var locationAuthorizationStatus : CLAuthorizationStatus
-        if #available(iOS 14.0, *) {
-            locationAuthorizationStatus =  locManager.authorizationStatus
-        } else {
-            // Fallback for earlier versions
-            locationAuthorizationStatus = CLLocationManager.authorizationStatus()
-        }
-        return locationAuthorizationStatus
-    }
-
-    /// Main public function for running a consent check - escaping completion function for running loadAds when value found
-    public func checkLocationServicesConsent (
-        completion: @escaping (Bool, Float?, String?) -> Void,
-        isInterstitial: Bool,
-        cpmFloor: Float?,
-        placementId: String?) {
-
-            //var ld = LocationData()
-            // CLLocationManager.authorizationStatus can cause UI unresponsiveness if invoked on the main thread.
-            DispatchQueue.global().async {
-
-                // Make sure location servics are available
-                if CLLocationManager.locationServicesEnabled() {
-
-                    // get authorisation status
-                    let authStatus = self.getLocationAuthorisationStatus()
-
-                    switch (authStatus) {
-                    case .authorizedAlways, .authorizedWhenInUse:
-                        print("Access - always or authorizedWhenInUse")
-                        if #available(iOS 14.0, *) {
-                            // iOS 14 intro precise/general options
-                            if self.locManager.accuracyAuthorization == .reducedAccuracy {
-                                
-                                TempoProfile.locData?.location_consent = Constants.LocationConsent.GENERAL.rawValue
-                                //self.myRequestLocation(consentType: Constants.LocationConsent.GENERAL)
-                                completion(isInterstitial, cpmFloor, placementId)
-                                return
-                            } else {
-                                TempoProfile.locData?.location_consent = Constants.LocationConsent.PRECISE.rawValue
-                                //self.myRequestLocation(consentType: Constants.LocationConsent.PRECISE)
-                                completion(isInterstitial, cpmFloor, placementId)
-                                return
-                            }
-                        } else {
-                            // Pre-iOS 14 considered precise
-                            completion(isInterstitial, cpmFloor, placementId)
-                            return
-                        }
-                    case .restricted, .denied:
-                        print("No access - restricted or denied")
-                    case .notDetermined:
-                        print("No access - notDetermined")
-                    @unknown default:
-                        print("Unknown authorization status")
-                    }
-                } else {
-                    print("Location services not enabled")
-                }
-
-                // If we reach here = Constants.LocationConsent.None
-                TempoProfile.locData?.location_consent = Constants.LocationConsent.NONE.rawValue
-                completion(isInterstitial, cpmFloor, placementId)
-            }
-        }
-
-        public func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
+   
+    /// Location Manager callback: didFailWithError
+    public func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
             TempoUtils.Say(msg: "👉👉👉 didFailWithError: \(error)")
             locManager.stopUpdatingLocation()
     
@@ -245,9 +276,6 @@ public class TempoProfile: NSObject, CLLocationManagerDelegate { //TODO: Make cl
                         print("Unknown error occurred while handling location manager error: \(error.localizedDescription)")
                     }
         }
-
-    
-    
 }
     
 //extension TempoProfile: CLLocationManagerDelegate {
@@ -366,7 +394,7 @@ public class TempoProfile: NSObject, CLLocationManagerDelegate { //TODO: Make cl
 
 
 public struct LocationData : Codable {
-    var location_consent: String?
+    var lc: String?
     var postcode: String?
     var state: String?
 }
