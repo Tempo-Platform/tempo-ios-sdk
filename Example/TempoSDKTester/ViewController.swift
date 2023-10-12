@@ -3,19 +3,22 @@ import UIKit
 import CoreLocation
 
 class ViewController: UIViewController, TempoAdListener {
-
-    var colouredBG: UIView?
-    let locationManager = CLLocationManager()
     
+    let locationManager = CLLocationManager()
     var adControllerReady: Bool = false
     var adController: TempoAdController? = nil
+    var colouredBG: UIView?
+    var campaignId: String! = ""
+    var isInterstitial: Bool! = true
     
+    // Button references
     @IBOutlet weak var loadAdButton: UIButton!
     @IBOutlet weak var showAdButton: UIButton!
+    @IBOutlet weak var leftButton: UIButton!
+    @IBOutlet weak var rightButton: UIButton!
     @IBOutlet weak var segmentedControl: UISegmentedControl!
-    @IBOutlet weak var checkLocationConsentButton: UIButton!
-    @IBOutlet weak var requestLocationConsentButton: UIButton!
     
+    // Buttons actions
     @IBAction func textFieldDidChange(_ textField: UITextField) {
         campaignId = textField.text
     }
@@ -27,88 +30,168 @@ class ViewController: UIViewController, TempoAdListener {
         }
     }
     @IBAction func loadAd(_ sender: Any) {
-        let startTime = Date().timeIntervalSince1970 * 1000
-        print("Loading Ad now: \(Date().timeIntervalSince1970 * 1000)")
-        print("Time taken: \(Date().timeIntervalSince1970 * 1000 - startTime)")
-        
         closeKeyboard()
         loadAdButton.setTitle("Loading..." , for: .normal)
         loadAdButton.isEnabled = false
         if (campaignId == "") {
             if(adController == nil)  {
-                print("👆 Creating a new 'self.adController'")
                 self.adController = TempoAdController(tempoAdListener: self, appId: getAppId())
             }
             
-            self.adController!.checkLocationConsentAndLoad(isInterstitial: isInterstitial, cpmFloor: 25.0, placementId: "XCODE_1")
-            //adController?.loadAd(isInterstitial: isInterstitial, cpmFloor: 25.0, placementId: "XCODE")
+            self.adController!.loadAd(isInterstitial: isInterstitial, cpmFloor: 25.0, placementId: "XCODE")
+            //self.adController!.checkLocationConsentAndLoad(isInterstitial: isInterstitial, cpmFloor: 25.0, placementId: "XCODE")
             
         } else {
             adController?.loadSpecificAd(isInterstitial: isInterstitial, campaignId: campaignId)
         }
     }
     @IBAction func showAd(_ sender: Any) {
-        print("Showing Ad now")
         closeKeyboard()
         adController?.showAd(parentViewController: self)
     }
-    
-    @IBAction func checkLocConsent(_ sender: Any) {
-        print("🤷‍♂️ updateColor / requestLocationDirectly")
-        TempoUtils.requestLocationDirectly(listener: self)
-        updateColor()
+    @IBAction func leftButtonAction(_ sender: Any) {
+            print("🤷‍♂️ updateColor / requestLocationDirectly")
+            //TempoUtils.requestLocationDirectly(listener: self)
+            updateColor()
     }
-    @IBAction func requestLocConsent(_ sender: Any) {
-        //TempoUtils.requestLocation()
+    @IBAction func rightButtonAction(_ sender: Any) {
         print("🤷‍♂️ requestWhenInUseAuthorization (button)")
         locationManager.requestWhenInUseAuthorization()
     }
     
-    func getRandomFloat() -> CGFloat {
-        return CGFloat(Double.random(in: 0.6...1))
-    }
-    
-    func updateColor() {
-        self.view.backgroundColor = UIColor(red: getRandomFloat(), green: getRandomFloat(), blue: getRandomFloat(), alpha: 1)
-    }
-    
-    var campaignId: String! = ""
-    var isInterstitial: Bool! = true
-    
-    override var prefersStatusBarHidden: Bool {
-        return true
-    }
-
+    /// Override initialiser
     override func viewDidLoad() {
         super.viewDidLoad()
         self.modalPresentationStyle = .fullScreen
         
-//        print("🤷‍♂️ viewDidLoad (delegate assigned)")
-//        locationManager.delegate = self
-        
         // Inititalise Tempo SDK
         TempoDataBackup.checkHeldMetrics(completion: Metrics.pushMetrics)
         initializeUIButtons();
-        
     }
     
+    /// Sets up main page  test IU
     func initializeUIButtons(){
+        
+        // Show button
         showAdButton.backgroundColor = UIColor(red: 0.9, green: 0.9, blue:0.9, alpha: 1.0)
         showAdButton.layer.cornerRadius = 5
+        showAdButton.isEnabled = false
+        
+        // Load button
         loadAdButton.backgroundColor = UIColor(red: 0.9, green: 0.9, blue:0.9, alpha: 1.0)
         loadAdButton.layer.cornerRadius = 5
-        showAdButton.isEnabled = false
+    }
+
+    /// Manually start ad fetching by which the rest of the ad process flows
+    func loadInterstitialAds() {
+        adController?.loadAd(isInterstitial: isInterstitial, cpmFloor: 25.0, placementId: "XCODE")
     }
     
+    // Updates loading UI to indicate ad ready or not
+    func setAdControllerReady(_ ready:Bool){
+        adControllerReady = ready
+        loadAdButton.setTitle("Load Ad", for: .normal)
+        loadAdButton.isEnabled = true
+        showAdButton.isEnabled = true
+    }
+    
+    /* ---------------- TEMPO LISTENER CALLBACKS  ---------------- */
+    func onTempoAdFetchSucceeded(isInterstitial: Bool) {
+        print("\(TempoUtils.getAdTypeString(isInterstitial: isInterstitial)) :: ready")
+        setAdControllerReady(true)
+    }
+    func onTempoAdFetchFailed(isInterstitial: Bool, reason: String?) {
+        print("\(TempoUtils.getAdTypeString(isInterstitial: isInterstitial)) :: load failed \(reason ?? "uknown")")
+        setAdControllerReady(true)
+        showAdButton.isEnabled = false
+    }
+    func onTempoAdClosed(isInterstitial: Bool) {
+        print("\(TempoUtils.getAdTypeString(isInterstitial: isInterstitial)) :: close")
+        setAdControllerReady(true)
+        
+        showAdButton.isEnabled = false
+        self.adController = nil
+        print("👇 Destroying 'self.adController'")
+    }
+    func onTempoAdDisplayed(isInterstitial: Bool) {
+        print("\(TempoUtils.getAdTypeString(isInterstitial: isInterstitial)) :: displayed")
+        showAdButton.isEnabled = false
+    }
+    func onTempoAdShowFailed(isInterstitial: Bool, reason: String?) {
+        print("\(TempoUtils.getAdTypeString(isInterstitial: isInterstitial)) :: show failed: \(reason ?? "uknown")")
+    }
+    func onTempoAdClicked(isInterstitial: Bool) {
+        print("\(TempoUtils.getAdTypeString(isInterstitial: isInterstitial)) :: clicked")
+    }
+    func getTempoAdapterVersion() -> String? {
+        print("\(TempoUtils.getAdTypeString(isInterstitial: isInterstitial)) :: version requested")
+        return DemoConstants.ADAP_VERSION
+    }
+    func getTempoAdapterType() -> String? {
+        print("\(TempoUtils.getAdTypeString(isInterstitial: isInterstitial)) :: adapter type requested")
+        return nil;
+    }
+    func hasUserConsent() -> Bool? {
+        print("\(TempoUtils.getAdTypeString(isInterstitial: isInterstitial)) :: user consent requested")
+        return true;
+    }
+    
+//    // Request location permission and start updating location
+//    func requestAuthorisation() {
+//        print("🤷‍♂️ requestAuthorisation")
+//        locationManager.requestWhenInUseAuthorization()
+//    }
+//    
+//    // Stop updating location
+//    func stopUpdatingLocation() {
+//        print("🤷‍♂️ stopUpdatingLocation")
+//        locationManager.stopUpdatingLocation()
+//    }
+//    
+//    func isLocationAccessEnabled() {
+//        if CLLocationManager.locationServicesEnabled() {
+//            switch CLLocationManager.authorizationStatus() {
+//            case .restricted:    print("No access - restricted")
+//            case .denied:    print("No access - denied")
+//            case .authorizedAlways:   print("Access - always ")
+//            case  .authorizedWhenInUse:   print("Access - authorizedWhenInUse ")
+//            case .notDetermined: fallthrough
+//            @unknown default: print("No access - notDetermined")
+//            }
+//        } else {
+//            print("Location services not enabled")
+//        }
+//    }
+    
+    
+    /* ----------------- GENERAL SETUP ---------------- */
+    /// Override status bar preference
+    override var prefersStatusBarHidden: Bool {
+        return true
+    }
+    /// Override touch behaviour
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         closeKeyboard()
     }
-    
+    /// Closes any visible keyboard (?)
     func closeKeyboard() {
         self.view.endEditing(true)
     }
     
     
+    /* ----------------- TESTING ONLY ---------------- */
+    /// Returns appropriate Ad ID based on dev/prod environment
+    func getAppId() -> String {
+        return TempoSDK.Constants.isProd ? "8" : "5";
+    }
+    /// Returns a random CGFloat value between 0.5 and 1
+    func getRandomFloat() -> CGFloat {
+        return CGFloat(Double.random(in: 0.6...1))
+    }
+    /// Update background view  with random color (for testing UI functions still workingl not freezing)
+    func updateColor() {
+        self.view.backgroundColor = UIColor(red: getRandomFloat(), green: getRandomFloat(), blue: getRandomFloat(), alpha: 1)
+    }
     // Define a function that takes your loadAd function as an argument
     public func loadAdWithCustomLogic(adLoader: (Bool, Float?, String?) -> Void) {
         // You can perform some custom logic here before loading the ad
@@ -123,112 +206,21 @@ class ViewController: UIViewController, TempoAdListener {
         print("Custom logic after loading ad")
     }
     
-    func loadInterstitialAds() {
-        adController?.loadAd(isInterstitial: isInterstitial, cpmFloor: 25.0, placementId: "XCODE")
-    }
-    
-    
-    
-    func setInterstitialReady(_ ready:Bool){
-        adControllerReady = ready
-        loadAdButton.setTitle("Load Ad", for: .normal)
-        loadAdButton.isEnabled = true
-        showAdButton.isEnabled = true
-    }
-    
-    func onTempoAdFetchSucceeded(isInterstitial: Bool) {
-        print("\(TempoUtils.getAdTypeString(isInterstitial: isInterstitial)) :: ready")
-        setInterstitialReady(true)
-    }
-    
-    func onTempoAdFetchFailed(isInterstitial: Bool, reason: String?) {
-        print("\(TempoUtils.getAdTypeString(isInterstitial: isInterstitial)) :: load failed \(reason ?? "uknown")")
-        setInterstitialReady(true)
-        showAdButton.isEnabled = false
-    }
-    
-    func onTempoAdClosed(isInterstitial: Bool) {
-        print("\(TempoUtils.getAdTypeString(isInterstitial: isInterstitial)) :: close")
-        setInterstitialReady(true)
-        
-        showAdButton.isEnabled = false
-        self.adController = nil
-        print("👇 Destroying 'self.adController'")
-    }
-    
-    func onTempoAdDisplayed(isInterstitial: Bool) {
-        print("\(TempoUtils.getAdTypeString(isInterstitial: isInterstitial)) :: displayed")
-        showAdButton.isEnabled = false
-    }
-
-    func onTempoAdClicked(isInterstitial: Bool) {
-        print("\(TempoUtils.getAdTypeString(isInterstitial: isInterstitial)) :: clicked")
-    }
-    
-    func getTempoAdapterVersion() -> String? {
-        print("\(TempoUtils.getAdTypeString(isInterstitial: isInterstitial)) :: version requested")
-        return DemoConstants.ADAP_VERSION
-    }
-    
-    func getTempoAdapterType() -> String? {
-        print("\(TempoUtils.getAdTypeString(isInterstitial: isInterstitial)) :: adapter type requested")
-        return nil;
-    }
-    
-    func onTempoAdShowFailed(isInterstitial: Bool, reason: String?) {
-        print("\(TempoUtils.getAdTypeString(isInterstitial: isInterstitial)) :: show failed: \(reason ?? "uknown")")
-    }
-    
-    func hasUserConsent() -> Bool? {
-        print("\(TempoUtils.getAdTypeString(isInterstitial: isInterstitial)) :: user consent requested")
-        return true;
-    }
-    
-    func getAppId() -> String {
-        return TempoSDK.Constants.isProd ? "8" : "5";
-    }
-    
-    
-    /// -----
-    func parseLocationJson(jsonString: String?) {
-        print(jsonString ?? "?????")
-    }
-    
-   
-    
-    // Request location permission and start updating location
-    func requestAuthorisation() {
-        print("🤷‍♂️ requestAuthorisation")
-        locationManager.requestWhenInUseAuthorization()
-    }
-    
-    // Stop updating location
-    func stopUpdatingLocation() {
-        print("🤷‍♂️ stopUpdatingLocation")
-        locationManager.stopUpdatingLocation()
-    }
-    
-    func isLocationAccessEnabled() {
-       if CLLocationManager.locationServicesEnabled() {
-          switch CLLocationManager.authorizationStatus() {
-          case .notDetermined:
-                print("No access - notDetermined")
-          case .restricted:
-             print("No access - restricted")
-          case .denied:
-             print("No access - denied")
-             case .authorizedAlways:
-                print("Access - always ")
-          case  .authorizedWhenInUse:
-              print("Access - authorizedWhenInUse ")
-          }
-       } else {
-          print("Location services not enabled")
-       }
-    }
 }
 
 extension ViewController: CLLocationManagerDelegate {
+    
+    func outputLocationProperty(labelName: String, property: String?) {
+        // TODO: Work out the tabs by string length..?
+        
+        if let checkedValue = property {
+            print("\(labelName): \(checkedValue)")
+        }
+        else {
+            print("\(labelName): [UNAVAILABLE]")
+        }
+    }
+    
     func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
         print("🤷‍♂️ didChangeAuthorization: \(status)")
         if status == .authorizedWhenInUse {
@@ -242,7 +234,7 @@ extension ViewController: CLLocationManagerDelegate {
         print("🤷‍♂️ didUpdateLocations: [\(locations.count)] \(manager.description)")
         if let location = locations.last {
                     // Stop updating location when you have the desired location
-                    stopUpdatingLocation()
+                    //stopUpdatingLocation()
                     
                     // Reverse geocoding to get the state
                     let geocoder = CLGeocoder()

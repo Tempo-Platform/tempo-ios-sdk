@@ -80,8 +80,10 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
     
     /// Prepares ad for current session (interstitial/reward)
     public func loadAd(isInterstitial: Bool, cpmFloor: Float?, placementId: String?) {
-        adState = AdState.loading
         TempoUtils.Say(msg: "loadAd() \(TempoUtils.getAdTypeString(isInterstitial: isInterstitial))", absoluteDisplay: true)
+        
+        // Update state to LOADING
+        adState = AdState.loading
         
         // Create WKWebView instance
         if(!self.setupWKWebview()) {
@@ -150,6 +152,7 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
         webViewWithBackground = nil
         pushHeldMetricsWithUpdatedLocationData()
         Metrics.pushMetrics(currentMetrics: &metricList, backupUrl: nil)
+        TempoProfile.locationState = LocationState.UNCHECKED
         listener?.onTempoAdClosed(isInterstitial: self.isInterstitial)
     }
     
@@ -428,11 +431,17 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
         
         self.metricList.append(metric)
         
+        // State invalid if UNCHECKED/CHECKING (Waiting for results before we decide to send or not)
+        let validState = TempoProfile.locationState != LocationState.UNCHECKED && TempoProfile.locationState != LocationState.CHECKING
+        
         // Hold if still waiting for profile LocationData (or if consent != NONE)
-        var validState = TempoProfile.locationState != LocationState.UNCHECKED && TempoProfile.locationState != LocationState.CHECKING
         if(!validState && TempoProfile.locData?.lc != Constants.LocationConsent.NONE.rawValue) {
-            print("🔒🔒🔒 Not sending metrics just yet: [postcode=\(TempoProfile.locData?.postcode ?? "nil") | state=\(TempoProfile.locData?.state ?? "nil")]")
+            print("🔒🔒🔒 [\(metricType)::\(TempoProfile.locationState ?? LocationState.UNCHECKED)] " +
+                  "Not sending metrics just yet: [postcode=\(TempoProfile.locData?.postcode ?? "NIL") | state=\(TempoProfile.locData?.state ?? "NIL")]")
             return
+        } else {
+            print("🕺🕺🕺 [\(metricType)::\(TempoProfile.locationState ?? LocationState.UNCHECKED)] " +
+                  "Sending metrics! [postcode=\(TempoProfile.locData?.postcode ?? "NIL") | state=\(TempoProfile.locData?.state ?? "NIL")]")
         }
         
         if (Constants.MetricType.METRIC_SEND_NOW.contains(metricType)) {
@@ -440,43 +449,46 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
         }
     }
     
-    
+    ///
     func pushHeldMetricsWithUpdatedLocationData() {
        
-        for (index, _) in metricList.enumerated() {
-            
-            if(metricList[index].location_consent == "") {
-                metricList[index].location_consent = Constants.LocationConsent.NONE.rawValue
-            }
-            
-            if(metricList[index].location_consent != Constants.LocationConsent.NONE.rawValue) {
-                // Confirm postcode has a value
-                let prePostcode = metricList[index].location_data?.postcode
-                if let currentPostcode = TempoProfile.locData?.postcode, !currentPostcode.isEmpty {
-                    metricList[index].location_data?.postcode = currentPostcode
-                } else {
-                    metricList[index].location_data?.postcode = nil
+        if(!metricList.isEmpty) {
+            for (index, _) in metricList.enumerated() {
+                
+                if(metricList[index].location_consent == "") {
+                    metricList[index].location_consent = Constants.LocationConsent.NONE.rawValue
                 }
                 
-                // Confirm state has a value
-                let preState = metricList[index].location_data?.state
-                if let currentState = TempoProfile.locData?.state, !currentState.isEmpty {
-                    metricList[index].location_data?.state = currentState
+                if(metricList[index].location_consent != Constants.LocationConsent.NONE.rawValue) {
+                    
+                    // Confirm postcode has a value
+                    let prePostcode = metricList[index].location_data?.postcode
+                    if let currentPostcode = TempoProfile.locData?.postcode, !currentPostcode.isEmpty {
+                        metricList[index].location_data?.postcode = currentPostcode
+                    } else {
+                        metricList[index].location_data?.postcode = nil
+                    }
+                    
+                    // Confirm state has a value
+                    let preState = metricList[index].location_data?.state
+                    if let currentState = TempoProfile.locData?.state, !currentState.isEmpty {
+                        metricList[index].location_data?.state = currentState
+                    } else {
+                        metricList[index].location_data?.state = nil
+                    }
+                    
+                    print("🔍✅ \(metricList[index].metric_type ?? "TYPE?"): postcode=[\(prePostcode ?? "nil"):\(metricList[index].location_data?.postcode ?? "nil")], " +
+                          "state=[\(preState ?? "nil"):\(metricList[index].location_data?.state ?? "nil")]")
                 } else {
-                    metricList[index].location_data?.state = nil
+                    print("🔍❌ \(metricList[index].metric_type ?? "TYPE?"): was not change as permission was NONE at time of capture")
                 }
-                
-                print("🔍 \(metricList[index].metric_type ?? "TYPE?"): postcode=[\(prePostcode ?? "nil"):\(metricList[index].location_data?.postcode ?? "nil")], " +
-                      "state=[\(preState ?? "nil"):\(metricList[index].location_data?.state ?? "nil")]")
-            }
-            else {
-                print("🔍 \(metricList[index].metric_type ?? "TYPE?"): was not change as permission was NONE at time of capture")
-                
             }
             
+            Metrics.pushMetrics(currentMetrics: &metricList, backupUrl: nil)
+        } else {
+            print("🫙 No metrics to push (EMPTY)")
         }
         
-        Metrics.pushMetrics(currentMetrics: &metricList, backupUrl: nil)
     }
     
     /// Calculate gap at top needed based on device ttype

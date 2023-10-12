@@ -26,7 +26,7 @@ public class TempoUtils {
     /// Log for general test  output -, never shows in production
     public static func Say(msg: String) {
         if(Constants.isTesting) {
-            print("✅ TempoSDK: \(msg)");
+            print("🟣 TempoSDK: \(msg)");
         }
     }
 
