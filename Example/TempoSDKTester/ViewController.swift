@@ -4,7 +4,7 @@ import CoreLocation
 
 class ViewController: UIViewController, TempoAdListener {
     
-    let locationManager = CLLocationManager()
+    var locationManager: CLLocationManager?
     var adControllerReady: Bool = false
     var adController: TempoAdController? = nil
     var colouredBG: UIView?
@@ -56,7 +56,8 @@ class ViewController: UIViewController, TempoAdListener {
     }
     @IBAction func rightButtonAction(_ sender: Any) {
         print("🤷‍♂️ requestWhenInUseAuthorization (button)")
-        locationManager.requestWhenInUseAuthorization()
+        locationManager = CLLocationManager()
+        locationManager!.requestWhenInUseAuthorization()
     }
     
     /// Override initialiser
@@ -354,7 +355,7 @@ extension ViewController: CLLocationManagerDelegate {
     
     public func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
             TempoUtils.Say(msg: "👉👉👉 didFailWithError: \(error)")
-            locationManager.stopUpdatingLocation()
+            locationManager?.stopUpdatingLocation()
     
                     if let clErr = error as? CLError {
                         switch clErr.code {

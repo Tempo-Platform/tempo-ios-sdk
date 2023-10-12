@@ -366,11 +366,6 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
             configuration.mediaTypesRequiringUserActionForPlayback = []
         }
         
-//        // Please explain
-//        if #available(iOS 13.0, *) {
-//            configuration.defaultWebpagePreferences.preferredContentMode = .mobile
-//        }
-        
         return configuration
     }
     

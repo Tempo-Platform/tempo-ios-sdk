@@ -23,11 +23,12 @@ public class TempoProfile: NSObject, CLLocationManagerDelegate { //TODO: Make cl
             
             // Assign manager delegate
             locManager.delegate = self
+            locManager.desiredAccuracy = kCLLocationAccuracyHundredMeters
             
             // For testing, loads when initialised
             if(requestOnLoad_testing) {
                 locManager.requestWhenInUseAuthorization()
-                locManager.startUpdatingLocation()
+                locManager.requestLocation()
                 requestLocationWithChecks()
             }
         }
@@ -90,6 +91,7 @@ public class TempoProfile: NSObject, CLLocationManagerDelegate { //TODO: Make cl
             }
             
             print("💥💥💥 !!! FALLBACK Location services not enabled [UPDATE]")
+            TempoProfile.locationState = LocationState.FAILED
             self.updateLocConsentValues(consentType: Constants.LocationConsent.NONE)
             completion?()
             
@@ -144,17 +146,8 @@ public class TempoProfile: NSObject, CLLocationManagerDelegate { //TODO: Make cl
                 print("🤔🤔🤔 not updating loc auth: CHECKING")
             }
             
-            locManager.desiredAccuracy = kCLLocationAccuracyHundredMeters // TODO: Reinstate this !!!!!!!!!!!!
-            //locManager.startUpdatingLocation()
             
             requestLocationWithChecks()
-//            if CLLocationManager.isMonitoringAvailable(for: CLBeaconRegion.self) { // TODO: Could these help?
-//                if CLLocationManager.isRangingAvailable() {
-//                    // do stuff
-//                    TempoUtils.Say(msg: "🤷‍♂️🤷‍♂️🤷‍♂️ status Part II")
-//                    locManager.startUpdatingLocation()
-//                }
-//            }
         }
         else {
             // The latest change (or first check) showed no valid authorisation: NONE updated
@@ -239,64 +232,8 @@ public class TempoProfile: NSObject, CLLocationManagerDelegate { //TODO: Make cl
         TempoUtils.Say(msg: "🪲🪲🪲 requestLocationConsent")
         locManager.requestWhenInUseAuthorization()
         
-        
         requestLocationWithChecks()
     }
-    
-    
-    /* --------------- DELETE? --------------- */
-    //
-    //    /// Main public function for running a consent check - escaping completion function for running loadAds when value found
-    //    public func checkLocConsent ( completion: @escaping (Bool, Float?, String?) -> Void, isInterstitial: Bool, cpmFloor: Float?,   placementId: String?) {
-    //
-    //        // CLLocationManager.authorizationStatus can cause UI unresponsiveness if invoked on the main thread.
-    //        DispatchQueue.global().async {
-    //
-    //            // Make sure location servics are available
-    //            if CLLocationManager.locationServicesEnabled() {
-    //
-    //                // get authorisation status
-    //                let authStatus = self.getLocAuthStatus()
-    //
-    //                switch (authStatus) {
-    //                case .authorizedAlways, .authorizedWhenInUse:
-    //                    print("Access - always or authorizedWhenInUse")
-    //                    if #available(iOS 14.0, *) {
-    //
-    //                        // iOS 14 intro precise/general options
-    //                        if self.locManager.accuracyAuthorization == .reducedAccuracy {
-    //                            // Update LocationData singleton as GENERAL
-    //                            self.updateLocConsentValues(consentType: Constants.LocationConsent.GENERAL)
-    //                            completion(isInterstitial, cpmFloor, placementId)
-    //                            return
-    //                        } else {
-    //                            // Update LocationData singleton as PRECISE
-    //                            self.updateLocConsentValues(consentType: Constants.LocationConsent.PRECISE)
-    //                            completion(isInterstitial, cpmFloor, placementId)
-    //                            return
-    //                        }
-    //                    } else {
-    //                        // Update LocationData singleton as PRECISE (pre-iOS 14 considered precise)
-    //                        self.updateLocConsentValues(consentType: Constants.LocationConsent.PRECISE)
-    //                        completion(isInterstitial, cpmFloor, placementId)
-    //                        return
-    //                    }
-    //                case .restricted, .denied:
-    //                    print("No access - restricted or denied")
-    //                case .notDetermined:
-    //                    print("No access - notDetermined")
-    //                @unknown default:
-    //                    print("Unknown authorization status")
-    //                }
-    //            } else {
-    //                print("Location services not enabled")
-    //            }
-    //
-    //            // Update LocationData singleton as GENERAL
-    //            self.updateLocConsentValues(consentType: Constants.LocationConsent.NONE)
-    //            completion(isInterstitial, cpmFloor, placementId)
-    //        }
-    //    }
 }
 
 
