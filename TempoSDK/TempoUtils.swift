@@ -77,7 +77,7 @@ public class TempoUtils {
             webAdUrl = "\(getRewardedUrl())/\(checkedCampaignId!)"
         }
         
-        TempoUtils.Shout(msg: "🌏 Web URL: \(webAdUrl)")
+        TempoUtils.Say(msg: "🌏 Web URL: \(webAdUrl)")
         
         return webAdUrl
     }

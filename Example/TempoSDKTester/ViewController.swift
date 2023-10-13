@@ -55,7 +55,7 @@ class ViewController: UIViewController, TempoAdListener {
             updateColor()
     }
     @IBAction func rightButtonAction(_ sender: Any) {
-        print("🤷‍♂️ requestWhenInUseAuthorization (button)")
+        print("🔘👈🏻 requestWhenInUseAuthorization (button)")
         locationManager = CLLocationManager()
         locationManager!.requestWhenInUseAuthorization()
     }
@@ -109,10 +109,8 @@ class ViewController: UIViewController, TempoAdListener {
     func onTempoAdClosed(isInterstitial: Bool) {
         print("\(TempoUtils.getAdTypeString(isInterstitial: isInterstitial)) :: close")
         setAdControllerReady(true)
-        
         showAdButton.isEnabled = false
         self.adController = nil
-        print("👇 Destroying 'self.adController'")
     }
     func onTempoAdDisplayed(isInterstitial: Bool) {
         print("\(TempoUtils.getAdTypeString(isInterstitial: isInterstitial)) :: displayed")

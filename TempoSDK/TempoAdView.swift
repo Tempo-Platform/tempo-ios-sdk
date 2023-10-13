@@ -56,7 +56,6 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
     var consent: Bool?
     var currentConsentType: String?
     var geo: String?
-    public var locationConsent: String?
     var locationData: LocationData?
 
     public init(listener: TempoAdListener, appId: String) {
@@ -150,9 +149,12 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
         webView?.removeFromSuperview()
         webView = nil
         webViewWithBackground = nil
-        pushHeldMetricsWithUpdatedLocationData()
-        Metrics.pushMetrics(currentMetrics: &metricList, backupUrl: nil)
-        TempoProfile.locationState = LocationState.UNCHECKED
+        if(TempoProfile.locationState == .UNCHECKED || TempoProfile.locationState == .CHECKING) {
+            pushHeldMetricsWithUpdatedLocationData()
+            TempoProfile.locationState = .FAILED
+        } else {
+            Metrics.pushMetrics(currentMetrics: &metricList, backupUrl: nil)
+        }
         listener?.onTempoAdClosed(isInterstitial: self.isInterstitial)
     }
     
@@ -194,7 +196,9 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
         request.httpMethod = "GET"
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
         
-        TempoUtils.Say(msg: "🌏 REST-ADS-API: " + (components.url?.absoluteString ?? "❌ URL STRING ?!"))
+        var urlStringOutput = components.url?.absoluteString ?? "❌ INVALID URL STRING?!"
+        urlStringOutput = urlStringOutput.replacingOccurrences(of: "com/ad", with: "com/ad\n")
+        TempoUtils.Say(msg: "🌏 REST-ADS-API: " + urlStringOutput)
         
         let session = URLSession.shared
         let task = session.dataTask(with: request, completionHandler: { data, response, error -> Void in
@@ -393,7 +397,6 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
             
             // Show success when content load
             if(webMsg == Constants.MetricType.IMAGES_LOADED) {
-                print("🥳 IMAGES_LOADED = onTempoAdFetchSucceeded")
                 listener.onTempoAdFetchSucceeded(isInterstitial: self.isInterstitial)
                 self.addMetric(metricType: Constants.MetricType.LOAD_SUCCESS)
             }
@@ -419,7 +422,6 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
                             adapter_type: self.adapterType,
                             consent: self.consent,
                             consent_type: nil,
-                            location_consent: self.locationConsent ?? "",
                             location_data: TempoProfile.locData ?? nil
                             
         )
@@ -427,15 +429,15 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
         self.metricList.append(metric)
         
         // State invalid if UNCHECKED/CHECKING (Waiting for results before we decide to send or not)
-        let validState = TempoProfile.locationState != LocationState.UNCHECKED && TempoProfile.locationState != LocationState.CHECKING
+        let validState = TempoProfile.locationState != .UNCHECKED && TempoProfile.locationState != .CHECKING
         
         // Hold if still waiting for profile LocationData (or if consent != NONE)
-        if(!validState && TempoProfile.locData?.lc != Constants.LocationConsent.NONE.rawValue) {
-            print("🔒🔒🔒 [\(metricType)::\(TempoProfile.locationState ?? LocationState.UNCHECKED)] " +
+        if(!validState && TempoProfile.locData?.consent != Constants.LocationConsent.NONE.rawValue) {
+            print("🛑 [\(metricType)::\(TempoProfile.locationState ?? LocationState.UNCHECKED)] " +
                   "Not sending metrics just yet: [postcode=\(TempoProfile.locData?.postcode ?? "NIL") | state=\(TempoProfile.locData?.state ?? "NIL")]")
             return
         } else {
-            print("🕺🕺🕺 [\(metricType)::\(TempoProfile.locationState ?? LocationState.UNCHECKED)] " +
+            print("🟢 [\(metricType)::\(TempoProfile.locationState ?? LocationState.UNCHECKED)] " +
                   "Sending metrics! [postcode=\(TempoProfile.locData?.postcode ?? "NIL") | state=\(TempoProfile.locData?.state ?? "NIL")]")
         }
         
@@ -444,18 +446,21 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
         }
     }
     
-    ///
+    /// Cycles through all unpushed metrics and updates all LocationData values based on consent value at time of creation
     func pushHeldMetricsWithUpdatedLocationData() {
        
         if(!metricList.isEmpty) {
             for (index, _) in metricList.enumerated() {
                 
-                if(metricList[index].location_consent == "") {
-                    metricList[index].location_consent = Constants.LocationConsent.NONE.rawValue
-                }
+                let prePostcode = metricList[index].location_data?.postcode
+                let preState = metricList[index].location_data?.state
                 
-                if(metricList[index].location_consent != Constants.LocationConsent.NONE.rawValue) {
-                    
+                if(metricList[index].location_data?.consent == Constants.LocationConsent.NONE.rawValue) {
+                    // Delete any data related to personal location
+                    metricList[index].location_data?.postcode = nil
+                    metricList[index].location_data?.state = nil
+                    print("🧹 xx \(metricList[index].metric_type ?? "TYPE?"): postcode=[\(prePostcode ?? "nil"):NIL)], state=[\(preState ?? "nil"):NIL]")
+                } else {
                     // Confirm postcode has a value
                     let prePostcode = metricList[index].location_data?.postcode
                     if let currentPostcode = TempoProfile.locData?.postcode, !currentPostcode.isEmpty {
@@ -465,23 +470,20 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
                     }
                     
                     // Confirm state has a value
-                    let preState = metricList[index].location_data?.state
                     if let currentState = TempoProfile.locData?.state, !currentState.isEmpty {
                         metricList[index].location_data?.state = currentState
                     } else {
                         metricList[index].location_data?.state = nil
                     }
                     
-                    print("🔍✅ \(metricList[index].metric_type ?? "TYPE?"): postcode=[\(prePostcode ?? "nil"):\(metricList[index].location_data?.postcode ?? "nil")], " +
+                    print("🧹 => \(metricList[index].metric_type ?? "TYPE?"): postcode=[\(prePostcode ?? "nil"):\(metricList[index].location_data?.postcode ?? "nil")], " +
                           "state=[\(preState ?? "nil"):\(metricList[index].location_data?.state ?? "nil")]")
-                } else {
-                    print("🔍❌ \(metricList[index].metric_type ?? "TYPE?"): was not change as permission was NONE at time of capture")
                 }
             }
             
             Metrics.pushMetrics(currentMetrics: &metricList, backupUrl: nil)
         } else {
-            print("🫙 No metrics to push (EMPTY)")
+            print("🧹.. No metrics to push (EMPTY)")
         }
         
     }
@@ -532,19 +534,19 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
     
     /// WebView fail delegate (ProvisionalNavigation)
     public func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
-        TempoUtils.Shout(msg: "❌ didFailProvisionalNavigation FAILURE")
+        //TempoUtils.Shout(msg: "❌ didFailProvisionalNavigation FAILURE")
         abortTempo()
     }
     
     /// WebView fail delegate (General fail)
     public func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
-        TempoUtils.Shout(msg: "❌ didFail FAILURE")
+        //TempoUtils.Shout(msg: "❌ didFail FAILURE")
         abortTempo()
     }
     
     /// WebView success delegate
     public func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
-        TempoUtils.Say(msg: "✅ didFinish SUCCESS")
+        //TempoUtils.Say(msg: "✅ didFinish SUCCESS")
     }
 }
 
