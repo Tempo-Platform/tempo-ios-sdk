@@ -39,7 +39,6 @@ class ViewController: UIViewController, TempoAdListener {
             }
             
             self.adController!.loadAd(isInterstitial: isInterstitial, cpmFloor: 25.0, placementId: "XCODE")
-            //self.adController!.checkLocationConsentAndLoad(isInterstitial: isInterstitial, cpmFloor: 25.0, placementId: "XCODE")
             
         } else {
             adController?.loadSpecificAd(isInterstitial: isInterstitial, campaignId: campaignId)

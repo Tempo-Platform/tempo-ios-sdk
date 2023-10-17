@@ -41,19 +41,19 @@ public class Metrics {
             return
         }
         
-        // For printout only
+        // For printout only (Metric type list)
         var metricOutput = "Metrics (x\(outMetricList?.count ?? 0))"
         for metric in outMetricList!{
             metricOutput += "\n  - \(metric.metric_type ?? "<TYPE_UNKNOWN>")"
         }
-        
         TempoUtils.Say(msg: "📊 \(metricOutput)")
+        
+        // For printout only (Metrics JSON payload)
         var jsonString = String(data: metricData ?? Data(), encoding: .utf8)!
         jsonString = jsonString.replacingOccurrences(of: "[", with: "[\n")
         jsonString = jsonString.replacingOccurrences(of: "]", with: "\n]")
         jsonString = jsonString.replacingOccurrences(of: "},{", with: "},\n\n{")
         jsonString = jsonString.replacingOccurrences(of: ",", with: ", ")
-        //TempoUtils.Say(msg: "📊 Payload: " + String(data: metricData ?? Data(), encoding: .utf8)!)
         TempoUtils.Say(msg: "📊 Payload: " + jsonString)
         
         // HTTP Headers
@@ -89,7 +89,7 @@ public class Metrics {
                 switch(httpResponse.statusCode)
                 {
                 case 200:
-                    //TempoUtils.Say(msg: "📊 Passed metrics - do not backup: \(httpResponse.statusCode)")
+                    TempoUtils.Say(msg: "📊 Sent metrics - safe pass: \(httpResponse.statusCode)")
                     break
                 case 400:
                     fallthrough

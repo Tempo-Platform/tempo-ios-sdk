@@ -128,11 +128,26 @@ public class TempoProfile: NSObject, CLLocationManagerDelegate { //TODO: Make cl
         }
     }
     
+    /// Shortcut output for locaation property types while returning string refererence for metrics
+    func getLocationPropertyValue(labelName: String, property: [String]?) -> [String]? {
+        // TODO: Work out the tabs by string length..?
+        if let checkedValue = property {
+            for prop in property! {
+                print("📍👉 \(labelName): \(prop)")
+            }
+            return checkedValue
+        }
+        else {
+            print("📍🤷‍♂️ \(labelName): [UNAVAILABLE]")
+            return nil
+        }
+    }
+   
+    
     public static func updateLocState(newState: LocationState) {
         TempoProfile.locationState = newState
         print("🗣️ Updated location state to: \(newState.rawValue)")
     }
-    
     
     /* ---------- Location Manager Callback ---------- */
     /// Location Manager callback: didChangeAuthorization
@@ -184,6 +199,24 @@ public class TempoProfile: NSObject, CLLocationManagerDelegate { //TODO: Make cl
                     TempoProfile.locData?.state = self.getLocationPropertyValue(labelName: "State", property: placemark.administrativeArea)
                     TempoProfile.locData?.postcode = self.getLocationPropertyValue(labelName: "Postcode", property: placemark.postalCode)
                     
+                    let testingOutput = false
+                    if(testingOutput) {
+                        print("🌐 => \(location.coordinate.latitude)/\(location.coordinate.longitude)" )
+                        self.getLocationPropertyValue(labelName: "name", property: placemark.name) ?? "n/a"
+                        self.getLocationPropertyValue(labelName: "thoroughfare", property: placemark.thoroughfare) ?? "n/a"
+                        self.getLocationPropertyValue(labelName: "subThoroughfare", property: placemark.subThoroughfare) ?? "n/a"
+                        self.getLocationPropertyValue(labelName: "locality", property: placemark.locality) ?? "n/a"
+                        self.getLocationPropertyValue(labelName: "subLocality", property: placemark.subLocality) ?? "n/a"
+                        self.getLocationPropertyValue(labelName: "administrativeArea", property: placemark.administrativeArea) ?? "n/a"
+                        self.getLocationPropertyValue(labelName: "subAdministrativeArea", property: placemark.subAdministrativeArea) ?? "n/a"
+                        self.getLocationPropertyValue(labelName: "postalCode", property: placemark.postalCode) ?? "n/a"
+                        self.getLocationPropertyValue(labelName: "isoCountryCode", property: placemark.isoCountryCode) ?? "n/a"
+                        self.getLocationPropertyValue(labelName: "country", property: placemark.country) ?? "n/a"
+                        self.getLocationPropertyValue(labelName: "inlandWater", property: placemark.inlandWater) ?? "n/a"
+                        self.getLocationPropertyValue(labelName: "ocean", property: placemark.ocean) ?? "n/a"
+                        self.getLocationPropertyValue(labelName: "areasOfInterest", property: placemark.areasOfInterest) ?? []
+                    }
+                    
                     print("🚩🚩🚩 onUpdate.success -> [postcode=\(TempoProfile.locData?.postcode ?? "NIL") | state=\(TempoProfile.locData?.state ?? "NIL")] | Values have been updated")
                     TempoProfile.updateLocState(newState: LocationState.CHECKED)
                     self.adView.pushHeldMetricsWithUpdatedLocationData()
@@ -197,6 +230,7 @@ public class TempoProfile: NSObject, CLLocationManagerDelegate { //TODO: Make cl
             return
         }
     }
+    
     /// Location Manager callback: didFailWithError
     public func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
         
@@ -224,7 +258,6 @@ public class TempoProfile: NSObject, CLLocationManagerDelegate { //TODO: Make cl
         TempoProfile.updateLocState(newState: LocationState.FAILED)
         self.adView.pushHeldMetricsWithUpdatedLocationData()
     }
-
     
     /* ---------- TESTING---------- */
     /// Public function for prompting consent (used for testing)
@@ -235,7 +268,6 @@ public class TempoProfile: NSObject, CLLocationManagerDelegate { //TODO: Make cl
         requestLocationWithChecks()
     }
 }
-
 
 public struct LocationData : Codable {
     var consent: String?
