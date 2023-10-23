@@ -367,10 +367,24 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
         
         newLocData.consent = newConsent
         if(newConsent != Constants.LocationConsent.NONE.rawValue) {
+            
             let state = TempoProfile.locData?.state
             let postcode = TempoProfile.locData?.postcode
+            let countryCode = TempoProfile.locData?.country_code
+            let postalCode = TempoProfile.locData?.postal_code
+            let adminArea = TempoProfile.locData?.admin_area
+            let subAdminArea = TempoProfile.locData?.sub_admin_area
+            let locality = TempoProfile.locData?.locality
+            let subLocality = TempoProfile.locData?.sub_locality
+            
             newLocData.state = state
             newLocData.postcode = postcode
+            newLocData.country_code = countryCode
+            newLocData.postal_code = postalCode
+            newLocData.admin_area = adminArea
+            newLocData.sub_admin_area = subAdminArea
+            newLocData.locality = locality
+            newLocData.sub_locality = subLocality
         }
         
         return newLocData
@@ -427,11 +441,25 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
                 
                 let prePostcode = metricList[index].location_data?.postcode
                 let preState = metricList[index].location_data?.state
+//                let prePostalCode = metricList[index].location_data?.postal_code
+//                let preCountryCode = metricList[index].location_data?.country_code
+//                let preAdminArea = metricList[index].location_data?.admin_area
+//                let preSubAdminArea = metricList[index].location_data?.sub_admin_area
+//                let preLocality = metricList[index].location_data?.locality
+//                let preSubLocality = metricList[index].location_data?.sub_locality
                 
                 if(metricList[index].location_data?.consent == Constants.LocationConsent.NONE.rawValue) {
+                    
                     // Delete any data related to personal location
                     metricList[index].location_data?.postcode = nil
                     metricList[index].location_data?.state = nil
+                    metricList[index].location_data?.postal_code = nil
+                    metricList[index].location_data?.country_code = nil
+                    metricList[index].location_data?.admin_area = nil
+                    metricList[index].location_data?.sub_admin_area = nil
+                    metricList[index].location_data?.locality = nil
+                    metricList[index].location_data?.sub_locality = nil
+                    
                     print("🧹 xx \(metricList[index].metric_type ?? "TYPE?"): postcode=[\(prePostcode ?? "nil"):NIL)], state=[\(preState ?? "nil"):NIL]")
                 } else {
                     // Confirm postcode has a value
@@ -448,6 +476,49 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
                     } else {
                         metricList[index].location_data?.state = nil
                     }
+                    
+                    // Confirm postal code has a value
+                    if let currentPostalCode = TempoProfile.locData?.postal_code, !currentPostalCode.isEmpty {
+                        metricList[index].location_data?.postal_code = currentPostalCode
+                    } else {
+                        metricList[index].location_data?.postal_code = nil
+                    }
+                    
+                    // Confirm country code has a value
+                    if let currentCountryCode = TempoProfile.locData?.country_code, !currentCountryCode.isEmpty {
+                        metricList[index].location_data?.country_code = currentCountryCode
+                    } else {
+                        metricList[index].location_data?.country_code = nil
+                    }
+                    
+                    // Confirm admin area has a value
+                    if let currentAdminArea = TempoProfile.locData?.admin_area, !currentAdminArea.isEmpty {
+                        metricList[index].location_data?.admin_area = currentAdminArea
+                    } else {
+                        metricList[index].location_data?.admin_area = nil
+                    }
+                    
+                    // Confirm sub-admin area has a value
+                    if let currentSubAdminArea = TempoProfile.locData?.sub_admin_area, !currentSubAdminArea.isEmpty {
+                        metricList[index].location_data?.sub_admin_area = currentSubAdminArea
+                    } else {
+                        metricList[index].location_data?.sub_admin_area = nil
+                    }
+                    
+                    // Confirm locality has a value
+                    if let currentLocality = TempoProfile.locData?.locality, !currentLocality.isEmpty {
+                        metricList[index].location_data?.locality = currentLocality
+                    } else {
+                        metricList[index].location_data?.locality = nil
+                    }
+                    
+                    // Confirm locality has a value
+                    if let currentSubLocality = TempoProfile.locData?.sub_locality, !currentSubLocality.isEmpty {
+                        metricList[index].location_data?.sub_locality = currentSubLocality
+                    } else {
+                        metricList[index].location_data?.sub_locality = nil
+                    }
+                    
                     
                     print("🧹 => \(metricList[index].metric_type ?? "TYPE?"): postcode=[\(prePostcode ?? "nil"):\(metricList[index].location_data?.postcode ?? "nil")], " +
                           "state=[\(preState ?? "nil"):\(metricList[index].location_data?.state ?? "nil")]")

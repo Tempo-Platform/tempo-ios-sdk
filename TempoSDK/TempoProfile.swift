@@ -199,22 +199,29 @@ public class TempoProfile: NSObject, CLLocationManagerDelegate { //TODO: Make cl
                     TempoProfile.locData?.state = self.getLocationPropertyValue(labelName: "State", property: placemark.administrativeArea)
                     TempoProfile.locData?.postcode = self.getLocationPropertyValue(labelName: "Postcode", property: placemark.postalCode)
                     
+                    TempoProfile.locData?.postal_code = self.getLocationPropertyValue(labelName: "Postal Code", property: placemark.postalCode)
+                    TempoProfile.locData?.country_code = self.getLocationPropertyValue(labelName: "Country Code", property: placemark.isoCountryCode)
+                    TempoProfile.locData?.admin_area = self.getLocationPropertyValue(labelName: "Admin Area", property: placemark.administrativeArea)
+                    TempoProfile.locData?.sub_admin_area = self.getLocationPropertyValue(labelName: "Sub Admin Area", property: placemark.subAdministrativeArea)
+                    TempoProfile.locData?.locality = self.getLocationPropertyValue(labelName: "Locality", property: placemark.locality)
+                    TempoProfile.locData?.sub_locality = self.getLocationPropertyValue(labelName: "Sub Locality", property: placemark.subLocality)
+                    
                     let testingOutput = false
                     if(testingOutput) {
-                        print("🌐 => \(location.coordinate.latitude)/\(location.coordinate.longitude)" )
-                        self.getLocationPropertyValue(labelName: "name", property: placemark.name) ?? "n/a"
-                        self.getLocationPropertyValue(labelName: "thoroughfare", property: placemark.thoroughfare) ?? "n/a"
-                        self.getLocationPropertyValue(labelName: "subThoroughfare", property: placemark.subThoroughfare) ?? "n/a"
-                        self.getLocationPropertyValue(labelName: "locality", property: placemark.locality) ?? "n/a"
-                        self.getLocationPropertyValue(labelName: "subLocality", property: placemark.subLocality) ?? "n/a"
-                        self.getLocationPropertyValue(labelName: "administrativeArea", property: placemark.administrativeArea) ?? "n/a"
-                        self.getLocationPropertyValue(labelName: "subAdministrativeArea", property: placemark.subAdministrativeArea) ?? "n/a"
-                        self.getLocationPropertyValue(labelName: "postalCode", property: placemark.postalCode) ?? "n/a"
-                        self.getLocationPropertyValue(labelName: "isoCountryCode", property: placemark.isoCountryCode) ?? "n/a"
-                        self.getLocationPropertyValue(labelName: "country", property: placemark.country) ?? "n/a"
-                        self.getLocationPropertyValue(labelName: "inlandWater", property: placemark.inlandWater) ?? "n/a"
-                        self.getLocationPropertyValue(labelName: "ocean", property: placemark.ocean) ?? "n/a"
-                        self.getLocationPropertyValue(labelName: "areasOfInterest", property: placemark.areasOfInterest) ?? []
+//                        print("🌐 => \(location.coordinate.latitude)/\(location.coordinate.longitude)" )
+//                        self.getLocationPropertyValue(labelName: "name", property: placemark.name) ?? "n/a"
+//                        self.getLocationPropertyValue(labelName: "thoroughfare", property: placemark.thoroughfare) ?? "n/a"
+//                        self.getLocationPropertyValue(labelName: "subThoroughfare", property: placemark.subThoroughfare) ?? "n/a"
+//                        self.getLocationPropertyValue(labelName: "locality", property: placemark.locality) ?? "n/a"
+//                        self.getLocationPropertyValue(labelName: "subLocality", property: placemark.subLocality) ?? "n/a"
+//                        self.getLocationPropertyValue(labelName: "administrativeArea", property: placemark.administrativeArea) ?? "n/a"
+//                        self.getLocationPropertyValue(labelName: "subAdministrativeArea", property: placemark.subAdministrativeArea) ?? "n/a"
+//                        self.getLocationPropertyValue(labelName: "postalCode", property: placemark.postalCode) ?? "n/a"
+//                        self.getLocationPropertyValue(labelName: "isoCountryCode", property: placemark.isoCountryCode) ?? "n/a"
+//                        self.getLocationPropertyValue(labelName: "country", property: placemark.country) ?? "n/a"
+//                        self.getLocationPropertyValue(labelName: "inlandWater", property: placemark.inlandWater) ?? "n/a"
+//                        self.getLocationPropertyValue(labelName: "ocean", property: placemark.ocean) ?? "n/a"
+//                        self.getLocationPropertyValue(labelName: "areasOfInterest", property: placemark.areasOfInterest) ?? []
                     }
                     
                     print("🚩🚩🚩 onUpdate.success -> [postcode=\(TempoProfile.locData?.postcode ?? "NIL") | state=\(TempoProfile.locData?.state ?? "NIL")] | Values have been updated")
@@ -273,6 +280,13 @@ public struct LocationData : Codable {
     var consent: String?
     var postcode: String?
     var state: String?
+    
+    var postal_code: String?
+    var country_code: String?
+    var admin_area: String?
+    var sub_admin_area: String?
+    var locality: String?
+    var sub_locality: String?
 }
 
 public enum LocationState: String {
