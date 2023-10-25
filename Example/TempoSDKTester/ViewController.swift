@@ -25,7 +25,7 @@ class ViewController: UIViewController, TempoInterstitialListener {
 //        view.backgroundColor = .gray
         super.viewDidLoad()
         self.modalPresentationStyle = .fullScreen
-        self.interstitial = TempoInterstitial(parentViewController:self, delegate:self, appId:"8")
+        self.interstitial = TempoInterstitial(parentViewController:self, delegate:self, appId:"5")
         initializeUIButtons();
         
 //        // For testing metric time functions
