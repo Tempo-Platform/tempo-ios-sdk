@@ -53,6 +53,13 @@ public struct Constants {
         static let SDK_VERSION = "sdk_version"
         static let ADAPTER_VERSION = "adapter_version"
         static let ADAPTER_TYPE = "adapter_type"
+        
+        static let LOC_COUNTRY_CODE = "country_code"
+        static let LOC_POSTAL_CODE = "postal_code"
+        static let LOC_ADMIN_AREA = "admin_area"
+        static let LOC_SUB_ADMIN_AREA = "sub_admin_area"
+        static let LOC_LOCALITY = "locality"
+        static let LOC_SUB_LOCALITY = "locality"
     }
     
     struct MetricType {
@@ -78,7 +85,7 @@ public struct Constants {
     }
     
     // Testable variables
-    public static var isProd = true
+    public static var isProd = false
     public static var isTesting = true
     
 }

@@ -2,6 +2,41 @@
 import Foundation
 import CoreLocation
 
+
+public class ResponseBadRequest: Decodable {
+    var error: String?
+    var status: String?
+}
+
+public class ResponseUnprocessable: Decodable {
+    var detail: [UnprocessableDetail]?
+}
+
+public class UnprocessableDetail: Decodable {
+    var loc: [String]?
+    var msg: String?
+    var type: String?
+    
+    private enum CodingKeys: String, CodingKey {
+            case loc
+            case msg
+            case type
+        }
+    
+    required public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+            loc = try container.decodeIfPresent([String].self, forKey: .loc)
+            msg = try container.decodeIfPresent(String.self, forKey: .msg)
+            type = try container.decode(String.self, forKey: .type)
+        }
+}
+
+
+public class ResponseSuccess: Decodable {
+    var status: String?
+    var cpm: Float?
+    var id: String?
+}
 /**
  * Global tools to use within the Tempo SDK module
  */

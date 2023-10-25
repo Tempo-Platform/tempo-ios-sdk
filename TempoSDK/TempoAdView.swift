@@ -145,75 +145,141 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
     /// Generate REST-ADS-API web request with current session data
     func sendAdRequest() {
     
-        // Create request string
-        let components = createUrlComponents()
+        var adsLocData = TempoDataBackup.getBackupAd()
         
+        
+        // Create request
+        let components = createUrlComponents()
         var request = URLRequest(url: components.url!)
         request.httpMethod = "GET"
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
         
+        // Reformat the url string for easier readibility
         var urlStringOutput = components.url?.absoluteString ?? "❌ INVALID URL STRING?!"
         urlStringOutput = urlStringOutput.replacingOccurrences(of: "com/ad", with: "com/ad\n")
         TempoUtils.Say(msg: "🌏 REST-ADS-API: " + urlStringOutput)
         
+        // Create request task and send
         let session = URLSession.shared
         let task = session.dataTask(with: request, completionHandler: { data, response, error -> Void in
+            
+            // Confirm there are no errors - exit on errors
             if error != nil {
                 DispatchQueue.main.async {
                     self.sendAdFetchFailed(reason: "Invalid data error: \(error!.localizedDescription)")
                 }
+                return
             }
-            else if data == nil {
+            
+            // Confirm the data exist
+            if data == nil {
                 DispatchQueue.main.async {
                     self.sendAdFetchFailed(reason: "Invalid data sent")
                 }
-            } else {
-                guard let httpResponse = response as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode) else {
-                    DispatchQueue.main.async {
-                        self.sendAdFetchFailed(reason: "Invalid HTTP response")
-                    }
-                    return
-                }
-                do {
-                    var validResponse = false
-                    let json = try JSONSerialization.jsonObject(with: data!)
-                    DispatchQueue.main.async {
-                        if let jsonDict = json as? Dictionary<String, Any> {
-                            if let status = jsonDict["status"] {
-                                if let statusString = status as? String {
-                                    if statusString == Constants.NO_FILL {
-                                        print("Tempo SDK: Failed loading the Ad. Received NO_FILL response from API.")
-                                        self.listener.onTempoAdFetchFailed(isInterstitial: self.isInterstitial, reason: Constants.NO_FILL)
-                                        self.addMetric(metricType: Constants.NO_FILL)
-                                        validResponse = true
-                                    } else if (statusString == Constants.OK) {
-                                        
-                                        // Loads ad from URL with id reference
-                                        if let id = jsonDict["id"] {
-                                            if let idString = id as? String {
-                                                TempoUtils.Say(msg: "Ad Received \(jsonDict).")
-                                                let url = URL(string: TempoUtils.getFullWebUrl(isInterstitial: self.isInterstitial, campaignId: idString))!
-                                                self.campaignId = TempoUtils.checkForTestCampaign(campaignId: idString)
-                                                self.webView.load(URLRequest(url: url))
-                                                validResponse = true
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        if (!validResponse) {
-                            DispatchQueue.main.async {
-                                self.sendAdFetchFailed(reason: "Invalid response from ad server")
-                            }
-                        }
-                    }
-                } catch {
-                    DispatchQueue.main.async {
-                        self.sendAdFetchFailed(reason: "Reason unknown")
-                    }
-                }
+                return
             }
+            
+            // Confirm there is a response
+            guard let httpResponse = response as? HTTPURLResponse else {
+                DispatchQueue.main.async {
+                    self.sendAdFetchFailed(reason: "Invalid HTTP response")
+                }
+                return
+            }
+            
+            print("🤖🤖🤖 ==== response ====> \((response as! HTTPURLResponse).statusCode)")
+         
+            switch(httpResponse.statusCode) {
+            case 200:
+                do {
+                    // Output values
+                    let responseSuccess = try JSONDecoder().decode(ResponseSuccess.self, from: data!)
+                    print("Status: \(responseSuccess.status ?? "No status provided")")
+                    print("Campaign ID: \(responseSuccess.id ?? "No campaign ID provided")")
+                    print("CPM: \(responseSuccess.cpm ?? 0)")
+                    
+                    // NO FILL
+                    if(responseSuccess.status == Constants.NO_FILL) {
+                        DispatchQueue.main.async {
+                            print("Tempo SDK: Failed loading the Ad. Received NO_FILL response from API.")
+                            self.listener.onTempoAdFetchFailed(isInterstitial: self.isInterstitial, reason: Constants.NO_FILL)
+                            self.addMetric(metricType: Constants.NO_FILL)
+                        }
+                    }
+                    
+                    // OK
+                    else if(responseSuccess.status == Constants.OK) {
+                        
+                        DispatchQueue.main.async {
+                            // Loads ad from URL with id reference
+                            guard let campaignId = responseSuccess.id, !campaignId.isEmpty else {
+                                print("CampaignId is nil/empty.")
+                                return
+                            }
+                            
+                            let url = URL(string: TempoUtils.getFullWebUrl(isInterstitial: self.isInterstitial, campaignId: campaignId))!
+                            self.campaignId = TempoUtils.checkForTestCampaign(campaignId: campaignId)
+                            self.webView.load(URLRequest(url: url))
+                        }
+                    }
+                    
+                    // UNKNOWN
+                    else {
+                        DispatchQueue.main.async {
+                            self.sendAdFetchFailed(reason: "200 - Unexpected data returned")
+                        }
+                    }
+                    
+                } catch let decodingError {
+                    print("Error decoding 200 JSON: \(decodingError)")
+                    // Send failure trigger
+                    DispatchQueue.main.async {
+                        self.sendAdFetchFailed(reason: "200 - Unexpected data returned")
+                    }
+                }
+                break
+            case 400:
+                do {
+                    // Output values
+                    let responseBadRequest = try JSONDecoder().decode(ResponseBadRequest.self, from: data!)
+                    print("Status: \(responseBadRequest.status ?? "No status provided")")
+                    print("Error: \(responseBadRequest.error ?? "No error provided")")
+                } catch let decodingError {
+                    print("Error decoding 400 JSON: \(decodingError)")
+                }
+                // Send failure trigger
+                DispatchQueue.main.async {
+                    self.sendAdFetchFailed(reason: "400 - Bad Request")
+                }
+                break
+            case 422:
+                do {
+                    // Output values
+                    let responseUnprocessable = try JSONDecoder().decode(ResponseUnprocessable.self, from: data!)
+                    if(responseUnprocessable.detail != nil && responseUnprocessable.detail!.count > 0) {
+                        for detail in responseUnprocessable.detail! {
+                            print("Msg: \(detail.msg ?? "No msg provided")")
+                            print("Type: \(detail.type ?? "No type provided")")
+                        }
+                    }
+                } catch let decodingError {
+                    print("Error decoding 422 JSON: \(decodingError)")
+                }
+                
+                // Send failure trigger
+                DispatchQueue.main.async {
+                    self.sendAdFetchFailed(reason: "422 - Unprocessable Request")
+                }
+                
+                break
+            default:
+                // Send failure trigger
+                DispatchQueue.main.async {
+                    self.sendAdFetchFailed(reason: "Reason unknown: \(httpResponse.statusCode)")
+                }
+                print("Status code not relevant - ignoring")
+            }
+            
             self.adState = AdState.dormant
         })
         
@@ -238,9 +304,29 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
             URLQueryItem(name: Constants.URL.ADAPTER_VERSION, value: String(adapterVersion ?? "")),
         ]
         
-        // Only ad adapter_type if value exists or cause invalid response
+        // Only ad these value if they exists or cause invalid response
         if adapterType != nil {
             components.queryItems?.append(URLQueryItem(name: Constants.URL.ADAPTER_TYPE, value: adapterType))
+        }
+        if(TempoProfile.locData != nil) {
+            if(TempoProfile.locData?.country_code != nil) {
+                components.queryItems?.append(URLQueryItem(name: Constants.URL.LOC_COUNTRY_CODE, value: TempoProfile.locData?.country_code))
+            }
+            if(TempoProfile.locData?.postal_code != nil) {
+                components.queryItems?.append(URLQueryItem(name: Constants.URL.LOC_POSTAL_CODE, value: TempoProfile.locData?.postal_code))
+            }
+            if(TempoProfile.locData?.admin_area != nil) {
+                components.queryItems?.append(URLQueryItem(name: Constants.URL.LOC_ADMIN_AREA, value: TempoProfile.locData?.admin_area))
+            }
+            if(TempoProfile.locData?.sub_admin_area != nil) {
+                components.queryItems?.append(URLQueryItem(name: Constants.URL.LOC_SUB_ADMIN_AREA, value: TempoProfile.locData?.sub_admin_area))
+            }
+            if(TempoProfile.locData?.locality != nil) {
+                components.queryItems?.append(URLQueryItem(name: Constants.URL.LOC_LOCALITY, value: TempoProfile.locData?.locality))
+            }
+            if(TempoProfile.locData?.sub_locality != nil) {
+                components.queryItems?.append(URLQueryItem(name: Constants.URL.LOC_SUB_LOCALITY, value: TempoProfile.locData?.sub_locality))
+            }
         }
         
         // Clean any '+' references with safe '%2B'

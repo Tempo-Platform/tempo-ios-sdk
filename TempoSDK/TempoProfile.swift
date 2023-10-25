@@ -225,8 +225,14 @@ public class TempoProfile: NSObject, CLLocationManagerDelegate { //TODO: Make cl
                     }
                     
                     print("🚩🚩🚩 onUpdate.success -> [postcode=\(TempoProfile.locData?.postcode ?? "NIL") | state=\(TempoProfile.locData?.state ?? "NIL")] | Values have been updated")
+                    
+                    // TODO: UPDATE BACKUPS
+                    self.saveLocData()
+                    
                     TempoProfile.updateLocState(newState: LocationState.CHECKED)
                     self.adView.pushHeldMetricsWithUpdatedLocationData()
+                    
+                    
                     return
                 }
             }
@@ -237,6 +243,21 @@ public class TempoProfile: NSObject, CLLocationManagerDelegate { //TODO: Make cl
             return
         }
     }
+    
+    
+    private func saveLocData() {
+        // Save the instance to UserDefaults
+        let encoder = JSONEncoder()
+        if let encoded = try? encoder.encode(TempoProfile.locData) {
+            let defaults = UserDefaults.standard
+            defaults.set(encoded, forKey: "locationData")
+            TempoUtils.Say(msg: "***********************   saveLocData SAVING")
+        }
+        else {
+            TempoUtils.Say(msg: "***********************   saveLocData FAILED")
+        }
+    }
+    
     
     /// Location Manager callback: didFailWithError
     public func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
