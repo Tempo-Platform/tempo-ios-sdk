@@ -5,7 +5,7 @@ class ViewController: UIViewController, TempoInterstitialListener {
 
     
     
-    public static let TEST_APP_ID: String = "1"; // 1 for DEV, 8 for PROD
+    public static let TEST_APP_ID: String = "5"; // 1 for DEV, 8 for PROD
 
     var interstitialReady:Bool = false
     var interstitial:TempoInterstitial? = nil

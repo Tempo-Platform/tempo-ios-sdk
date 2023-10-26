@@ -184,7 +184,8 @@ public class TempoInterstitialView: UIViewController, WKNavigationDelegate, WKSc
                                             if let idString = id as? String {
                                                 print("Tempo SDK: Got Ad ID from server. Response \(jsonDict).")
                                                 let urlComponent = self.currentIsInterstitial! ? "interstitial" : "campaign"
-                                                let url = URL(string: "https://ads.tempoplatform.com/\(urlComponent)/\(idString)/ios")!
+                                                //let url = URL(string: "https://ads.tempoplatform.com/\(urlComponent)/\(idString)/ios")!
+                                                let url = URL(string: "https://development--tempo-html-ads.netlify.app/\(urlComponent)/\(idString)/ios")!
                                                 self.currentCampaignId = idString
                                                 self.webView.load(URLRequest(url: url))
                                                 didSomething = true
