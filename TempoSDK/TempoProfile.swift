@@ -15,22 +15,25 @@ public class TempoProfile: NSObject, CLLocationManagerDelegate { //TODO: Make cl
     init(adView: TempoAdView) {
         self.adView = adView
         super.init()
-        if #available(iOS 14.0, *) {
-            
-            // Create a new locData object for the static reference if first initialisation
-            TempoProfile.locData = TempoProfile.locData ?? LocationData()
-            TempoProfile.updateLocState(newState: TempoProfile.locationState ?? LocationState.UNCHECKED)
-            
-            // Assign manager delegate
-            locManager.delegate = self
-            locManager.desiredAccuracy = kCLLocationAccuracyHundredMeters
-            
-            // For testing, loads when initialised
-            if(requestOnLoad_testing) {
-                locManager.requestWhenInUseAuthorization()
-                locManager.requestLocation()
-                requestLocationWithChecks()
-            }
+        
+        // Update locData with backup if nil
+        if(TempoProfile.locData == nil) {
+            TempoUtils.Say(msg: "🌏 Updating with backup")
+            TempoProfile.locData = TempoDataBackup.getMostRecentLocationData()
+        } else {
+            TempoUtils.Say(msg: "🌏 LocData is not null, no backup needed")
+        }
+        TempoProfile.updateLocState(newState: TempoProfile.locationState ?? LocationState.UNCHECKED)
+        
+        // Assign manager delegate
+        locManager.delegate = self
+        locManager.desiredAccuracy = kCLLocationAccuracyHundredMeters
+        
+        // For testing, loads when initialised
+        if(requestOnLoad_testing) {
+            locManager.requestWhenInUseAuthorization()
+            locManager.requestLocation()
+            requestLocationWithChecks()
         }
     }
     
@@ -81,8 +84,22 @@ public class TempoProfile: NSObject, CLLocationManagerDelegate { //TODO: Make cl
                     }
                 case .restricted, .denied:
                     print("⛔️ No access - restricted or denied [UPDATE]")
+                    // Need to update latest valid consent as confirmed NONE
+                    TempoProfile.locData = self.adView.getClonedAndCleanedLocation()
+                    TempoProfile.updateLocState(newState: LocationState.UNAVAILABLE)
+                    self.updateLocConsentValues(consentType: Constants.LocationConsent.NONE)
+                    self.saveLatestValidLocData()
+                    completion?()
+                    return
                 case .notDetermined:
                     print("⛔️ No access - notDetermined [UPDATE]")
+                    // Need to update latest valid consent as confirmed NONE
+                    TempoProfile.locData = self.adView.getClonedAndCleanedLocation()
+                    TempoProfile.updateLocState(newState: LocationState.UNAVAILABLE)
+                    self.updateLocConsentValues(consentType: Constants.LocationConsent.NONE)
+                    self.saveLatestValidLocData()
+                    completion?()
+                    return
                 @unknown default:
                     print("⛔️ Unknown authorization status [UPDATE]")
                 }
@@ -115,7 +132,7 @@ public class TempoProfile: NSObject, CLLocationManagerDelegate { //TODO: Make cl
         return locationAuthorizationStatus
     }
     
-    /// Shortcut output for locaation property types while returning string refererence for metrics
+    /// Shortcut output for location property types while returning string refererence for metrics
     func getLocationPropertyValue(labelName: String, property: String?) -> String? {
         // TODO: Work out the tabs by string length..?
         if let checkedValue = property {
@@ -128,7 +145,7 @@ public class TempoProfile: NSObject, CLLocationManagerDelegate { //TODO: Make cl
         }
     }
     
-    /// Shortcut output for locaation property types while returning string refererence for metrics
+    /// Shortcut output for location property types while returning string refererence for metrics
     func getLocationPropertyValue(labelName: String, property: [String]?) -> [String]? {
         // TODO: Work out the tabs by string length..?
         if let checkedValue = property {
@@ -226,13 +243,11 @@ public class TempoProfile: NSObject, CLLocationManagerDelegate { //TODO: Make cl
                     
                     print("🚩🚩🚩 onUpdate.success -> [postcode=\(TempoProfile.locData?.postcode ?? "NIL") | state=\(TempoProfile.locData?.state ?? "NIL")] | Values have been updated")
                     
-                    // TODO: UPDATE BACKUPS
-                    self.saveLocData()
+                    // Save data instance as most recently validated data
+                    self.saveLatestValidLocData()
                     
                     TempoProfile.updateLocState(newState: LocationState.CHECKED)
                     self.adView.pushHeldMetricsWithUpdatedLocationData()
-                    
-                    
                     return
                 }
             }
@@ -245,7 +260,8 @@ public class TempoProfile: NSObject, CLLocationManagerDelegate { //TODO: Make cl
     }
     
     
-    private func saveLocData() {
+    private func saveLatestValidLocData() {
+        
         // Save the instance to UserDefaults
         let encoder = JSONEncoder()
         if let encoded = try? encoder.encode(TempoProfile.locData) {

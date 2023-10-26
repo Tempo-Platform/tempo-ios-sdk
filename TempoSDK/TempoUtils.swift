@@ -36,7 +36,9 @@ public class ResponseSuccess: Decodable {
     var status: String?
     var cpm: Float?
     var id: String?
+    var location_url_suffix: String?
 }
+
 /**
  * Global tools to use within the Tempo SDK module
  */
@@ -99,7 +101,7 @@ public class TempoUtils {
     }
     
     /// Returns web URL of ad content with customised parameters
-    public static func getFullWebUrl(isInterstitial: Bool, campaignId: String) -> String {
+    public static func getFullWebUrl(isInterstitial: Bool, campaignId: String, urlSuffix: String?) -> String {
         var webAdUrl: String
         
         let checkedCampaignId = checkForTestCampaign(campaignId: campaignId)
@@ -111,12 +113,17 @@ public class TempoUtils {
             webAdUrl = "\(getRewardedUrl())/\(checkedCampaignId!)"
         }
         
+        // If additional URL suffix valid, place at the end of the string
+        if let suffix = urlSuffix, !suffix.isEmpty {
+            webAdUrl.append("/\(suffix)")
+        }
+        
         TempoUtils.Say(msg: "🌏 Web URL: \(webAdUrl)")
         
         return webAdUrl
     }
     
-    ///
+    /// Checks local UI testing variables to see if there is a custom Campaign ID to overwrite the one returned from ads API
     internal static func checkForTestCampaign(campaignId: String!) -> String! {
         
         let customCampaignTrimmed: String? = TempoTesting.instance?.customCampaignId?.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -129,7 +136,8 @@ public class TempoUtils {
         
         return campaignId
     }
-    
+
+    /// Returns URL for Rewarded Ads
     public static func getRewardedUrl() -> String {
         if((TempoTesting.instance?.isTestingDeployVersion ?? false) && TempoTesting.instance?.currentDeployVersion != nil) {
             let deployPreviewUrl = Constants.Web.ADS_DOM_PREFIX_URL_PREVIEW +
@@ -150,7 +158,7 @@ public class TempoUtils {
         }
     }
     
-    /// Returns URL
+    /// Returns URL for Interstitial Ads
     public static func getInterstitialUrl() -> String {
         if((TempoTesting.instance?.isTestingDeployVersion ?? false) && TempoTesting.instance?.currentDeployVersion != nil) {
             let deployPreviewUrl = Constants.Web.ADS_DOM_PREFIX_URL_PREVIEW +

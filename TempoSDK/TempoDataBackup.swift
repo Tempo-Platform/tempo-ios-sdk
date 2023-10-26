@@ -153,13 +153,16 @@ public class TempoDataBackup
     }
     
     
-    public static func getBackupAd() -> LocationData {
+    public static func getMostRecentLocationData() -> LocationData {
+        
         // To retrieve the instance from UserDefaults:
         if let savedLocationData = UserDefaults.standard.data(forKey: "locationData"),
             let decodedLocation = try? JSONDecoder().decode(LocationData.self, from: savedLocationData) {
             // Use the retrieved location data
-            print(decodedLocation)
+            print("👉 =========> Backup: \(decodedLocation)")
             return decodedLocation
+        } else {
+            print("👉 =========> Backup: NONE")
         }
         
         return LocationData()
