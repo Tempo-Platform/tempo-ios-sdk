@@ -12,6 +12,7 @@ public struct Constants {
     struct Backup {
         static let METRIC_BACKUP_FOLDER = "metricJsons"
         static let METRIC_BACKUP_APPEND = ".tempo"
+        static let LOC_BACKUP_REF = "locationData"
         static let MAX_BACKUPS: Int = 100
         static let EXPIRY_DAYS: Int = 7
     }
