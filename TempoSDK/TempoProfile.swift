@@ -9,7 +9,7 @@ public class TempoProfile: NSObject, CLLocationManagerDelegate { //TODO: Make cl
     let adView: TempoAdView
     
     // The static that can be retrieved at any time during the SDK's usage
-    static var outputtingLocationInfo = false
+    static var outputtingLocationInfo = true
     static var locationState: LocationState?
     static var locData: LocationData?
     
@@ -170,7 +170,7 @@ public class TempoProfile: NSObject, CLLocationManagerDelegate { //TODO: Make cl
         }
     }
    
-    
+    /// Updates the fetchingf state of location data
     public static func updateLocState(newState: LocationState) {
         TempoProfile.locationState = newState
         
@@ -250,6 +250,11 @@ public class TempoProfile: NSObject, CLLocationManagerDelegate { //TODO: Make cl
 //                        self.getLocationPropertyValue(labelName: "inlandWater", property: placemark.inlandWater) ?? "n/a"
 //                        self.getLocationPropertyValue(labelName: "ocean", property: placemark.ocean) ?? "n/a"
 //                        self.getLocationPropertyValue(labelName: "areasOfInterest", property: placemark.areasOfInterest) ?? []
+                        }
+                        
+                        // Update current sessions top-level country code paramter is there is a value
+                        if let cc = TempoProfile.locData?.country_code, !cc.isEmpty {
+                            self.adView.countryCode = cc
                         }
                         
                         TempoUtils.Say(msg: "☎️ didUpdateLocations: [admin=\(TempoProfile.locData?.admin_area ?? "nil") | locality=\(TempoProfile.locData?.locality ?? "nil")] | Values have been updated")

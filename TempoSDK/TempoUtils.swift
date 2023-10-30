@@ -133,7 +133,7 @@ public class TempoUtils {
         
         // If additional URL suffix valid, place at the end of the string
         if let suffix = urlSuffix, !suffix.isEmpty {
-            webAdUrl.append("/\(suffix)")
+            webAdUrl.append("\(suffix)")
         }
         
         TempoUtils.Say(msg: "🌏 Web URL: \(webAdUrl)")

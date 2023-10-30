@@ -26,7 +26,7 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
     var adapterType: String?
     var consent: Bool?
     var currentConsentType: String?
-    var geo: String?
+    internal var countryCode: String? = "XX"// CountryCode.getIsoCountryCode2Digit()
     var locationData: LocationData?
     var metricList: [Metric] = []
     
@@ -71,7 +71,7 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
         
         // Update session values from global checks
         uuid = UUID().uuidString
-        geo = Constants.TEMP_GEO_US  // TODO: This will eventually need to be taken from mediation parameters
+        //geo = CountryCode.getIsoCountryCode2Digit()  // TODO: This will eventually need to be taken from mediation parameters
         
         // Create ad load metrics with updated ad data
         self.addMetric(metricType: Constants.MetricType.LOAD_REQUEST)
@@ -212,7 +212,7 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
                                     return
                                 }
                                 
-                                let url = URL(string: TempoUtils.getFullWebUrl(isInterstitial: self.isInterstitial, campaignId: campaignId, urlSuffix: nil))!
+                                let url = URL(string: TempoUtils.getFullWebUrl(isInterstitial: self.isInterstitial, campaignId: campaignId, urlSuffix: responseSuccess.location_url_suffix))!
                                 self.campaignId = TempoUtils.checkForTestCampaign(campaignId: campaignId)
                                 self.webView.load(URLRequest(url: url))
                                 self.adState = AdState.dormant
@@ -270,7 +270,7 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
             URLQueryItem(name: Constants.URL.AD_ID, value: adId),
             URLQueryItem(name: Constants.URL.APP_ID, value: appId),
             URLQueryItem(name: Constants.URL.CPM_FLOOR, value: String(cpmFloor ?? 0.0)),
-            URLQueryItem(name: Constants.URL.LOCATION, value: geo),
+            URLQueryItem(name: Constants.URL.LOCATION, value: countryCode),
             URLQueryItem(name: Constants.URL.IS_INTERSTITIAL, value: String(isInterstitial)),
             URLQueryItem(name: Constants.URL.SDK_VERSION, value: String(sdkVersion ?? "")),
             URLQueryItem(name: Constants.URL.ADAPTER_VERSION, value: String(adapterVersion ?? "")),
@@ -460,7 +460,8 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
                             bundle_id: Bundle.main.bundleIdentifier!,
                             campaign_id: self.campaignId ?? "",
                             session_id: self.uuid!,
-                            location: self.geo ?? Constants.TEMP_GEO_US,
+                            location: self.countryCode ?? "",
+                            country_code: self.countryCode ?? "",
                             placement_id: self.placementId ?? "",
                             os: "iOS \(UIDevice.current.systemVersion)",
                             sdk_version: self.sdkVersion ?? "",
@@ -539,6 +540,8 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
                     // Confirm country code has a value
                     if let currentCountryCode = TempoProfile.locData?.country_code, !currentCountryCode.isEmpty {
                         metricList[index].location_data?.country_code = currentCountryCode
+                        metricList[index].country_code = currentCountryCode
+                        metricList[index].location = currentCountryCode
                     } else {
                         metricList[index].location_data?.country_code = nil
                     }
