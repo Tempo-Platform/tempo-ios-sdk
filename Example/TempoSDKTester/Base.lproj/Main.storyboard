@@ -64,22 +64,22 @@
                                     </button>
                                 </subviews>
                             </stackView>
-                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="LZx-s6-fUg">
+                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="LZx-s6-fUg" userLabel="LEFT">
                                 <rect key="frame" x="71" y="547" width="81" height="35"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <state key="normal" title="Button"/>
                                 <buttonConfiguration key="configuration" style="plain" title="CHECK"/>
                                 <connections>
-                                    <action selector="checkLocConsent:" destination="vXZ-lx-hvc" eventType="touchUpInside" id="pWu-gT-jMQ"/>
+                                    <action selector="leftButtonAction:" destination="vXZ-lx-hvc" eventType="touchUpInside" id="G7b-xG-SgV"/>
                                 </connections>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="kXW-Z8-FJW">
+                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="kXW-Z8-FJW" userLabel="RIGHT">
                                 <rect key="frame" x="215" y="547" width="100" height="35"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <state key="normal" title="Button"/>
                                 <buttonConfiguration key="configuration" style="plain" title="REQUEST"/>
                                 <connections>
-                                    <action selector="requestLocConsent:" destination="vXZ-lx-hvc" eventType="touchUpInside" id="e3b-Wt-jbc"/>
+                                    <action selector="rightButtonAction:" destination="vXZ-lx-hvc" eventType="touchUpInside" id="Wap-oL-sf3"/>
                                 </connections>
                             </button>
                         </subviews>
@@ -90,16 +90,16 @@
                         </constraints>
                     </view>
                     <connections>
-                        <outlet property="checkLocationConsentButton" destination="LZx-s6-fUg" id="m2A-7c-Tik"/>
+                        <outlet property="leftButton" destination="LZx-s6-fUg" id="iA9-WN-wFs"/>
                         <outlet property="loadAdButton" destination="noH-Fc-j5r" id="flk-UD-lEX"/>
-                        <outlet property="requestLocationConsentButton" destination="kXW-Z8-FJW" id="NAW-kS-8qW"/>
+                        <outlet property="rightButton" destination="kXW-Z8-FJW" id="s1t-6e-g07"/>
                         <outlet property="segmentedControl" destination="QeJ-gA-O8Q" id="Vda-Fv-k6V"/>
                         <outlet property="showAdButton" destination="9EP-PG-jog" id="EWK-G9-XNx"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="x5A-6p-PRh" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="38" y="112"/>
+            <point key="canvasLocation" x="37.600000000000001" y="111.99400299850076"/>
         </scene>
     </scenes>
 </document>
