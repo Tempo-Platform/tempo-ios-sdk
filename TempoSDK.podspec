@@ -6,7 +6,7 @@
 
 Pod::Spec.new do |spec|
   spec.name             = 'TempoSDK'
-  spec.version          = '1.4.1-rc.10'
+  spec.version          = '1.4.1-rc.11'
   spec.swift_version    = '5.6.1'
   spec.author           = { 'Tempo Engineering' => 'development@tempoplatform.com' }
   spec.license          = { :type => 'MIT', :file => 'LICENSE' }
@@ -18,11 +18,24 @@ Pod::Spec.new do |spec|
   spec.ios.deployment_target = '11.0'
 
   spec.source_files  = 'TempoSDK/**/*.{h,m,swift}'
-#  spec.resource_bundles = {
-#      'TempoSDK' => ['TempoSDK/Resources/**/*']
-#    }
-  spec.resource = 'Info.plist'
-  spec.resource = 'TempoSDK/Resources/PrivacyInfo.xcprivacy'
+  spec.resource_bundles = {
+      'TempoSDK' => ['TempoSDK/Resources/**/*']
+    }
+  
+  # Add post-install script to update info.plist
+    spec.script_phase = {
+      :name => 'Add Info.plist Entries',
+      :script => <<-SCRIPT
+        plist_file = Dir.glob("**/*.plist").first
+        info_plist = Xcodeproj::Plist.read_from_path(plist_file)
+        
+        # Add necessary keys and descriptions
+        info_plist['NSLocationWhenInUseUsageDescription'] = 'XYZ'
+
+        # Write changes back to Info.plist
+        Xcodeproj::Plist.write_to_path(info_plist, plist_file)
+      SCRIPT
+    }
   
   spec.tvos.pod_target_xcconfig  = { 'EXCLUDED_ARCHS[sdk=appletvsimulator*]' => 'arm64', }
   spec.tvos.user_target_xcconfig = { 'EXCLUDED_ARCHS[sdk=appletvsimulator*]' => 'arm64' }
