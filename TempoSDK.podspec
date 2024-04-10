@@ -6,7 +6,7 @@
 
 Pod::Spec.new do |spec|
   spec.name             = 'TempoSDK'
-  spec.version          = '1.4.1-rc.11'
+  spec.version          = '1.4.1-rc.12'
   spec.swift_version    = '5.6.1'
   spec.author           = { 'Tempo Engineering' => 'development@tempoplatform.com' }
   spec.license          = { :type => 'MIT', :file => 'LICENSE' }
@@ -21,12 +21,13 @@ Pod::Spec.new do |spec|
   spec.resource_bundles = {
       'TempoSDK' => ['TempoSDK/Resources/**/*']
     }
+  spec.resource = "TempoSDK/Info.plist"
   
   # Add post-install script to update info.plist
     spec.script_phase = {
       :name => 'Add Info.plist Entries',
       :script => <<-SCRIPT
-        plist_file = Dir.glob("**/*.plist").first
+        plist_file = Dir.glob("**/Info.plist").first
         info_plist = Xcodeproj::Plist.read_from_path(plist_file)
         
         # Add necessary keys and descriptions
