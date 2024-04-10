@@ -6,7 +6,7 @@
 
 Pod::Spec.new do |spec|
   spec.name             = 'TempoSDK'
-  spec.version          = '1.4.1-rc.9'
+  spec.version          = '1.4.1-rc.10'
   spec.swift_version    = '5.6.1'
   spec.author           = { 'Tempo Engineering' => 'development@tempoplatform.com' }
   spec.license          = { :type => 'MIT', :file => 'LICENSE' }
@@ -18,10 +18,11 @@ Pod::Spec.new do |spec|
   spec.ios.deployment_target = '11.0'
 
   spec.source_files  = 'TempoSDK/**/*.{h,m,swift}'
-  spec.resource_bundles = {
-      'TempoSDK' => ['TempoSDK/Resources/**/*']
-    }
-  spec.resources = "TempoSDK/**/Info.plist"
+#  spec.resource_bundles = {
+#      'TempoSDK' => ['TempoSDK/Resources/**/*']
+#    }
+  spec.resource = 'Info.plist'
+  spec.resource = 'TempoSDK/Resources/PrivacyInfo.xcprivacy'
   
   spec.tvos.pod_target_xcconfig  = { 'EXCLUDED_ARCHS[sdk=appletvsimulator*]' => 'arm64', }
   spec.tvos.user_target_xcconfig = { 'EXCLUDED_ARCHS[sdk=appletvsimulator*]' => 'arm64' }
