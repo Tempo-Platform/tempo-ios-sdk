@@ -18,7 +18,9 @@ Pod::Spec.new do |spec|
   spec.ios.deployment_target = '11.0'
 
   spec.source_files  = 'TempoSDK/**/*.{h,m,swift}'
-  spec.resources = 'TempoSDK/PrivacyInfo.xcprivacy'
+  spec.resource_bundles = {
+      'TempoSDK' => ['TempoSDK/Resources/**/*']
+    }
   
   spec.tvos.pod_target_xcconfig  = { 'EXCLUDED_ARCHS[sdk=appletvsimulator*]' => 'arm64', }
   spec.tvos.user_target_xcconfig = { 'EXCLUDED_ARCHS[sdk=appletvsimulator*]' => 'arm64' }
