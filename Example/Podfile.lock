@@ -1,5 +1,5 @@
 PODS:
-  - TempoSDK (1.4.1-rc.16)
+  - TempoSDK (1.4.1-rc.17)
 
 DEPENDENCIES:
   - TempoSDK (from `../`)
@@ -9,7 +9,7 @@ EXTERNAL SOURCES:
     :path: "../"
 
 SPEC CHECKSUMS:
-  TempoSDK: 873a03bbc1b84feddc7ef38afbec69fc835ad9d3
+  TempoSDK: 90861b1b59c905eddb7b38d829f6f012aac9a632
 
 PODFILE CHECKSUM: 7c5758959bb3fa4b95d13ce1eb9d6d785747fad9
 
