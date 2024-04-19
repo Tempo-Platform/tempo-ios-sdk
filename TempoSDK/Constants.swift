@@ -86,8 +86,6 @@ public struct Constants {
     }
     
     // Testable variables
-    public static var isProd = true
-    public static var isTesting = false
-    public static var isInit = true
-    
+    public static var isProd = false
+    public static var isTesting = true
 }

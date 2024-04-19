@@ -63,6 +63,13 @@ public class TempoProfile: NSObject, CLLocationManagerDelegate { //TODO: Make cl
                 case .authorizedAlways, .authorizedWhenInUse: // TODO: auth always might not work
                     let addendum = completion == nil ? "No completion task given" : ""
                     TempoUtils.Say(msg: "✅ Access - always or authorizedWhenInUse [UPDATE] \(addendum)")
+                    
+                    // ALWAYS update LocationData singleton as GENERAL (PRECISE not in use)
+                    self.updateLocConsentValues(consentType: Constants.LocationConsent.GENERAL)
+                    completion?()
+                    return
+                    
+                    /* // TODO: Not using precise location at the moment
                     if #available(iOS 14.0, *) {
                         // iOS 14 intro precise/general options
                         if self.locManager.accuracyAuthorization == .reducedAccuracy {
@@ -76,12 +83,15 @@ public class TempoProfile: NSObject, CLLocationManagerDelegate { //TODO: Make cl
                             completion?()
                             return
                         }
+                        
                     } else {
                         // Update LocationData singleton as PRECISE (pre-iOS 14 considered precise)
                         self.updateLocConsentValues(consentType: Constants.LocationConsent.PRECISE)
                         completion?()
                         return
                     }
+                     */
+                    
                 case .restricted, .denied:
                     TempoUtils.Warn(msg: "⛔️ No access - restricted or denied [UPDATE]")
                     // Need to update latest valid consent as confirmed NONE
