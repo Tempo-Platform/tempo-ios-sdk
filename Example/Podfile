@@ -2,7 +2,7 @@ use_frameworks!
 
 platform :ios, '11.0'
 
-targe t 'TempoSDKTester' do
+target 'TempoSDKTester' do
   pod 'TempoSDK', :path => '../'
 #  pod 'TempoSDK', '~> 1.0.0'
 end
