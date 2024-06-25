@@ -2,7 +2,7 @@
 
 public struct Constants {
     
-    public static let SDK_VERSIONS = "1.6.1-rc.0"
+    public static let SDK_VERSIONS = "1.6.1-rc.1"
     static let NO_FILL = "NO_FILL"
     static let OK = "OK"
     static let UNDEF = "UNDEFINED"
@@ -97,7 +97,7 @@ public struct Constants {
         case PRD
         
         // Swift does not assign index valus to enum, so we make an indexable array
-        static let allValues = [DEV, STG, PRD]
+        public static let allValues = [DEV, STG, PRD]
     }
     
     // Testable variables
