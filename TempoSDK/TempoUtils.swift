@@ -178,13 +178,6 @@ public class TempoUtils {
         default:
             return "\(Constants.Web.ADS_DOM_URL_DEV)/\(Constants.Web.URL_REW)"
         }
-        
-//        if Constants.isProd {
-//            return "\(Constants.Web.ADS_DOM_URL_PROD)/\(Constants.Web.URL_REW)"
-//        }
-//        else {
-//            return "\(Constants.Web.ADS_DOM_URL_DEV)/\(Constants.Web.URL_REW)"
-//        }
     }
     
     /// Returns URL for Interstitial Ads
@@ -210,13 +203,6 @@ public class TempoUtils {
         default:
             return "\(Constants.Web.ADS_DOM_URL_DEV)/\(Constants.Web.URL_INT)"
         }
-        
-//        if Constants.isProd {
-//            return "\(Constants.Web.ADS_DOM_URL_PROD)/\(Constants.Web.URL_INT)"
-//        }
-//        else {
-//            return "\(Constants.Web.ADS_DOM_URL_DEV)/\(Constants.Web.URL_INT)"
-//        }
     }
     
     /// Returns REST-ADS-API url based on current environment
@@ -231,8 +217,6 @@ public class TempoUtils {
         default:
             return Constants.Web.ADS_API_URL_DEV
         }
-        
-        //return Constants.isProd ? Constants.Web.ADS_API_URL_PROD : Constants.Web.ADS_API_URL_DEV;
     }
     
     /// Returns METRICS url based on current environment
@@ -247,8 +231,6 @@ public class TempoUtils {
         default:
             return Constants.Web.METRICS_URL_DEV
         }
-        
-        //return Constants.isProd ? Constants.Web.METRICS_URL_PROD : Constants.Web.METRICS_URL_DEV;
     }
     
     /// Retuns string of 'INTERSTITIAL' or 'REWARDED' for debugging purposes

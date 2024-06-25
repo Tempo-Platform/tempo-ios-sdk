@@ -100,9 +100,8 @@ public struct Constants {
         public static let allValues = [DEV, STG, PRD]
     }
     
-    // Testable variables
-    //public static var isProd = true
-    public static var environment: Environment = Environment.DEV
-    public static var isVerboseDebugging = true
+    // Test tool variables
+    public static var environment: Environment = Environment.PRD
+    public static var isVerboseDebugging = false
     
 }
