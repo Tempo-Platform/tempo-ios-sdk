@@ -180,7 +180,17 @@ class ViewController: UIViewController, TempoAdListener {
     /* ----------------- TESTING ONLY ---------------- */
     /// Returns appropriate Ad ID based on dev/prod environment
     func getAppId() -> String {
-        return TempoSDK.Constants.isProd ? DemoConstants.APP_ID_PROD : DemoConstants.APP_ID_DEV;
+        switch(Constants.environment){
+        case Constants.Environment.STG:
+            return DemoConstants.APP_ID_PROD
+        case Constants.Environment.PRD:
+            return DemoConstants.APP_ID_PROD
+        case Constants.Environment.DEV:
+            fallthrough
+        default:
+            return DemoConstants.APP_ID_DEV
+        }
+        //return TempoSDK.Constants.isProd ? DemoConstants.APP_ID_PROD : DemoConstants.APP_ID_DEV;
     }
     /// Returns a random CGFloat value between 0.5 and 1
     func getRandomFloat() -> CGFloat {
