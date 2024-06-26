@@ -244,6 +244,7 @@ public class TempoDataBackup
         }
     }
     
+    /// Checks if any metric data held in case, actions completion task (usually PushMetrics) if existing data valid
     public static func checkHeldMetrics(completion: @escaping (inout [Metric], URL) throws -> Void) throws {
         // See if check has already been called
         if(readyForCheck) {
