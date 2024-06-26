@@ -184,7 +184,7 @@ public class TempoDataBackup
         }
     }
     
-    public static func checkHeldMetrics(completion: @escaping (inout [Metric], URL) -> Void) {
+    public static func checkHeldMetrics(completion: @escaping (inout [Metric], URL) throws -> Void) {
         // See if check has already been called
         if(readyForCheck) {
             // Request creation of backup metrics dictionary
@@ -197,7 +197,12 @@ public class TempoDataBackup
             for url in fileMetric.keys
             {
                 // Attempt to push metric(s) again
-                completion(&emptyArray, url)
+                do{
+                    try completion(&emptyArray, url)
+                }
+                catch {
+                    TempoUtils.Warn(msg: "\(error)")
+                }
             }
             
             // Prevents from being checked again this session. If network is failing, no point retrying during this session

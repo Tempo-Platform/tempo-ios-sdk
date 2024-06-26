@@ -26,7 +26,7 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
     var adapterType: String?
     var consent: Bool?
     var currentConsentType: String?
-    internal var countryCode: String? = CountryCode.getIsoCountryCode2Digit()
+    internal var countryCode: String?
     var locationData: LocationData?
     var metricList: [Metric] = []
     var lastestURL: String? = nil
@@ -37,6 +37,15 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
         self.listener = listener
         self.appId = appId
         
+        // Confirm a valid country code
+        do {
+            countryCode = try CountryCode.getIsoCountryCode2Digit()
+            TempoUtils.Say(msg: "ISO Country Code: \(countryCode!)")
+        } catch CountryCodeError.missingCountryCode {
+            TempoUtils.Warn(msg: "Error: Missing ISO country code") // TODO: Consequences of this being nil?
+        } catch {
+            TempoUtils.Shout(msg: "An unknown error occurred: \(error)") // TODO: Consequences of this happening?
+        }
         sdkVersion = Constants.SDK_VERSIONS
         adapterVersion = self.listener.getTempoAdapterVersion()
         adapterType = self.listener.getTempoAdapterType()
@@ -173,12 +182,28 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
         webView = nil
         webViewWithBackground = nil
         
-        // Send metrics regadless - check if needs to be retroactively updated to reflect new location data
+        // Send metrics regardless - check if needs to be retroactively updated to reflect new location data
         if(TempoProfile.locationState == .UNCHECKED || TempoProfile.locationState == .CHECKING) {
             pushHeldMetricsWithUpdatedLocationData()
             TempoProfile.locationState = .FAILED
         } else {
-            Metrics.pushMetrics(currentMetrics: &metricList, backupUrl: nil)
+            // Push metrics with error handling
+            do {
+                try Metrics.pushMetrics(currentMetrics: &metricList, backupUrl: nil)
+                TempoUtils.Say(msg: "Metrics pushed successfully.")
+            } catch MetricsError.invalidURL {
+                TempoUtils.Warn(msg: "Error: Invalid URL")
+            } catch MetricsError.jsonEncodingFailed {
+                TempoUtils.Warn(msg: "Error: Failed to encode metrics data")
+            } catch MetricsError.emptyMetrics {
+                TempoUtils.Warn(msg: "Error: No metrics to push")
+            } catch MetricsError.missingJsonString {
+                TempoUtils.Warn(msg: "Error: Missing JSON string")
+            } catch MetricsError.invalidHeaderValue {
+                TempoUtils.Warn(msg: "Error: Invalid header value")
+            } catch {
+                TempoUtils.Warn(msg: "An unknown error occurred: \(error)")
+            }
         }
         
         // Invoke close callback
@@ -541,7 +566,23 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
         }
         
         if (Constants.MetricType.METRIC_SEND_NOW.contains(metricType)) {
-            Metrics.pushMetrics(currentMetrics: &metricList, backupUrl: nil)
+            // Push metrics with error handling
+            do {
+                try Metrics.pushMetrics(currentMetrics: &metricList, backupUrl: nil)
+                TempoUtils.Say(msg: "Metrics pushed successfully.")
+            } catch MetricsError.invalidURL {
+                TempoUtils.Warn(msg: "Error: Invalid URL")
+            } catch MetricsError.jsonEncodingFailed {
+                TempoUtils.Warn(msg: "Error: Failed to encode metrics data")
+            } catch MetricsError.emptyMetrics {
+                TempoUtils.Warn(msg: "Error: No metrics to push")
+            } catch MetricsError.missingJsonString {
+                TempoUtils.Warn(msg: "Error: Missing JSON string")
+            } catch MetricsError.invalidHeaderValue {
+                TempoUtils.Warn(msg: "Error: Invalid header value")
+            } catch {
+                TempoUtils.Warn(msg: "An unknown error occurred: \(error)")
+            }
         }
     }
     
@@ -630,7 +671,24 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
                 }
             }
             
-            Metrics.pushMetrics(currentMetrics: &metricList, backupUrl: nil)
+            // Push metrics with error handling
+            do {
+                try Metrics.pushMetrics(currentMetrics: &metricList, backupUrl: nil)
+                TempoUtils.Say(msg: "Metrics pushed successfully.")
+            } catch MetricsError.invalidURL {
+                TempoUtils.Warn(msg: "Error: Invalid URL")
+            } catch MetricsError.jsonEncodingFailed {
+                TempoUtils.Warn(msg: "Error: Failed to encode metrics data")
+            } catch MetricsError.emptyMetrics {
+                TempoUtils.Warn(msg: "Error: No metrics to push")
+            } catch MetricsError.missingJsonString {
+                TempoUtils.Warn(msg: "Error: Missing JSON string")
+            } catch MetricsError.invalidHeaderValue {
+                TempoUtils.Warn(msg: "Error: Invalid header value")
+            } catch {
+                TempoUtils.Warn(msg: "An unknown error occurred: \(error)")
+            }
+            
         } else {
             TempoUtils.Say(msg:"🧹 No metrics to push (EMPTY)")
         }
