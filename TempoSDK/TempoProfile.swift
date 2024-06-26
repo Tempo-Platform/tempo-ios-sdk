@@ -19,7 +19,15 @@ public class TempoProfile: NSObject, CLLocationManagerDelegate { //TODO: Make cl
         
         // Update locData with backup if nil
         if(TempoProfile.locData == nil) {
-            TempoProfile.locData = TempoDataBackup.getMostRecentLocationData()
+            do{
+                TempoProfile.locData = try TempoDataBackup.getMostRecentLocationData()
+            } catch LocationDataError.missingBackupData {
+                TempoProfile.locData = LocationData()
+            } catch LocationDataError.decodingFailed(let error) {
+                TempoProfile.locData = LocationData()
+            } catch {
+                TempoProfile.locData = LocationData()
+            }
         } else {
             TempoUtils.Say(msg: "🌏 LocData is null, no backup needed")
         }

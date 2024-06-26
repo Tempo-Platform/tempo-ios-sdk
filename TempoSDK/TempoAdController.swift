@@ -19,7 +19,11 @@ public class TempoAdController: NSObject {
         if(!TempoAdController.isInitialised) {
             
             // Check for backups
-            TempoDataBackup.checkHeldMetrics(completion: Metrics.pushMetrics)
+            do{
+                try TempoDataBackup.checkHeldMetrics(completion: Metrics.pushMetrics)
+            } catch {
+                TempoUtils.Warn(msg: "Error checking backups: \(error)")
+            }
             
             // Show as initialised moving forward and ignore this section
             TempoAdController.isInitialised = true;

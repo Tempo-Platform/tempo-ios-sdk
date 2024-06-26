@@ -95,7 +95,12 @@ public class Metrics {
                 guard error == nil else {
                     if(backupUrl == nil) {
                         TempoUtils.Warn(msg: "Data did not send, creating backup")
-                        TempoDataBackup.storeData(metricsArray: metricListCopy)
+                        do {
+                            try TempoDataBackup.storeData(metricsArray: metricListCopy)
+                        } catch {
+                            TempoUtils.Warn(msg:"Error while backing up data: \(error)")
+                            return
+                        }
                     }
                     else{
                         TempoUtils.Warn(msg:"Data did not send, keeping backup: \(backupUrl!)")
@@ -109,7 +114,11 @@ public class Metrics {
                     TempoUtils.Say(msg: "Removing backup: \(backupUrl!) (x\(TempoDataBackup.fileMetric[backupUrl!]!.count))")
                     
                     // Remove metricList from device storage
-                    TempoDataBackup.removeSpecificMetricList(backupUrl: backupUrl!)
+                    do {
+                        try TempoDataBackup.removeSpecificMetricList(backupUrl: backupUrl!)
+                    } catch {
+                        TempoUtils.Warn(msg: "Error removing file: \(error)")
+                    }
                 }
                 
                 if let httpResponse = response as? HTTPURLResponse {
@@ -122,16 +131,21 @@ public class Metrics {
                         break
                     default:
                         TempoUtils.Say(msg: "📊 Non-Tempo related error - backup: \(httpResponse.statusCode)")
-                        TempoDataBackup.storeData(metricsArray: metricListCopy)
+                        do {
+                            try TempoDataBackup.storeData(metricsArray: metricListCopy)
+                        } catch {
+                            TempoUtils.Warn(msg:"Error while backing up data: \(error)")
+                            return
+                        }
                     }
                 }
             })
             
             task.resume()
         } catch MetricsError.missingJsonString {
-            print("Error: Missing JSON string")
+            TempoUtils.Warn(msg: "Error: Missing JSON string")
         } catch {
-            print("An unknown error occurred: \(error)")
+            TempoUtils.Warn(msg: "An unknown error occurred: \(error)")
         }
     }
 }

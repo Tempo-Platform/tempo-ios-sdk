@@ -224,7 +224,15 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
         // Update locData with backup if nil
         if(TempoProfile.locData == nil) {
             TempoUtils.Say(msg: "🌏 Updating with backup")
-            TempoProfile.locData = TempoDataBackup.getMostRecentLocationData()
+            do{
+                TempoProfile.locData = try TempoDataBackup.getMostRecentLocationData()
+            } catch LocationDataError.missingBackupData {
+                TempoProfile.locData = LocationData()
+            } catch LocationDataError.decodingFailed(let error) {
+                TempoProfile.locData = LocationData()
+            } catch {
+                TempoProfile.locData = LocationData()
+            }
         } else {
             TempoUtils.Say(msg: "🌏 LocData is not null, no backup needed")
         }

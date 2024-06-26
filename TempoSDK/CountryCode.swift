@@ -83,7 +83,7 @@ public class CountryCode {
         return currencyCode
     }
     
-    // Dictionary of 3 -> 2 digit ISO-1366-1 counrty codes
+    /// Dictionary of 3 -> 2 digit ISO-1366-1 counrty codes
     // Source: https://en.wikipedia.org/wiki/List_of_ISO_3166_country_codes
     static let iso1366Dict: [String: String] = [
         "ABW": "AW",
