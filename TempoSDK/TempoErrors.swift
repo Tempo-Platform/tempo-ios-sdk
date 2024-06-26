@@ -44,4 +44,9 @@ enum StoreDataError: Error {
 enum LocationDataError: Error {
     case missingBackupData
     case decodingFailed(Error)
+    case authorizationFailed
+}
+
+enum AdProcessError: Error {
+    case loadFailed(Error)
 }

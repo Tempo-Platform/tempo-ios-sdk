@@ -70,6 +70,7 @@ class ViewController: UIViewController, TempoAdListener {
         } catch {
             TempoUtils.Warn(msg: "Error checking backups: \(error)")
         }
+        
         initializeUIButtons();
     }
     

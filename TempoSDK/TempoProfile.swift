@@ -61,64 +61,62 @@ public class TempoProfile: NSObject, CLLocationManagerDelegate { //TODO: Make cl
         // CLLocationManager.authorizationStatus can cause UI unresponsiveness if invoked on the main thread.
         DispatchQueue.global().async {
             
-            // Make sure location servics are available
-            if CLLocationManager.locationServicesEnabled() {
-                
-                // get authorisation status
-                let authStatus = self.getLocAuthStatus()
-                
-                switch (authStatus) {
-                case .authorizedAlways, .authorizedWhenInUse: // TODO: auth always might not work
-                    let addendum = completion == nil ? "No completion task given" : ""
-                    TempoUtils.Say(msg: "✅ Access - always or authorizedWhenInUse [UPDATE] \(addendum)")
-                    if #available(iOS 14.0, *) {
-                        // iOS 14 intro precise/general options
-                        if self.locManager.accuracyAuthorization == .reducedAccuracy {
-                            // Update LocationData singleton as GENERAL
-                            self.updateLocConsentValues(consentType: Constants.LocationConsent.GENERAL)
-                            completion?()
-                            return
-                        } else {
-                            // Update LocationData singleton as PRECISE
-                            self.updateLocConsentValues(consentType: Constants.LocationConsent.PRECISE)
-                            completion?()
-                            return
-                        }
+            // Make sure location services are available
+            guard CLLocationManager.locationServicesEnabled() else {
+                TempoUtils.Warn(msg: "⛔️ Location services not enabled [UPDATE]")
+                TempoProfile.updateLocState(newState: LocationState.UNAVAILABLE)
+                self.updateLocConsentValues(consentType: Constants.LocationConsent.NONE)
+                completion?()
+                return
+            }
+            
+            // get authorisation status
+            let authStatus = self.getLocAuthStatus()
+            
+            switch (authStatus) {
+            case .authorizedAlways, .authorizedWhenInUse: // TODO: auth always might not work
+                let addendum = completion == nil ? "No completion task given" : ""
+                TempoUtils.Say(msg: "✅ Access - always or authorizedWhenInUse [UPDATE] \(addendum)")
+                if #available(iOS 14.0, *) {
+                    // iOS 14 intro precise/general options
+                    if self.locManager.accuracyAuthorization == .reducedAccuracy {
+                        // Update LocationData singleton as GENERAL
+                        self.updateLocConsentValues(consentType: Constants.LocationConsent.GENERAL)
+                        completion?()
+                        return
                     } else {
-                        // Update LocationData singleton as PRECISE (pre-iOS 14 considered precise)
+                        // Update LocationData singleton as PRECISE
                         self.updateLocConsentValues(consentType: Constants.LocationConsent.PRECISE)
                         completion?()
                         return
                     }
-                case .restricted, .denied:
-                    TempoUtils.Warn(msg: "⛔️ No access - restricted or denied [UPDATE]")
-                    // Need to update latest valid consent as confirmed NONE
-                    TempoProfile.locData = self.adView.getClonedAndCleanedLocation()
-                    TempoProfile.updateLocState(newState: LocationState.UNAVAILABLE)
-                    self.updateLocConsentValues(consentType: Constants.LocationConsent.NONE)
-                    self.saveLatestValidLocData()
+                } else {
+                    // Update LocationData singleton as PRECISE (pre-iOS 14 considered precise)
+                    self.updateLocConsentValues(consentType: Constants.LocationConsent.PRECISE)
                     completion?()
                     return
-                case .notDetermined:
-                    TempoUtils.Warn(msg: "⛔️ No access - notDetermined [UPDATE]")
-                    // Need to update latest valid consent as confirmed NONE
-                    TempoProfile.locData = self.adView.getClonedAndCleanedLocation()
-                    TempoProfile.updateLocState(newState: LocationState.UNAVAILABLE)
-                    self.updateLocConsentValues(consentType: Constants.LocationConsent.NONE)
-                    self.saveLatestValidLocData()
-                    completion?()
-                    return
-                @unknown default:
-                    TempoUtils.Warn(msg: "⛔️ Unknown authorization status [UPDATE]")
                 }
-            } else {
-                TempoUtils.Warn(msg: "⛔️ Location services not enabled [UPDATE]")
+            case .restricted, .denied:
+                TempoUtils.Warn(msg: "⛔️ No access - restricted or denied [UPDATE]")
+                // Need to update latest valid consent as confirmed NONE
+                TempoProfile.locData = self.adView.getClonedAndCleanedLocation()
+                TempoProfile.updateLocState(newState: LocationState.UNAVAILABLE)
+                self.updateLocConsentValues(consentType: Constants.LocationConsent.NONE)
+                self.saveLatestValidLocData()
+                completion?()
+                return
+            case .notDetermined:
+                TempoUtils.Warn(msg: "⛔️ No access - notDetermined [UPDATE]")
+                // Need to update latest valid consent as confirmed NONE
+                TempoProfile.locData = self.adView.getClonedAndCleanedLocation()
+                TempoProfile.updateLocState(newState: LocationState.UNAVAILABLE)
+                self.updateLocConsentValues(consentType: Constants.LocationConsent.NONE)
+                self.saveLatestValidLocData()
+                completion?()
+                return
+            @unknown default:
+                TempoUtils.Warn(msg: "⛔️ Unknown authorization status [UPDATE]")
             }
-            
-            TempoProfile.updateLocState(newState: LocationState.UNAVAILABLE)
-            self.updateLocConsentValues(consentType: Constants.LocationConsent.NONE)
-            completion?()
-            
         }
     }
     

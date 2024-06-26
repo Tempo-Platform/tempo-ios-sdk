@@ -20,9 +20,23 @@ public class TempoAdController: NSObject {
             
             // Check for backups
             do{
-                try TempoDataBackup.checkHeldMetrics(completion: Metrics.pushMetrics)
-            } catch {
-                TempoUtils.Warn(msg: "Error checking backups: \(error)")
+                try TempoDataBackup.checkHeldMetrics { metricsArray, url in
+                    try Metrics.pushMetrics(currentMetrics: &metricsArray, backupUrl: url)
+                }
+            } catch let error {
+                // Handle specific errors or log them
+                if let metricsError = error as? MetricsError {
+                    switch metricsError {
+                    case .missingJsonString:
+                        TempoUtils.Warn(msg: "Missing JSON string error: \(metricsError)")
+                    case .decodingFailed(let decodingError):
+                        TempoUtils.Warn(msg: "Decoding failed: \(decodingError)")
+                    default: TempoUtils.Warn(msg: "Failed to push backup metrics")
+                    }
+                } else {
+                    // Handle other generic errors
+                    TempoUtils.Warn(msg: "Error while handling backuo metrics: \(error)")
+                }
             }
             
             // Show as initialised moving forward and ignore this section
@@ -76,8 +90,8 @@ public class TempoAdController: NSObject {
     }
     
     
-    /// Public LOAD function for internal testing with specific campaign ID
-    public func loadSpecificAd(isInterstitial: Bool, campaignId:String){
+    /// Public LOAD function for internal testing with specific campaign ID {ONLY USED IN TESTING)
+    public func loadSpecificAd(isInterstitial: Bool, campaignId:String) {
         adView!.loadSpecificCampaignAd(
             isInterstitial: isInterstitial,
             campaignId: campaignId)
