@@ -28,6 +28,19 @@ public class TempoProfile: NSObject, CLLocationManagerDelegate { //TODO: Make cl
             } catch {
                 TempoProfile.locData = LocationData()
             }
+            
+            do{
+                TempoProfile.locData = try TempoDataBackup.getMostRecentLocationData()
+            } catch LocationDataError.missingBackupData {
+                TempoUtils.Say(msg: "Could not locate existing cache location data for init")
+                TempoProfile.locData = LocationData()
+            } catch LocationDataError.decodingFailed(let error) {
+                TempoUtils.Warn(msg: "Decoding failed getting location JSON during init: \(error.localizedDescription)")
+                TempoProfile.locData = LocationData()
+            } catch {
+                TempoUtils.Warn(msg: "Error while attempting to fetch cached location data during init")
+                TempoProfile.locData = LocationData()
+            }
         } else {
             TempoUtils.Say(msg: "🌏 LocData is null, no backup needed")
         }

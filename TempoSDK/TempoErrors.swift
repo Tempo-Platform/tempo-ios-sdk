@@ -49,4 +49,28 @@ enum LocationDataError: Error {
 
 enum AdProcessError: Error {
     case loadFailed(Error)
+    case webViewCreationFailed
+    case invalidPlacementId
+    case invalidCpmFloor
+    case invalidUrl
+}
+
+enum ProfileError: Error {
+    case idfaNotAvailable
+    case invalidAdId
+}
+
+enum AdRequestError: Error {
+    case missingBackupData
+    case decodingFailed(String)
+    case urlCreationFailed
+    case invalidHttpResponse
+    case invalidDataError(String)
+    case invalidStatusCode(Int)
+}
+
+enum WebViewError: Error {
+    case webViewCreationFailed
+    case backgroundViewCreationFailed
+    case configurationFailed
 }
