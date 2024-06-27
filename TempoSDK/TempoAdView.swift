@@ -79,8 +79,8 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
         do {
             try setupWKWebview()
         } catch let error {
+            self.adState = AdState.dormant
             DispatchQueue.main.async {
-                self.adState = AdState.dormant
                 self.processAdFetchFailed(reason: "Could not create WKWebView: \(error.localizedDescription)")
             }
             return
@@ -104,8 +104,8 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
         }
         catch {
             // Send failure trigger and reset state
+            self.adState = AdState.dormant
             DispatchQueue.main.async {
-                self.adState = AdState.dormant
                 self.processAdFetchFailed(reason: "Failed sending ad fetch request")
             }
         }
@@ -262,10 +262,11 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
     
     /// Resets any potential hanging values when ad is closed
     func cleanUpWebViews() {
+        // Safely update adState
+        self.adState = AdState.dormant
+        
         // Ensure this code runs on the main thread
         DispatchQueue.main.async {
-            // Safely update adState
-            self.adState = AdState.dormant
             
             // Safely remove web views from their superviews
             self.webViewBackground?.removeFromSuperview()
@@ -362,9 +363,9 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
             else {
                 // Fail on invalid HTTP response
                 guard let httpResponse = response as? HTTPURLResponse else {
+                    self.adState = AdState.dormant
                     DispatchQueue.main.async {
                         self.processAdFetchFailed(reason: "Invalid HTTP response")
-                        self.adState = AdState.dormant
                     }
                     return
                 }
@@ -430,8 +431,8 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
             }
             
             // Send failure trigger and reset state
+            self.adState = AdState.dormant
             DispatchQueue.main.async {
-                self.adState = AdState.dormant
                 self.processAdFetchFailed(reason: errorMsg)
             }
         })
@@ -650,7 +651,7 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
                 try pushMetrics()
             }
         } catch {
-            handleMetricError(error, metricType: metricType)
+            handleMetricError(error)
         }
     }
     
@@ -661,20 +662,20 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
     }
     
     /// Handle metric-related errors
-    private func handleMetricError(_ error: Error, metricType: String) {
+    private func handleMetricError(_ error: Error) {
         switch error {
         case MetricsError.invalidURL:
-            TempoUtils.Warn(msg: "Error: Invalid URL for metrics: [\(metricType)]")
+            TempoUtils.Warn(msg: "Error: Invalid URL for metrics")
         case MetricsError.jsonEncodingFailed:
-            TempoUtils.Warn(msg: "Error: Failed to encode metrics data: [\(metricType)]")
+            TempoUtils.Warn(msg: "Error: Failed to encode metrics data")
         case MetricsError.emptyMetrics:
-            TempoUtils.Warn(msg: "Error: No metrics to push: [\(metricType)]")
+            TempoUtils.Warn(msg: "Error: No metrics to push")
         case MetricsError.missingJsonString:
-            TempoUtils.Warn(msg: "Error: Missing JSON string: [\(metricType)]")
+            TempoUtils.Warn(msg: "Error: Missing JSON string")
         case MetricsError.invalidHeaderValue:
-            TempoUtils.Warn(msg: "Error: Invalid header value: [\(metricType)]")
+            TempoUtils.Warn(msg: "Error: Invalid header value")
         default:
-            TempoUtils.Warn(msg: "An unknown error occurred: \(error) [\(metricType)]")
+            TempoUtils.Warn(msg: "An unknown error occurred: \(error)")
         }
     }
     
@@ -711,164 +712,132 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
     /// Cycles through all unpushed metrics and updates all LocationData values based on consent value at time of creation
     func pushHeldMetricsWithUpdatedLocationData() {
         
-        if(!metricList.isEmpty) {
-            for (index, _) in metricList.enumerated() {
-                
-                let preAdmin = metricList[index].location_data?.admin_area
-                let preLocality = metricList[index].location_data?.locality
-                
-                if(metricList[index].location_data?.consent == Constants.LocationConsent.NONE.rawValue) {
-                    
-                    // Delete any data related to personal location
-                    metricList[index].location_data?.postcode = nil
-                    metricList[index].location_data?.state = nil
-                    metricList[index].location_data?.postal_code = nil
-                    metricList[index].location_data?.country_code = nil
-                    metricList[index].location_data?.admin_area = nil
-                    metricList[index].location_data?.sub_admin_area = nil
-                    metricList[index].location_data?.locality = nil
-                    metricList[index].location_data?.sub_locality = nil
-                    
-                    TempoUtils.Say(msg: "🧹 NONE => \(metricList[index].metric_type ?? "TYPE?"): admin=[\(preAdmin ?? "nil"):nil)], locality=[\(preLocality ?? "nil"):nil]")
-                } else {
-                    // Confirm postcode has a value
-                    if let currentPostcode = TempoProfile.locData?.postcode, !currentPostcode.isEmpty {
-                        metricList[index].location_data?.postcode = currentPostcode
-                    } else {
-                        metricList[index].location_data?.postcode = nil
-                    }
-                    
-                    // Confirm state has a value
-                    if let currentState = TempoProfile.locData?.state, !currentState.isEmpty {
-                        metricList[index].location_data?.state = currentState
-                    } else {
-                        metricList[index].location_data?.state = nil
-                    }
-                    
-                    // Confirm postal code has a value
-                    if let currentPostalCode = TempoProfile.locData?.postal_code, !currentPostalCode.isEmpty {
-                        metricList[index].location_data?.postal_code = currentPostalCode
-                    } else {
-                        metricList[index].location_data?.postal_code = nil
-                    }
-                    
-                    // Confirm country code has a value
-                    if let currentCountryCode = TempoProfile.locData?.country_code, !currentCountryCode.isEmpty {
-                        metricList[index].location_data?.country_code = currentCountryCode
-                        metricList[index].country_code = currentCountryCode
-                        metricList[index].location = currentCountryCode
-                    } else {
-                        metricList[index].location_data?.country_code = nil
-                    }
-                    
-                    // Confirm admin area has a value
-                    if let currentAdminArea = TempoProfile.locData?.admin_area, !currentAdminArea.isEmpty {
-                        metricList[index].location_data?.admin_area = currentAdminArea
-                    } else {
-                        metricList[index].location_data?.admin_area = nil
-                    }
-                    
-                    // Confirm sub-admin area has a value
-                    if let currentSubAdminArea = TempoProfile.locData?.sub_admin_area, !currentSubAdminArea.isEmpty {
-                        metricList[index].location_data?.sub_admin_area = currentSubAdminArea
-                    } else {
-                        metricList[index].location_data?.sub_admin_area = nil
-                    }
-                    
-                    // Confirm locality has a value
-                    if let currentLocality = TempoProfile.locData?.locality, !currentLocality.isEmpty {
-                        metricList[index].location_data?.locality = currentLocality
-                    } else {
-                        metricList[index].location_data?.locality = nil
-                    }
-                    
-                    // Confirm locality has a value
-                    if let currentSubLocality = TempoProfile.locData?.sub_locality, !currentSubLocality.isEmpty {
-                        metricList[index].location_data?.sub_locality = currentSubLocality
-                    } else {
-                        metricList[index].location_data?.sub_locality = nil
-                    }
-                    
-                    TempoUtils.Say(msg: "🧹\(metricList[index].location_data?.consent ?? "NOT_NONE") => \(metricList[index].metric_type ?? "TYPE?"): admin=[\(preAdmin ?? "nil"):\(metricList[index].location_data?.postcode ?? "nil")], locality=[\(preLocality ?? "nil"):\(metricList[index].location_data?.state ?? "nil")]")
-                }
-            }
-            
-            // Push metrics with error handling
-            do {
-                try Metrics.pushMetrics(currentMetrics: &metricList, backupUrl: nil)
-                TempoUtils.Say(msg: "Metrics pushed successfully.")
-            } catch MetricsError.invalidURL {
-                TempoUtils.Warn(msg: "Error: Invalid URL")
-            } catch MetricsError.jsonEncodingFailed {
-                TempoUtils.Warn(msg: "Error: Failed to encode metrics data")
-            } catch MetricsError.emptyMetrics {
-                TempoUtils.Warn(msg: "Error: No metrics to push")
-            } catch MetricsError.missingJsonString {
-                TempoUtils.Warn(msg: "Error: Missing JSON string")
-            } catch MetricsError.invalidHeaderValue {
-                TempoUtils.Warn(msg: "Error: Invalid header value")
-            } catch {
-                TempoUtils.Warn(msg: "An unknown error occurred: \(error)")
-            }
-            
-        } else {
+        guard !metricList.isEmpty else {
             TempoUtils.Say(msg:"🧹 No metrics to push (EMPTY)")
+            return
         }
+        
+        // Update location/consent details for eacb Metric if needed
+        for (index, var metric) in metricList.enumerated() {
+            let preAdmin = metric.location_data?.admin_area
+            let preLocality = metric.location_data?.locality
+            
+            if metric.location_data?.consent == Constants.LocationConsent.NONE.rawValue {
+                clearSensitiveLocationData(&metric, preAdmin: preAdmin, preLocality: preLocality)
+            } else {
+                updateLocationDataFromTempoProfile(&metric)
+            }
+            
+            TempoUtils.Say(msg: "🧹\(metric.location_data?.consent ?? "NOT_NONE") => \(metric.metric_type ?? "TYPE?"): admin=[\(preAdmin ?? "nil"):\(metric.location_data?.postcode ?? "nil")], locality=[\(preLocality ?? "nil"):\(metric.location_data?.state ?? "nil")]")
+            
+            metricList[index] = metric
+        }
+        
+        do {
+            try pushMetrics()
+        } catch {
+            handleMetricError(error)
+        }
+    }
+    
+    /// Clears sensitive location data if consent is NONE
+    private func clearSensitiveLocationData(_ metric: inout Metric, preAdmin: String?, preLocality: String?) {
+        // Delete any data related to personal location
+        metric.location_data?.postcode = nil
+        metric.location_data?.state = nil
+        metric.location_data?.postal_code = nil
+        metric.location_data?.country_code = nil
+        metric.location_data?.admin_area = nil
+        metric.location_data?.sub_admin_area = nil
+        metric.location_data?.locality = nil
+        metric.location_data?.sub_locality = nil
+        
+        TempoUtils.Say(msg: "🧹 NONE => \(metric.metric_type ?? "TYPE?"): admin=[\(preAdmin ?? "nil"):nil)], locality=[\(preLocality ?? "nil"):nil]")
+    }
+
+    /// Updates location data from TempoProfile
+    private func updateLocationDataFromTempoProfile(_ metric: inout Metric) {
+        metric.location_data?.postcode = TempoProfile.locData?.postcode ?? nil
+        metric.location_data?.state = TempoProfile.locData?.state ?? nil
+        metric.location_data?.postal_code = TempoProfile.locData?.postal_code ?? nil
+        metric.location_data?.country_code = TempoProfile.locData?.country_code ?? nil
+        metric.location_data?.admin_area = TempoProfile.locData?.admin_area ?? nil
+        metric.location_data?.sub_admin_area = TempoProfile.locData?.sub_admin_area ?? nil
+        metric.location_data?.locality = TempoProfile.locData?.locality ?? nil
+        metric.location_data?.sub_locality = TempoProfile.locData?.sub_locality ?? nil
+        
+//        // Original implementation example...
+//        // Confirm postcode has a value
+//        if let currentPostcode = TempoProfile.locData?.postcode, !currentPostcode.isEmpty {
+//            metricList[index].location_data?.postcode = currentPostcode
+//        } else {
+//            metricList[index].location_data?.postcode = nil
+//        }
     }
     
     /// Calculate gap at top needed based on device ttype
     @available(iOS 13.0, *)
     func getSafeAreaTop() -> CGFloat {
-        let keyWindow = UIApplication.shared.connectedScenes
-            .filter({$0.activationState == .foregroundActive})
-            .map({$0 as? UIWindowScene})
-            .compactMap({$0})
+        guard let keyWindow = UIApplication.shared.connectedScenes
+            .filter({ $0.activationState == .foregroundActive })
+            .map({ $0 as? UIWindowScene })
+            .compactMap({ $0 })
             .first?.windows
-            .filter({$0.isKeyWindow}).first
+            .first(where: { $0.isKeyWindow })
+        else {
+            return 0
+        }
         
-        return keyWindow?.safeAreaInsets.top ?? 0
+        return keyWindow.safeAreaInsets.top
     }
     
     /// Calculate gap at bottom needed based on device ttype
     @available(iOS 13.0, *)
     func getSafeAreaBottom() -> CGFloat {
-        let keyWindow = UIApplication.shared.connectedScenes
-            .filter({$0.activationState == .foregroundActive})
-            .map({$0 as? UIWindowScene})
-            .compactMap({$0})
+        guard let keyWindow = UIApplication.shared.connectedScenes
+            .filter({ $0.activationState == .foregroundActive })
+            .map({ $0 as? UIWindowScene })
+            .compactMap({ $0 })
             .first?.windows
-            .filter({$0.isKeyWindow}).first
+            .first(where: { $0.isKeyWindow })
+        else {
+            return 0
+        }
         
-        return keyWindow?.safeAreaInsets.bottom ?? 0
+        return keyWindow.safeAreaInsets.bottom
     }
     
     /// Shuts down Tempo ads as a type of nuclear option
     func abortTempo() {
-        TempoUtils.Warn(msg: "Abrupt Tempo shutdown (state=\(adState!))")
+        // If no ad state, abort now
+        guard let adState = adState else {
+            TempoUtils.Warn(msg: "Abrupt Tempo shutdown: adState is nil")
+            self.processAdFetchFailed(reason: "WKWebView navigation failure (adState=nil)")
+            return
+        }
         
         // Invoke failure callbacks
-        if(adState == AdState.loading)
-        {
-            self.processAdFetchFailed(reason: "WKWebView navigation failure")
-        }
-        else if(adState == AdState.showing)
-        {
-            self.processAdShowFailed(reason: "WKWebView navigation failure")
-
+        switch adState {
+        case AdState.loading:
+            processAdFetchFailed(reason: "WKWebView navigation failure during loading")
+        case AdState.showing:
+            processAdShowFailed(reason: "WKWebView navigation failure during showing")
             // Close the iOS WebView - this should return to original view this was called against
             closeAd()
+        default:
+            TempoUtils.Warn(msg: "Unhandled adState: \(adState)")
         }
     }
     
     /// WebView fail delegate (ProvisionalNavigation)
     public func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
-        //TempoUtils.Shout(msg: "❌ didFailProvisionalNavigation FAILURE")
+        //TempoUtils.Warn(msg: "❌ didFailProvisionalNavigation FAILURE: \(error.localizedDescription)")
         abortTempo()
     }
     
     /// WebView fail delegate (General fail)
     public func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
-        //TempoUtils.Shout(msg: "❌ didFail FAILURE")
+        //TempoUtils.Shout(msg: "❌ didFail FAILURE: \(error.localizedDescription)")
         abortTempo()
     }
     
@@ -881,11 +850,12 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
     public func loadSpecificCampaignAd(isInterstitial: Bool, campaignId:String) {
         adState = AdState.loading
         TempoUtils.Say(msg: "load specific url \(isInterstitial ? "INTERSTITIAL": "REWARDED")")
+        
         do {
             try setupWKWebview()
         } catch let error {
+            self.adState = AdState.dormant
             DispatchQueue.main.async {
-                self.adState = AdState.dormant
                 self.processAdFetchFailed(reason: "Could not create WKWebView for specific campaign: \(error.localizedDescription)")
             }
             return
@@ -895,13 +865,24 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
         adId = "TEST"
         appId = "TEST"
         self.isInterstitial = isInterstitial
-        //let urlComponent = isInterstitial ? TempoConstants.URL_INT : TempoConstants.URL_REW
+        
+        // Add metric for ad load request
         self.addMetric(metricType: "CUSTOM_AD_LOAD_REQUEST")
-        //let url = URL(string: "https://ads.tempoplatform.com/\(urlComponent)/\(campaignId)/ios")!
-        let url = URL(string: TempoUtils.getFullWebUrl(isInterstitial: isInterstitial, campaignId: campaignId, urlSuffix: nil))!
-        //self.campaignId = campaignId
+        
+        // Generate URL based on interstitial type and campaign ID
+        guard let url = URL(string: TempoUtils.getFullWebUrl(isInterstitial: isInterstitial, campaignId: campaignId, urlSuffix: nil)) else {
+            adState = .dormant
+            DispatchQueue.main.async {
+                self.processAdFetchFailed(reason: "Invalid URL for campaign \(campaignId)")
+            }
+            return
+        }
+        
+        // Check for test campaign and set campaign ID accordingly
         self.campaignId = TempoUtils.checkForTestCampaign(campaignId: campaignId)
-        self.webViewAd.load(URLRequest(url: url))
+        
+        // Load the ad in the web view
+        webViewAd.load(URLRequest(url: url))
     }
 }
 
@@ -914,6 +895,8 @@ class FullScreenWKWebView: WKWebView {
     
     override init(frame: CGRect, configuration: WKWebViewConfiguration) {
         super.init(frame: frame, configuration: configuration)
+
+        // Additional configurations
         self.allowsBackForwardNavigationGestures = true
         self.scrollView.isScrollEnabled = false
         self.scrollView.bounces = false
