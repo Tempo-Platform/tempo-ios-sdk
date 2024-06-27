@@ -213,6 +213,7 @@ public class TempoDataBackup
         
         // Validate backup location exists with UserDefaults using 'locationData' key
         guard let savedLocationData = UserDefaults.standard.data(forKey: Constants.Backup.LOC_BACKUP_REF) else {
+            TempoUtils.Warn(msg: "Could not find cache location for LocData")
             throw LocationDataError.missingBackupData
         }
         
@@ -222,6 +223,7 @@ public class TempoDataBackup
             TempoUtils.Say(msg: "🌎 Most recent location backed up: admin=\(decodedLocation.admin_area ?? "nil"), locality=\(decodedLocation.locality ?? "nil")")
             return decodedLocation
         } catch {
+            TempoUtils.Warn(msg: "Error decoding existing LocData JSON: \(error)")
             throw LocationDataError.decodingFailed(error)
         }
     }
