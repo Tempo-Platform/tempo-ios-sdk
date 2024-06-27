@@ -119,40 +119,57 @@ public class TempoUtils {
     //    }
     //
     /// Returns web URL of ad content with customised parameters
-    public static func getFullWebUrl(isInterstitial: Bool, campaignId: String, urlSuffix: String?) -> String {
+    public static func getFullWebUrl(isInterstitial: Bool, campaignId: String, urlSuffix: String?) throws -> String {
         var webAdUrl: String
         
-        let checkedCampaignId = checkForTestCampaign(campaignId: campaignId)
-        
-        if(isInterstitial) {
-            webAdUrl = "\(getInterstitialUrl())/\(checkedCampaignId!)"
+        do{
+            guard let checkedCampaignId = try checkForTestCampaign(campaignId: campaignId) else {
+                TempoUtils.Warn(msg: "No valid campaign ID, cannot continue")
+                throw WebURLError.invalidCampaignId // TODO: When is this caught, here or calling method?
+            }
+         
+            if(isInterstitial) {
+                webAdUrl = "\(getInterstitialUrl())/\(checkedCampaignId)"
+            }
+            else {
+                webAdUrl = "\(getRewardedUrl())/\(checkedCampaignId)"
+            }
+            
+            // If additional URL suffix valid, place at the end of the string
+            if let suffix = urlSuffix, !suffix.isEmpty {
+                webAdUrl.append("\(suffix)")
+            }
+            
+            TempoUtils.Say(msg: "🌏 Web URL: \(webAdUrl)")
+            
+            return webAdUrl
+            
+        } catch WebURLError.invalidCustomCampaignID {
+            throw WebURLError.invalidCustomCampaignID
+        } catch {
+            throw WebURLError.invalidCampaignId
         }
-        else {
-            webAdUrl = "\(getRewardedUrl())/\(checkedCampaignId!)"
-        }
-        
-        // If additional URL suffix valid, place at the end of the string
-        if let suffix = urlSuffix, !suffix.isEmpty {
-            webAdUrl.append("\(suffix)")
-        }
-        
-        TempoUtils.Say(msg: "🌏 Web URL: \(webAdUrl)")
-        
-        return webAdUrl
     }
     
     /// Checks local UI testing variables to see if there is a custom Campaign ID to overwrite the one returned from ads API
-    internal static func checkForTestCampaign(campaignId: String!) -> String! {
+    internal static func checkForTestCampaign(campaignId: String!) throws -> String! {
         
-        let customCampaignTrimmed: String? = TempoTesting.instance?.customCampaignId?.trimmingCharacters(in: .whitespacesAndNewlines)
-        let invalidString = customCampaignTrimmed?.isEmpty ?? true
-        //print("💥 customCampaignTrimmed: \(customCampaignTrimmed ?? "NOTHING") | invalidString: \(invalidString)")
-        
-        if (!invalidString && (TempoTesting.instance?.isTestingCustomCampaigns ?? false)) {
-            return TempoTesting.instance?.customCampaignId
+        if(campaignId != nil && !campaignId.isEmpty) {
+            
+            if (TempoTesting.instance?.isTestingCustomCampaigns ?? false) {
+                guard let customCampaignId = TempoTesting.instance?.customCampaignId?.trimmingCharacters(in: .whitespacesAndNewlines), !customCampaignId.isEmpty else {
+                    throw WebURLError.invalidCustomCampaignID
+                }
+                
+                return customCampaignId
+            }
+        }
+        else{
+            throw WebURLError.invalidCampaignId
         }
         
-        return campaignId
+        
+        return campaignId;
     }
     
     /// Returns URL for Rewarded Ads

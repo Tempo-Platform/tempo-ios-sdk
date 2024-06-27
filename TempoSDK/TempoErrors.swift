@@ -74,3 +74,9 @@ enum WebViewError: Error {
     case backgroundViewCreationFailed
     case configurationFailed
 }
+
+enum WebURLError: Error {
+    case invalidCampaignId
+    case invalidURLSuffix
+    case invalidCustomCampaignID
+}
