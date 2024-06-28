@@ -384,22 +384,41 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
                             self.addMetric(metricType: Constants.NO_FILL)
                         case Constants.OK:
                             // Loads ad from URL with id reference
-                            DispatchQueue.main.async {
-                                guard let campaignId = responseSuccess.id, !campaignId.isEmpty else {
-                                    // Send failure trigger and reset state
-                                    errorMsg = "200 - CampaignId was nil"
-                                    self.adState = AdState.dormant
-                                    self.processAdFetchFailed(reason: errorMsg)
-                                    return
+                            guard let campaignId = responseSuccess.id, !campaignId.isEmpty else {
+                                // Send failure trigger and reset state
+                                errorMsg = "Campaign ID invalid"
+                                self.adState = AdState.dormant
+                                self.processAdFetchFailed(reason: errorMsg)
+                                return
+                            }
+
+                                
+                            do {
+                                let url = URL(string: try TempoUtils.getFullWebUrl(isInterstitial: self.isInterstitial, campaignId: campaignId, urlSuffix: responseSuccess.location_url_suffix))!
+                                
+                                self.lastestURL = url.absoluteString
+                                self.campaignId = try TempoUtils.checkForTestCampaign(campaignId: campaignId)
+                                self.adState = AdState.dormant
+                                
+                                DispatchQueue.main.async {
+                                    self.webViewAd.load(URLRequest(url: url))
                                 }
                                 
-                                let url = URL(string: TempoUtils.getFullWebUrl(isInterstitial: self.isInterstitial, campaignId: campaignId, urlSuffix: responseSuccess.location_url_suffix))!
-                                self.lastestURL = url.absoluteString
-                                self.campaignId = TempoUtils.checkForTestCampaign(campaignId: campaignId)
-                                self.webViewAd.load(URLRequest(url: url))
-                                self.adState = AdState.dormant
+                                TempoUtils.Shout(msg: "---- A ----")
+                                return
                             }
-                            return
+                            catch WebURLError.invalidCampaignId {
+                                errorMsg = "200 - Custom campaign ID invalid"
+                            }
+                            catch WebURLError.invalidCustomCampaignID {
+                                errorMsg = "200 - Campaign ID invalid"
+                            }
+                            catch {
+                                errorMsg = "200 - Unknown error while loading ad"
+                            }
+                            
+                            TempoUtils.Shout(msg: "---- B ----")
+                            
                         default:
                             errorMsg = "200 - Unexpected data returned"
                         }
@@ -869,20 +888,40 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
         // Add metric for ad load request
         self.addMetric(metricType: "CUSTOM_AD_LOAD_REQUEST")
         
-        // Generate URL based on interstitial type and campaign ID
-        guard let url = URL(string: TempoUtils.getFullWebUrl(isInterstitial: isInterstitial, campaignId: campaignId, urlSuffix: nil)) else {
-            adState = .dormant
-            DispatchQueue.main.async {
-                self.processAdFetchFailed(reason: "Invalid URL for campaign \(campaignId)")
+        var errorMsg: String = "Unknown"
+        do {
+            // Generate URL based on interstitial type and campaign ID
+            guard let url = URL(string: try TempoUtils.getFullWebUrl(isInterstitial: isInterstitial, campaignId: campaignId, urlSuffix: nil)) else {
+                
+                TempoUtils.Shout(msg: "---- 0 (fail) ----")
+                adState = .dormant
+                DispatchQueue.main.async {
+                    self.processAdFetchFailed(reason: "Invalid URL for campaign \(campaignId)")
+                }
+                return
             }
+            
+            // Check for test campaign and set campaign ID accordingly
+            self.campaignId = try TempoUtils.checkForTestCampaign(campaignId: campaignId)
+            
+            // Load the ad in the web view
+            webViewAd.load(URLRequest(url: url))
+            
+            TempoUtils.Shout(msg: "---- 1 (suc) ----")
             return
+            
+        } catch WebURLError.invalidCampaignId {  errorMsg = "200 - Custom campaign ID invalid"
+        } catch WebURLError.invalidCustomCampaignID {   errorMsg = "200 - Campaign ID invalid"
+        } catch { errorMsg = "200 - Unknown error while loading ad"
         }
         
-        // Check for test campaign and set campaign ID accordingly
-        self.campaignId = TempoUtils.checkForTestCampaign(campaignId: campaignId)
+        TempoUtils.Shout(msg: "---- 2 (err) ----")
         
-        // Load the ad in the web view
-        webViewAd.load(URLRequest(url: url))
+        // If ends here, we have failed so exit
+        adState = .dormant
+        DispatchQueue.main.async {
+            self.processAdFetchFailed(reason: errorMsg)
+        }
     }
 }
 
