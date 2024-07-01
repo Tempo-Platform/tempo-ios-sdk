@@ -240,18 +240,8 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
             do {
                 try Metrics.pushMetrics(currentMetrics: &metricList, backupUrl: nil)
                 TempoUtils.Say(msg: "Metrics pushed successfully.")
-            } catch MetricsError.invalidURL {
-                TempoUtils.Warn(msg: "Error: Invalid URL")
-            } catch MetricsError.jsonEncodingFailed {
-                TempoUtils.Warn(msg: "Error: Failed to encode metrics data")
-            } catch MetricsError.emptyMetrics {
-                TempoUtils.Warn(msg: "Error: No metrics to push")
-            } catch MetricsError.missingJsonString {
-                TempoUtils.Warn(msg: "Error: Missing JSON string")
-            } catch MetricsError.invalidHeaderValue {
-                TempoUtils.Warn(msg: "Error: Invalid header value")
             } catch {
-                TempoUtils.Warn(msg: "An unknown error occurred: \(error)")
+                TempoUtils.Warn(msg: "Error pushing metrics on close: \(error)")
             }
         }
         
@@ -587,11 +577,6 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
         if(Constants.MetricType.METRIC_OUTPUT_TYPES.contains(webMsg))
         {
             TempoUtils.Say(msg: "WEB: \(webMsg)", absoluteDisplay: true)
-        }
-        
-        // Can close ad
-        if(webMsg == Constants.MetricType.CLOSE_AD) {
-            self.closeAd()
         }
         
         // Handle any actionable commands

@@ -22,6 +22,7 @@ public class Metrics {
         
         // Confirm url is not nil
         guard let url = URL(string: TempoUtils.getMetricsUrl()) else {
+            TempoUtils.Warn(msg: "Invalid URL for metrics")
             throw MetricsError.invalidURL
         }
         
@@ -41,6 +42,7 @@ public class Metrics {
             metricListCopy = TempoDataBackup.fileMetric[backupUrl] ?? []
             // Confirm valid JSON from backup Metric list
             guard let jsonEncodedBackupData = try? JSONEncoder().encode(metricListCopy) else {
+                TempoUtils.Warn(msg: "Error: Failed to encode backup metrics data")
                 throw MetricsError.jsonEncodingFailed
             }
             metricData = jsonEncodedBackupData
@@ -48,6 +50,7 @@ public class Metrics {
             metricListCopy = currentMetrics
             // Confirm valid JSON from Metric list
             guard let jsonEncodedMetricData = try? JSONEncoder().encode(currentMetrics) else {
+                TempoUtils.Warn(msg: "Error: Failed to encode metrics data")
                 throw MetricsError.jsonEncodingFailed
             }
             metricData = jsonEncodedMetricData
@@ -88,7 +91,10 @@ public class Metrics {
             request.addValue(Constants.Web.APPLICATION_JSON, forHTTPHeaderField: Constants.Web.HEADER_ACCEPT)
             let metricTimeValue = String(Int(Date().timeIntervalSince1970))
             // Confirm valid date/time first
-            guard !metricTimeValue.isEmpty else { throw MetricsError.invalidHeaderValue }
+            guard !metricTimeValue.isEmpty else {
+                TempoUtils.Warn(msg: "Invalid header value for X-Timestamp header")
+                throw MetricsError.invalidHeaderValue
+            }
             request.addValue(metricTimeValue, forHTTPHeaderField: Constants.Web.HEADER_METRIC_TIME)
             
             // Create dataTask using the session object to send data to the server
@@ -144,7 +150,7 @@ public class Metrics {
             
             task.resume()
         } catch MetricsError.missingJsonString {
-            TempoUtils.Warn(msg: "Error: Missing JSON string")
+            TempoUtils.Warn(msg: "Missing JSON string")
         } catch {
             TempoUtils.Warn(msg: "An unknown error occurred: \(error)")
         }
