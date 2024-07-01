@@ -41,14 +41,14 @@ public class Metrics {
             metricListCopy = TempoDataBackup.fileMetric[backupUrl] ?? []
             // Confirm valid JSON from backup Metric list
             guard let jsonEncodedBackupData = try? JSONEncoder().encode(metricListCopy) else {
-                throw MetricsError.jsonEncodingFailed // TODO: COnsequencs of this failing?
+                throw MetricsError.jsonEncodingFailed
             }
             metricData = jsonEncodedBackupData
         } else {
             metricListCopy = currentMetrics
             // Confirm valid JSON from Metric list
             guard let jsonEncodedMetricData = try? JSONEncoder().encode(currentMetrics) else {
-                throw MetricsError.jsonEncodingFailed // TODO: Consequencs of this failing?
+                throw MetricsError.jsonEncodingFailed
             }
             metricData = jsonEncodedMetricData
             currentMetrics.removeAll()
@@ -67,21 +67,22 @@ public class Metrics {
         // For printout only (Metric type list)
         var metricOutput = "Metrics (x\(outMetricList?.count ?? 0))"
         for metric in outMetricList!{
-            metricOutput += "\n  - \(metric.metric_type ?? "<TYPE_UNKNOWN>")"
+            metricOutput += "\n  > \(metric.metric_type ?? "<TYPE_UNKNOWN>")"
         }
         TempoUtils.Say(msg: "📊 \(metricOutput)")
         
         // For printout only (Metrics JSON payload)
-        guard let jsonString = String(data: metricData ?? Data(), encoding: .utf8) else {
-            throw MetricsError.missingJsonString // TODO: Do I really want to throw here..?
+        do {
+            let metricJsonString = String(data: metricData ?? Data(), encoding: .utf8)
+            let formattedOutput = try formatMetricsOutput(jsonString: metricJsonString)
+            TempoUtils.Say(msg: "📊 Payload: " + formattedOutput)
+        }
+        catch {
+            TempoUtils.Warn(msg: "📊 Payload: ERROR - could not convert metricData to JSON string")
         }
         
         // On JSON metrics validation, create metrics POST request
         do {
-            let formattedOutput = try formatMetricsOutput(jsonString: jsonString)
-            TempoUtils.Say(msg: "📊 Payload: " + formattedOutput)
-            
-            // HTTP Headers
             // Super-pedantic header validation
             request.addValue(Constants.Web.APPLICATION_JSON, forHTTPHeaderField: Constants.Web.HEADER_CONTENT_TYPE)
             request.addValue(Constants.Web.APPLICATION_JSON, forHTTPHeaderField: Constants.Web.HEADER_ACCEPT)
