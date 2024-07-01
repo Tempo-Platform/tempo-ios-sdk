@@ -65,7 +65,12 @@ class ViewController: UIViewController, TempoAdListener {
         self.modalPresentationStyle = .fullScreen
         
         // Inititalise Tempo SDK
-        TempoDataBackup.checkHeldMetrics(completion: Metrics.pushMetrics)
+        do{
+            try TempoDataBackup.checkHeldMetrics(completion: Metrics.pushMetrics)
+        } catch {
+            TempoUtils.Warn(msg: "Error checking backups: \(error)")
+        }
+        
         initializeUIButtons();
     }
     
