@@ -21,7 +21,6 @@ public class ResponseUnprocessable: Decodable {
                 TempoUtils.Warn(msg: "[422]: msg=\(detail.msg ?? "nil"), type=\(detail.type ?? "nil"), loc=\(detail.loc ?? ["n/a"])")
             }
         }
-        
     }
 }
 
@@ -265,5 +264,11 @@ public class TempoUtils {
     /// Retuns string of 'INTERSTITIAL' or 'REWARDED' for debugging purposes
     public static func getAdTypeString(isInterstitial: Bool) -> String {
         return isInterstitial ? "INTERSTITIAL": "REWARDED"
+    }
+    
+    public static func openUrlInBrowser(url: String) {
+        if let validatedUrl = URL(string: url) {
+            UIApplication.shared.open(validatedUrl, options: [:], completionHandler: nil)
+        }
     }
 }

@@ -564,34 +564,62 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
     /// Create controller that provides a way for JavaScript to post messages to a web view.
     public func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
         
+        let refList: [String] = [Constants.MetricType.CLOSE_AD, Constants.MetricType.IMAGES_LOADED ] + Constants.MetricType.METRIC_OUTPUT_TYPES
+        
+        // JSON formatted?
+        if let data = message.body as? [String : Any],
+           let msgTypeString = data["msgType"] as? String,
+           let urlString = data["url"] as? String {
+            if(msgTypeString == "OPEN_EXTERNAL_URL") {
+                TempoUtils.Say(msg: "🌏🌏🌏 Opening browser: \(urlString)")
+                TempoUtils.openUrlInBrowser(url : urlString)
+                self.addMetric(metricType: msgTypeString)
+                return
+            } else {
+                TempoUtils.Say(msg: "🤷‍♂️🤷‍♂️🤷‍♂️ Unknown message type: \(msgTypeString)")
+            }
+        } else if(message.body as? String != nil) {
+            let bodyString = message.body as! String
+            
+            if refList.contains(bodyString) {
+                print(bodyString)
+                
+                // Send metric for web message
+                self.addMetric(metricType: bodyString)
+                
+                // Output metric message
+                if(Constants.MetricType.METRIC_OUTPUT_TYPES.contains(bodyString))
+                {
+                    TempoUtils.Say(msg: "WEB: \(bodyString)", absoluteDisplay: true)
+                }
+                
+                // Handle any actionable commands
+                var jsMsg = "JS: \(bodyString)"
+                switch(bodyString) {
+                case Constants.MetricType.CLOSE_AD:
+                    jsMsg.append(" 🔫 Oh! CLOSE_AD!")
+                    self.closeAd()
+//                case "TIMER_COMPLETED":
+//                    jsMsg.append(" 🔫 Oh! TIMER_COMPLETED!")
+//                    TempoUtils.openUrlInBrowser(url: "https://www.shopcider.com/")
+                case Constants.MetricType.IMAGES_LOADED:
+                    jsMsg.append(" 🔫 Oh! IMAGES_LOADED!")
+                    listener.onTempoAdFetchSucceeded(isInterstitial: self.isInterstitial)
+                    self.addMetric(metricType: Constants.MetricType.LOAD_SUCCESS)
+                default: //
+                    jsMsg.append(" ❌ Oh! \(bodyString) (unused)")
+                }
+                TempoUtils.Say(msg: jsMsg)
+                return;
+            }
+        }
+        
         // Make sure body is at least a String
         guard let webMsg = message.body as? String else {
             TempoUtils.Warn(msg: "Invalid message format received: \(message.body)")
             return
         }
         
-        // Send metric for web message
-        self.addMetric(metricType: webMsg)
-        
-        // Output metric message
-        if(Constants.MetricType.METRIC_OUTPUT_TYPES.contains(webMsg))
-        {
-            TempoUtils.Say(msg: "WEB: \(webMsg)", absoluteDisplay: true)
-        }
-        
-        // Handle any actionable commands
-        var jsMsg = "JS: \(webMsg)"
-        switch(webMsg) {
-        case Constants.MetricType.CLOSE_AD:
-            self.closeAd()
-        case Constants.MetricType.IMAGES_LOADED:
-            listener.onTempoAdFetchSucceeded(isInterstitial: self.isInterstitial)
-            self.addMetric(metricType: Constants.MetricType.LOAD_SUCCESS)
-        default: //
-            jsMsg.append(" (unused)")
-        }
-        
-        TempoUtils.Say(msg: jsMsg)
     }
     
     /// Creates and returns new LocationData from current static singleton that doesn't retain its memory references (clears all if NONE consent)
