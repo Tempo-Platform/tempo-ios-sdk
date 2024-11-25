@@ -319,6 +319,7 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
         // Request with validated URL
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
+        
         request.addValue(Constants.Web.APPLICATION_JSON, forHTTPHeaderField: Constants.Web.HEADER_CONTENT_TYPE)
         
         // Reformat the url string for easier readibility
@@ -376,7 +377,7 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
                                 self.lastestURL = url.absoluteString
                                 self.campaignId = try TempoUtils.checkForTestCampaign(campaignId: campaignId)
                                 self.adState = AdState.dormant
-                                
+                                TempoUtils.Say(msg: "🧨 URL: \(self.lastestURL!)")
                                 DispatchQueue.main.async {
                                     self.webViewAd.load(URLRequest(url: url))
                                 }
@@ -564,62 +565,58 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
     /// Create controller that provides a way for JavaScript to post messages to a web view.
     public func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
         
-        let refList: [String] = [Constants.MetricType.CLOSE_AD, Constants.MetricType.IMAGES_LOADED ] + Constants.MetricType.METRIC_OUTPUT_TYPES
+        // List of single-word keys as function references
+        let actionList: [String] = [ Constants.MetricType.CLOSE_AD, Constants.MetricType.IMAGES_LOADED ]
         
-        // JSON formatted?
-        if let data = message.body as? [String : Any],
-           let msgTypeString = data["msgType"] as? String,
-           let urlString = data["url"] as? String {
-            if(msgTypeString == "OPEN_EXTERNAL_URL") {
-                TempoUtils.Say(msg: "🌏🌏🌏 Opening browser: \(urlString)")
-                TempoUtils.openUrlInBrowser(url : urlString)
-                self.addMetric(metricType: msgTypeString)
-                return
-            } else {
-                TempoUtils.Say(msg: "🤷‍♂️🤷‍♂️🤷‍♂️ Unknown message type: \(msgTypeString)")
-            }
-        } else if(message.body as? String != nil) {
-            let bodyString = message.body as! String
-            
-            if refList.contains(bodyString) {
-                print(bodyString)
-                
-                // Send metric for web message
-                self.addMetric(metricType: bodyString)
-                
-                // Output metric message
-                if(Constants.MetricType.METRIC_OUTPUT_TYPES.contains(bodyString))
-                {
-                    TempoUtils.Say(msg: "WEB: \(bodyString)", absoluteDisplay: true)
-                }
-                
-                // Handle any actionable commands
-                var jsMsg = "JS: \(bodyString)"
-                switch(bodyString) {
-                case Constants.MetricType.CLOSE_AD:
-                    jsMsg.append(" 🔫 Oh! CLOSE_AD!")
-                    self.closeAd()
-//                case "TIMER_COMPLETED":
-//                    jsMsg.append(" 🔫 Oh! TIMER_COMPLETED!")
-//                    TempoUtils.openUrlInBrowser(url: "https://www.shopcider.com/")
-                case Constants.MetricType.IMAGES_LOADED:
-                    jsMsg.append(" 🔫 Oh! IMAGES_LOADED!")
-                    listener.onTempoAdFetchSucceeded(isInterstitial: self.isInterstitial)
-                    self.addMetric(metricType: Constants.MetricType.LOAD_SUCCESS)
-                default: //
-                    jsMsg.append(" ❌ Oh! \(bodyString) (unused)")
-                }
-                TempoUtils.Say(msg: jsMsg)
-                return;
-            }
-        }
-        
-        // Make sure body is at least a String
-        guard let webMsg = message.body as? String else {
+        // Ensure message body is a string
+        guard let bodyString = message.body as? String else {
             TempoUtils.Warn(msg: "Invalid message format received: \(message.body)")
             return
         }
+        TempoUtils.Say(msg: "WEB_MSG: \(bodyString)", absoluteDisplay: true)
         
+        // Check if known one-word reference
+        if actionList.contains(bodyString) {
+            // Send metric for web message
+            self.addMetric(metricType: bodyString)
+            
+            // Handle actionable commands
+            var jsMsg = "👀: "
+            switch bodyString {
+            case Constants.MetricType.CLOSE_AD:
+                jsMsg.append("CLOSE_AD")
+                self.closeAd()
+            case Constants.MetricType.IMAGES_LOADED:
+                jsMsg.append("IMAGES_LOADED")
+                listener.onTempoAdFetchSucceeded(isInterstitial: self.isInterstitial)
+                self.addMetric(metricType: Constants.MetricType.LOAD_SUCCESS)
+            default:
+                jsMsg.append("⚠️ \(bodyString) (unexpected)")
+            }
+            TempoUtils.Say(msg: jsMsg)
+        }
+        // Check if JSON format first
+        else if (TempoUtils.isPossiblyJSONObject(msg: bodyString)) {
+            if let jsonData = bodyString.data(using: .utf8) {
+                do {
+                    // Parse expected JSON data
+                    let redirect = try JSONDecoder().decode(Constants.Function_RedirectToUrl.self, from: jsonData)
+//                    TempoUtils.Say(msg: "Message Type: \(redirect.msgType)")
+//                    TempoUtils.Say(msg: "URL: \(redirect.url)")
+                    
+                    if redirect.msgType == "OPEN_URL_IN_EXTERNAL_BROWSER" {
+                        TempoUtils.openUrlInBrowser(url: redirect.url)
+                    }
+                } catch {
+                    TempoUtils.Warn(msg: "❌ Failed to decode JSON: \(error)")
+                }
+            } else {
+                TempoUtils.Warn(msg: "❌ Failed to create JSON data from string: \(bodyString)")
+            }
+        }
+        else {
+            TempoUtils.Say(msg: "🆗 \(bodyString)")
+        }
     }
     
     /// Creates and returns new LocationData from current static singleton that doesn't retain its memory references (clears all if NONE consent)
@@ -694,7 +691,6 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
             TempoUtils.Warn(msg: "An unknown error occurred: \(error)")
         }
     }
-    
     
     /// Create a Metric instance based on current ad's class properties
     private func createMetric(metricType: String) throws -> Metric {

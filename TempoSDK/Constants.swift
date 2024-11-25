@@ -2,7 +2,7 @@
 
 public struct Constants {
     
-    public static let SDK_VERSIONS = "1.7.1-rc.0"
+    public static let SDK_VERSIONS = "1.7.1-rc.1"
     static let NO_FILL = "NO_FILL"
     static let OK = "OK"
     static let UNDEF = "UNDEFINED"
@@ -100,8 +100,14 @@ public struct Constants {
         public static let allValues = [DEV, STG, PRD]
     }
     
+    // JSON received structure
+    struct Function_RedirectToUrl: Codable {
+        var msgType: String
+        var url: String
+    }
+    
     // Test tool variables
-    public static var environment: Environment = Environment.DEV
-    public static var isVerboseDebugging = true
+    public static var environment: Environment = Environment.PRD
+    public static var isVerboseDebugging = false
     
 }
