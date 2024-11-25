@@ -604,7 +604,7 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
 //                    TempoUtils.Say(msg: "Message Type: \(redirect.msgType)")
 //                    TempoUtils.Say(msg: "URL: \(redirect.url)")
                     
-                    if redirect.msgType == "OPEN_URL_IN_EXTERNAL_BROWSER" {
+                    if redirect.msgType == Constants.MetricType.OPEN_URL_IN_EXTERNAL_BROWSER {
                         TempoUtils.openUrlInBrowser(url: redirect.url)
                     }
                 } catch {
