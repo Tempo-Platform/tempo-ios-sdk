@@ -60,7 +60,6 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
         }
         TempoUtils.Say(msg: "Ad ID: \(adId!)")
     }
-    
     /// Ignore requirement to implement required initializer ‘init(coder:) in it.
     @available(*, unavailable, message: "Nibs are unsupported")
     public required init?(coder aDecoder: NSCoder) {
@@ -76,6 +75,7 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
         
         // Create WKWebView instance
         do {
+            TempoUtils.Say(msg: "⭐️⭐️⭐️ setupWKWebview...")
             try setupWKWebview()
         } catch let error {
             // Fails if cannot get WkWebView
@@ -202,7 +202,15 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
         adState = AdState.showing
         
         // Add content view
-        self.parentVC!.view.addSubview(self.webViewBackground)
+//        self.parentVC!.view.addSubview(self.webViewBackground)
+        if let unityVC = UIApplication.shared.windows.first?.rootViewController {
+            
+            TempoUtils.Say(msg: "🌟🌟🌟 Presenting adView... ")
+            
+            unityVC.present(self, animated: true, completion: nil)
+            
+            self.view.addSubview(self.webViewBackground)
+        }
         
         // Send SHOW metric and call activate DISPLAYED listener
         addMetric(metricType: Constants.MetricType.SHOW)
@@ -254,17 +262,25 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
         // Safely update adState
         self.adState = AdState.dormant
         
-        // Ensure this code runs on the main thread
-        DispatchQueue.main.async {
+        if let unityVC = UIApplication.shared.windows.first?.rootViewController {
             
-            // Safely remove web views from their superviews
-            self.webViewBackground?.removeFromSuperview()
-            self.webViewAd?.removeFromSuperview()
+            TempoUtils.Say(msg: "🌟🌟🌟 Presenting adView... ")
+            unityVC.dismiss(animated: true, completion: nil)
             
-            // Set web views to nil to release memory
-            self.webViewAd = nil
-            self.webViewBackground = nil
+            // Ensure this code runs on the main thread
+            DispatchQueue.main.async {
+                
+                // Safely remove web views from their superviews
+//                self.webViewBackground?.removeFromSuperview()
+//                self.webViewAd?.removeFromSuperview()
+                
+                // Set web views to nil to release memory
+                self.webViewAd = nil
+                self.webViewBackground = nil
+            }
         }
+        
+        
     }
     
     /// Checks is consented Ad ID exists and returns (nullable) value
@@ -527,6 +543,7 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
         let configuration = getWKWebViewConfiguration()
         
         // Create WKWebView object
+        TempoUtils.Say(msg: "🌟🌟🌟 Creating WKWebView... ")
         webViewAd = FullScreenAdWebView(frame: webViewFrame, configuration: configuration)
         if(webViewAd == nil){ throw WebViewError.webViewCreationFailed }
         webViewAd.navigationDelegate = self
@@ -920,6 +937,38 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
             self.processAdFetchFailed(reason: errorMsg)
         }
     }
+    
+    
+    public override var shouldAutorotate: Bool {
+        return false // Prevents rotation
+    }
+
+    public override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
+        return .portrait // Locks to portrait mode
+    }
+    
+    // **Force portrait when view appears**
+    public override func viewWillAppear(_ animated: Bool) {
+        TempoUtils.Say(msg: "🌟🌟🌟 viewWillAppear... ")
+        
+        super.viewWillAppear(animated)
+        UIDevice.current.setValue(UIInterfaceOrientation.portrait.rawValue, forKey: "orientation")
+        UIViewController.attemptRotationToDeviceOrientation()
+        if #available(iOS 16.0, *) {
+            self.setNeedsUpdateOfSupportedInterfaceOrientations()
+        } else {
+            // Fallback on earlier versions
+        }
+    }
+    
+    public override func viewWillDisappear(_ animated: Bool) {
+            super.viewWillDisappear(animated)
+        
+            TempoUtils.Say(msg: "🌟🌟🌟 viewWillDisappear... ")
+            // Restore Unity's rotation settings
+            UIDevice.current.setValue(UIInterfaceOrientation.unknown.rawValue, forKey: "orientation")
+            UIViewController.attemptRotationToDeviceOrientation()
+        }
 }
 
 
