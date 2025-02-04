@@ -202,12 +202,50 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
         adState = AdState.showing
         
         // Add content view
-//        self.parentVC!.view.addSubview(self.webViewBackground)
+//        self.parentVC!.view.addSubview(self.webViewBackground) // BEFORE CHANGES
         if let unityVC = UIApplication.shared.windows.first?.rootViewController {
             
             TempoUtils.Say(msg: "🌟🌟🌟 Presenting adView... ")
             
+            
+            var safeAreaTop: CGFloat = 0.0
+            var safeAreaBottom: CGFloat = 0.0
+            var safeAreaLeft: CGFloat = 0.0
+            var safeAreaRight: CGFloat = 0.0
+            if #available(iOS 13.0, *) {
+                safeAreaTop = getSafeAreaTop()
+                safeAreaBottom = getSafeAreaBottom()
+                safeAreaLeft = getSafeAreaLeft()
+                safeAreaRight = getSafeAreaRight()
+            }
+            
+            
+            let inverse = UIScreen.main.bounds.width > UIScreen.main.bounds.height;
+            
+            let topOffset = inverse ? safeAreaLeft : safeAreaTop
+            let bottomOffset = inverse ? safeAreaRight : safeAreaBottom
+            let assumedWidth = inverse ? UIScreen.main.bounds.height : UIScreen.main.bounds.width
+            let assumedHeight = inverse ? UIScreen.main.bounds.width : UIScreen.main.bounds.height
+            // TODO: del as don't think we need variables now
+            let xStart = inverse ? 0.0 : 0.0
+            let yStart = inverse ? safeAreaLeft : safeAreaTop
+            
+            
+            TempoUtils.Say(msg: "🌟🌟🌟 Presenting adView..." +
+               "\n inverse: \(inverse) " +
+               "\n safeAreaTop: \(safeAreaTop)" +
+               "\n safeAreaLeft: \(safeAreaLeft)" +
+               "\n safeAreaBottom: \(safeAreaTop)" +
+               "\n safeAreaRight: \(safeAreaLeft)" +
+               "\n assumedWidth: \(assumedWidth)" +
+               "\n assumedHeight: \(assumedHeight)")
+            
+            self.webViewBackground.frame = CGRect(x: 0, y: 0, width: assumedWidth, height: assumedHeight)
+            
+            // Presents as primary
             unityVC.present(self, animated: true, completion: nil)
+            
+            self.webViewAd.frame = CGRect(x: xStart, y: yStart, width: assumedWidth, height: assumedHeight - topOffset - bottomOffset )
             
             self.view.addSubview(self.webViewBackground)
         }
@@ -532,6 +570,11 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
             safeAreaTop = getSafeAreaTop()
             safeAreaBottom = getSafeAreaBottom()
         }
+//        
+//        let inverse = UIScreen.main.bounds.width > UIScreen.main.bounds.height;
+//        let assumedWidth = inverse ? UIScreen.main.bounds.height : UIScreen.main.bounds.width
+//        let assumedHeight = inverse ? UIScreen.main.bounds.width : UIScreen.main.bounds.height
+        
         let webViewFrame = CGRect(
             x: 0,
             y: safeAreaTop,
@@ -543,7 +586,7 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
         let configuration = getWKWebViewConfiguration()
         
         // Create WKWebView object
-        TempoUtils.Say(msg: "🌟🌟🌟 Creating WKWebView... ")
+        TempoUtils.Say(msg: "🌟🌟🌟 Creating WKWebView... (w: \(UIScreen.main.bounds.width), h: \(UIScreen.main.bounds.height)")
         webViewAd = FullScreenAdWebView(frame: webViewFrame, configuration: configuration)
         if(webViewAd == nil){ throw WebViewError.webViewCreationFailed }
         webViewAd.navigationDelegate = self
@@ -804,6 +847,8 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
 //        }
     }
     
+    
+    /* * * * TODO - A bit (lot) of redundancy here, clean up keyWindow reuse*/
     /// Calculate gap at top needed based on device ttype
     @available(iOS 13.0, *)
     func getSafeAreaTop() -> CGFloat {
@@ -817,7 +862,38 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
             return 0
         }
         
+        
         return keyWindow.safeAreaInsets.top
+    }
+    
+    @available(iOS 13.0, *)
+    func getSafeAreaLeft() -> CGFloat {
+        guard let keyWindow = UIApplication.shared.connectedScenes
+            .filter({ $0.activationState == .foregroundActive })
+            .map({ $0 as? UIWindowScene })
+            .compactMap({ $0 })
+            .first?.windows
+            .first(where: { $0.isKeyWindow })
+        else {
+            return 0
+        }
+        
+        return keyWindow.safeAreaInsets.left
+    }
+    
+    @available(iOS 13.0, *)
+    func getSafeAreaRight() -> CGFloat {
+        guard let keyWindow = UIApplication.shared.connectedScenes
+            .filter({ $0.activationState == .foregroundActive })
+            .map({ $0 as? UIWindowScene })
+            .compactMap({ $0 })
+            .first?.windows
+            .first(where: { $0.isKeyWindow })
+        else {
+            return 0
+        }
+        
+        return keyWindow.safeAreaInsets.right
     }
     
     /// Calculate gap at bottom needed based on device ttype
@@ -952,13 +1028,13 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
         TempoUtils.Say(msg: "🌟🌟🌟 viewWillAppear... ")
         
         super.viewWillAppear(animated)
-        UIDevice.current.setValue(UIInterfaceOrientation.portrait.rawValue, forKey: "orientation")
-        UIViewController.attemptRotationToDeviceOrientation()
-        if #available(iOS 16.0, *) {
-            self.setNeedsUpdateOfSupportedInterfaceOrientations()
-        } else {
-            // Fallback on earlier versions
-        }
+//        UIDevice.current.setValue(UIInterfaceOrientation.portrait.rawValue, forKey: "orientation")
+//        UIViewController.attemptRotationToDeviceOrientation()
+//        if #available(iOS 16.0, *) {
+//            self.setNeedsUpdateOfSupportedInterfaceOrientations()
+//        } else {
+//            // Fallback on earlier versions
+//        }
     }
     
     public override func viewWillDisappear(_ animated: Bool) {

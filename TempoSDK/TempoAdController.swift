@@ -42,8 +42,9 @@ public class TempoAdController: NSObject {
         }
         
         // Create AdView object
+        TempoUtils.Say(msg: "🌟🌟🌟 adView created... ")
         adView = TempoAdView(listener: tempoAdListener, appId: appId)
-        adView!.modalPresentationStyle = .fullScreen
+//        adView!.modalPresentationStyle = .fullScreen
 //        if let unityVC = UIApplication.shared.windows.first?.rootViewController {
 //            
 //            TempoUtils.Say(msg: "🌟🌟🌟 Presenting adView... ")
@@ -80,6 +81,7 @@ public class TempoAdController: NSObject {
             // Load ad callback for when checks are satisfied
             let showAdCallback: () -> Void = {
                 DispatchQueue.main.async {
+                    self.adView!.modalPresentationStyle = .fullScreen
                     self.adView!.showAd(parentVC: parentViewController)
                 }
             }
