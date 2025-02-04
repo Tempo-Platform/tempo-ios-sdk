@@ -201,38 +201,59 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
         // Update adState
         adState = AdState.showing
         
+        // Find primary active window
+        var keyWindow: UIWindow?
+        if #available(iOS 13.0, *) {
+            // Collected all active scenes, converts to Window scene object, and finds first/active scene
+            keyWindow = UIApplication.shared.connectedScenes
+                .compactMap { $0 as? UIWindowScene }
+                .flatMap { $0.windows }
+                .first { $0.isKeyWindow }
+        } else {
+            keyWindow = UIApplication.shared.keyWindow // iOS 12 and earlier
+        }
+        
         // Add content view
-//        self.parentVC!.view.addSubview(self.webViewBackground) // BEFORE CHANGES
-        if let unityVC = UIApplication.shared.windows.first?.rootViewController {
+        if let unityVC = keyWindow?.rootViewController {
             
             TempoUtils.Say(msg: "🌟🌟🌟 Presenting adView... ")
             
-            
+            // Default safe areas at 0 // TODO: Maybe we should raise these?
             var safeAreaTop: CGFloat = 0.0
             var safeAreaBottom: CGFloat = 0.0
             var safeAreaLeft: CGFloat = 0.0
             var safeAreaRight: CGFloat = 0.0
+            
+            // iOS 13+ provides safe area to account for bottom Home indicator and the top menu options
             if #available(iOS 13.0, *) {
-                safeAreaTop = getSafeAreaTop()
-                safeAreaBottom = getSafeAreaBottom()
-                safeAreaLeft = getSafeAreaLeft()
-                safeAreaRight = getSafeAreaRight()
+                safeAreaTop = getSafeAreaInset(.top)
+                safeAreaBottom = getSafeAreaInset(.bottom)
+                safeAreaLeft = getSafeAreaInset(.left)
+                safeAreaRight = getSafeAreaInset(.right)
             }
             
+            // Check for current orientation
+            var isLandscape: Bool = false
+            if #available(iOS 13.0, *) {
+                // iOS 13+ uses different methods to checking orientation
+                if let windowScene = UIApplication.shared.connectedScenes
+                    .compactMap({ $0 as? UIWindowScene })
+                    .first {
+                    isLandscape = windowScene.interfaceOrientation.isLandscape
+                }
+            } else {
+                isLandscape = UIApplication.shared.statusBarOrientation.isLandscape
+            }
             
-            let inverse = UIScreen.main.bounds.width > UIScreen.main.bounds.height;
-            
-            let topOffset = inverse ? safeAreaLeft : safeAreaTop
-            let bottomOffset = inverse ? safeAreaRight : safeAreaBottom
-            let assumedWidth = inverse ? UIScreen.main.bounds.height : UIScreen.main.bounds.width
-            let assumedHeight = inverse ? UIScreen.main.bounds.width : UIScreen.main.bounds.height
-            // TODO: del as don't think we need variables now
-            let xStart = inverse ? 0.0 : 0.0
-            let yStart = inverse ? safeAreaLeft : safeAreaTop
-            
+            // Create size offsets using current orientation state
+            let topOffset = isLandscape ? safeAreaLeft : safeAreaTop
+            let bottomOffset = isLandscape ? safeAreaRight : safeAreaBottom
+            let assumedWidth = isLandscape ? UIScreen.main.bounds.height : UIScreen.main.bounds.width
+            let assumedHeight = isLandscape ? UIScreen.main.bounds.width : UIScreen.main.bounds.height
+            let yStart = isLandscape ? safeAreaLeft : safeAreaTop
             
             TempoUtils.Say(msg: "🌟🌟🌟 Presenting adView..." +
-               "\n inverse: \(inverse) " +
+               "\n isLandscape: \(isLandscape) " +
                "\n safeAreaTop: \(safeAreaTop)" +
                "\n safeAreaLeft: \(safeAreaLeft)" +
                "\n safeAreaBottom: \(safeAreaTop)" +
@@ -240,34 +261,40 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
                "\n assumedWidth: \(assumedWidth)" +
                "\n assumedHeight: \(assumedHeight)")
             
+            // Update black container size
             self.webViewBackground.frame = CGRect(x: 0, y: 0, width: assumedWidth, height: assumedHeight)
             
-            // Presents as primary
+            // Update display webview size with offsets
+            self.webViewAd.frame = CGRect(x: 0, y: yStart, width: assumedWidth, height: assumedHeight - topOffset - bottomOffset )
+            
+            // Finally, we can now add the ad display to the existing container...
+            self.view.addSubview(self.webViewBackground)
+            
+            // ...and presents ad as primary view with animated slide-in
             unityVC.present(self, animated: true, completion: nil)
             
-            self.webViewAd.frame = CGRect(x: xStart, y: yStart, width: assumedWidth, height: assumedHeight - topOffset - bottomOffset )
+            // Send SHOW metric and call activate DISPLAYED listener
+            addMetric(metricType: Constants.MetricType.SHOW)
+            listener.onTempoAdDisplayed(isInterstitial: self.isInterstitial)
             
-            self.view.addSubview(self.webViewBackground)
-        }
-        
-        // Send SHOW metric and call activate DISPLAYED listener
-        addMetric(metricType: Constants.MetricType.SHOW)
-        listener.onTempoAdDisplayed(isInterstitial: self.isInterstitial)
-        
-        // Create JS statement to find video element and play.
-        let script = Constants.JS.JS_FORCE_PLAY
-        self.webViewAd.evaluateJavaScript(script) { (result, error) in
-            
-            if let error = error {
-                TempoUtils.Say(msg: "Error playing video: \(error)")
-                // TODO: METRIC if this occurs? Close?
+            // Create JS statement to find video element and play.
+            let script = Constants.JS.JS_FORCE_PLAY
+            self.webViewAd.evaluateJavaScript(script) { (result, error) in
+                
+                if let error = error {
+                    TempoUtils.Say(msg: "Error playing video: \(error)")
+                    // TODO: METRIC if this occurs? Close?
+                }
+                
+                // Note: Method return type not recognised by WKWebKit so we add null return.
+                if let result = result {
+                    TempoUtils.Say(msg: "Playing video result: \(result)")
+                    // Placer if required, should be nil
+                }
             }
-            
-            // Note: Method return type not recognised by WKWebKit so we add null return.
-            if let result = result {
-                TempoUtils.Say(msg: "Playing video result: \(result)")
-                // Placer if required, should be nil
-            }
+        } else {
+            processAdShowFailed(reason: "keyWindow could not be produced to display ad")
+            closeAd()
         }
     }
     
@@ -555,7 +582,7 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
     
     // Combines show fail callback and metric send
     func processAdShowFailed(reason: String?) {
-        TempoUtils.Warn(msg: "AdFetchFailed: \(reason ?? "UNKNOWN")")
+        TempoUtils.Warn(msg: "AdShowFailed: \(reason ?? "UNKNOWN")")
         self.addMetric(metricType: Constants.MetricType.SHOW_FAIL)
         self.listener.onTempoAdShowFailed(isInterstitial: self.isInterstitial, reason: reason)
     }
@@ -563,38 +590,42 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
     /// Creates the custom WKWebView including safe areas, background color and pulls custom configurations
     private func setupWKWebview() throws {
         
-        // Create webview frame parameters
-        var safeAreaTop: CGFloat = 0.0
-        var safeAreaBottom: CGFloat = 0.0
-        if #available(iOS 13.0, *) {
-            safeAreaTop = getSafeAreaTop()
-            safeAreaBottom = getSafeAreaBottom()
-        }
+//        // Create webview frame parameters
+//        var safeAreaTop: CGFloat = 0.0
+//        var safeAreaBottom: CGFloat = 0.0
+//        if #available(iOS 13.0, *) {
+//            safeAreaTop = getSafeAreaTop()
+//            safeAreaBottom = getSafeAreaBottom()
+//        }
 //        
 //        let inverse = UIScreen.main.bounds.width > UIScreen.main.bounds.height;
 //        let assumedWidth = inverse ? UIScreen.main.bounds.height : UIScreen.main.bounds.width
 //        let assumedHeight = inverse ? UIScreen.main.bounds.width : UIScreen.main.bounds.height
         
-        let webViewFrame = CGRect(
-            x: 0,
-            y: safeAreaTop,
-            width: UIScreen.main.bounds.width,
-            height: UIScreen.main.bounds.height - safeAreaTop - safeAreaBottom
-        )
+//        let webViewFrame = CGRect(
+//            x: 0,
+//            y: safeAreaTop,
+//            width: UIScreen.main.bounds.width,
+//            height: UIScreen.main.bounds.height - safeAreaTop - safeAreaBottom
+//        )
         
         // Create webview config
         let configuration = getWKWebViewConfiguration()
         
-        // Create WKWebView object
+        // Create display WKWebView object, size (based on orientation) will be determined at time of show()
         TempoUtils.Say(msg: "🌟🌟🌟 Creating WKWebView... (w: \(UIScreen.main.bounds.width), h: \(UIScreen.main.bounds.height)")
-        webViewAd = FullScreenAdWebView(frame: webViewFrame, configuration: configuration)
+        webViewAd = FullScreenAdWebView(frame: UIScreen.main.bounds, configuration: configuration)
         if(webViewAd == nil){ throw WebViewError.webViewCreationFailed }
         webViewAd.navigationDelegate = self
         
-        // Add black base background, and add main view to background
+        // Create black background container
         webViewBackground = FullScreenBackgroundWebView(frame: UIScreen.main.bounds)
         if(webViewBackground == nil) { throw WebViewError.backgroundViewCreationFailed }
+        
+        // Color cannot be pure black (i.e. 0,0,0) as may be determined as null/transparent
         webViewBackground.backgroundColor = UIColor(red: 0.01, green: 0.01, blue: 0.01, alpha: 1)
+        
+        // Add display view as child of background view
         webViewBackground.addSubview(webViewAd)
     }
     
@@ -847,69 +878,27 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
 //        }
     }
     
-    
-    /* * * * TODO - A bit (lot) of redundancy here, clean up keyWindow reuse*/
-    /// Calculate gap at top needed based on device ttype
+    /// Returns safe area insert based on current orientation (and top/bottom/left/right argument)
     @available(iOS 13.0, *)
-    func getSafeAreaTop() -> CGFloat {
+    private func getSafeAreaInset(_ edge: UIRectEdge) -> CGFloat {
+        // Collected all active scenes, converts to Window scene object, and finds first/active scene
         guard let keyWindow = UIApplication.shared.connectedScenes
-            .filter({ $0.activationState == .foregroundActive })
-            .map({ $0 as? UIWindowScene })
-            .compactMap({ $0 })
-            .first?.windows
+            .compactMap({ $0 as? UIWindowScene })
+            .first(where: { $0.activationState == .foregroundActive })?
+            .windows
             .first(where: { $0.isKeyWindow })
         else {
             return 0
         }
-        
-        
-        return keyWindow.safeAreaInsets.top
-    }
-    
-    @available(iOS 13.0, *)
-    func getSafeAreaLeft() -> CGFloat {
-        guard let keyWindow = UIApplication.shared.connectedScenes
-            .filter({ $0.activationState == .foregroundActive })
-            .map({ $0 as? UIWindowScene })
-            .compactMap({ $0 })
-            .first?.windows
-            .first(where: { $0.isKeyWindow })
-        else {
-            return 0
+
+        // Return designated edge value
+        switch edge {
+        case .top: return keyWindow.safeAreaInsets.top
+        case .left: return keyWindow.safeAreaInsets.left
+        case .right: return keyWindow.safeAreaInsets.right
+        case .bottom: return keyWindow.safeAreaInsets.bottom
+        default: return 0
         }
-        
-        return keyWindow.safeAreaInsets.left
-    }
-    
-    @available(iOS 13.0, *)
-    func getSafeAreaRight() -> CGFloat {
-        guard let keyWindow = UIApplication.shared.connectedScenes
-            .filter({ $0.activationState == .foregroundActive })
-            .map({ $0 as? UIWindowScene })
-            .compactMap({ $0 })
-            .first?.windows
-            .first(where: { $0.isKeyWindow })
-        else {
-            return 0
-        }
-        
-        return keyWindow.safeAreaInsets.right
-    }
-    
-    /// Calculate gap at bottom needed based on device ttype
-    @available(iOS 13.0, *)
-    func getSafeAreaBottom() -> CGFloat {
-        guard let keyWindow = UIApplication.shared.connectedScenes
-            .filter({ $0.activationState == .foregroundActive })
-            .map({ $0 as? UIWindowScene })
-            .compactMap({ $0 })
-            .first?.windows
-            .first(where: { $0.isKeyWindow })
-        else {
-            return 0
-        }
-        
-        return keyWindow.safeAreaInsets.bottom
     }
     
     /// Shuts down Tempo ads as a type of nuclear option
