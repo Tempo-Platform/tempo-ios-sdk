@@ -1003,37 +1003,38 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
         }
     }
     
-    
+    /// Disable auto-rotation
     public override var shouldAutorotate: Bool {
-        return false // Prevents rotation
+        return false
     }
 
+    /// Restrict to portrait mode
     public override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-        return .portrait // Locks to portrait mode
+        return .portrait
     }
     
-    // **Force portrait when view appears**
-    public override func viewWillAppear(_ animated: Bool) {
-        TempoUtils.Say(msg: "🌟🌟🌟 viewWillAppear... ")
-        
-        super.viewWillAppear(animated)
-//        UIDevice.current.setValue(UIInterfaceOrientation.portrait.rawValue, forKey: "orientation")
-//        UIViewController.attemptRotationToDeviceOrientation()
-//        if #available(iOS 16.0, *) {
-//            self.setNeedsUpdateOfSupportedInterfaceOrientations()
-//        } else {
-//            // Fallback on earlier versions
+//    // **Force portrait when view appears**
+//    public override func viewWillAppear(_ animated: Bool) {
+//        TempoUtils.Say(msg: "🌟🌟🌟 viewWillAppear... ")
+//        
+//        super.viewWillAppear(animated)
+////        UIDevice.current.setValue(UIInterfaceOrientation.portrait.rawValue, forKey: "orientation")
+////        UIViewController.attemptRotationToDeviceOrientation()
+////        if #available(iOS 16.0, *) {
+////            self.setNeedsUpdateOfSupportedInterfaceOrientations()
+////        } else {
+////            // Fallback on earlier versions
+////        }
+//    }
+//    
+//    public override func viewWillDisappear(_ animated: Bool) {
+//            super.viewWillDisappear(animated)
+//        
+//            TempoUtils.Say(msg: "🌟🌟🌟 viewWillDisappear... ")
+//            // Restore Unity's rotation settings
+//            UIDevice.current.setValue(UIInterfaceOrientation.unknown.rawValue, forKey: "orientation")
+//            UIViewController.attemptRotationToDeviceOrientation()
 //        }
-    }
-    
-    public override func viewWillDisappear(_ animated: Bool) {
-            super.viewWillDisappear(animated)
-        
-            TempoUtils.Say(msg: "🌟🌟🌟 viewWillDisappear... ")
-            // Restore Unity's rotation settings
-            UIDevice.current.setValue(UIInterfaceOrientation.unknown.rawValue, forKey: "orientation")
-            UIViewController.attemptRotationToDeviceOrientation()
-        }
 }
 
 
