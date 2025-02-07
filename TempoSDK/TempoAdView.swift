@@ -75,7 +75,6 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
         
         // Create WKWebView instance
         do {
-            TempoUtils.Say(msg: "⭐️⭐️⭐️ setupWKWebview...")
             try setupWKWebview()
         } catch let error {
             // Fails if cannot get WkWebView
@@ -216,8 +215,6 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
         // Add content view
         if let unityVC = keyWindow?.rootViewController {
             
-            TempoUtils.Say(msg: "🌟🌟🌟 Presenting adView... ")
-            
             // Default safe areas at 0 // TODO: Maybe we should raise these?
             var safeAreaTop: CGFloat = 0.0
             var safeAreaBottom: CGFloat = 0.0
@@ -251,15 +248,6 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
             let assumedWidth = isLandscape ? UIScreen.main.bounds.height : UIScreen.main.bounds.width
             let assumedHeight = isLandscape ? UIScreen.main.bounds.width : UIScreen.main.bounds.height
             let yStart = isLandscape ? safeAreaLeft : safeAreaTop
-            
-            TempoUtils.Say(msg: "🌟🌟🌟 Presenting adView..." +
-               "\n isLandscape: \(isLandscape) " +
-               "\n safeAreaTop: \(safeAreaTop)" +
-               "\n safeAreaLeft: \(safeAreaLeft)" +
-               "\n safeAreaBottom: \(safeAreaTop)" +
-               "\n safeAreaRight: \(safeAreaLeft)" +
-               "\n assumedWidth: \(assumedWidth)" +
-               "\n assumedHeight: \(assumedHeight)")
             
             // Update black container size
             self.webViewBackground.frame = CGRect(x: 0, y: 0, width: assumedWidth, height: assumedHeight)
@@ -327,25 +315,32 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
         // Safely update adState
         self.adState = AdState.dormant
         
-        if let unityVC = UIApplication.shared.windows.first?.rootViewController {
+        
+        // Find primary active window
+        var keyWindow: UIWindow?
+        if #available(iOS 13.0, *) {
+            // Collected all active scenes, converts to Window scene object, and finds first/active scene
+            keyWindow = UIApplication.shared.connectedScenes
+                .compactMap { $0 as? UIWindowScene }
+                .flatMap { $0.windows }
+                .first { $0.isKeyWindow }
+        } else {
+            keyWindow = UIApplication.shared.keyWindow // iOS 12 and earlier
+        }
+        
+        // TODO: Handle failure? (Can't get get if didn't already pass the previous check)
+        if let unityVC = keyWindow?.rootViewController {
             
-            TempoUtils.Say(msg: "🌟🌟🌟 Presenting adView... ")
             unityVC.dismiss(animated: true, completion: nil)
             
             // Ensure this code runs on the main thread
             DispatchQueue.main.async {
-                
-                // Safely remove web views from their superviews
-//                self.webViewBackground?.removeFromSuperview()
-//                self.webViewAd?.removeFromSuperview()
                 
                 // Set web views to nil to release memory
                 self.webViewAd = nil
                 self.webViewBackground = nil
             }
         }
-        
-        
     }
     
     /// Checks is consented Ad ID exists and returns (nullable) value
@@ -536,6 +531,7 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
             URLQueryItem(name: Constants.URL.IS_INTERSTITIAL, value: String(isInterstitial)),
             URLQueryItem(name: Constants.URL.SDK_VERSION, value: String(sdkVersion ?? "")),
             URLQueryItem(name: Constants.URL.ADAPTER_VERSION, value: String(adapterVersion ?? "")),
+            URLQueryItem(name: Constants.URL.OS, value: Constants.IOS_OS),
         ]
         
         // Add adapterType if it exists
@@ -590,30 +586,10 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
     /// Creates the custom WKWebView including safe areas, background color and pulls custom configurations
     private func setupWKWebview() throws {
         
-//        // Create webview frame parameters
-//        var safeAreaTop: CGFloat = 0.0
-//        var safeAreaBottom: CGFloat = 0.0
-//        if #available(iOS 13.0, *) {
-//            safeAreaTop = getSafeAreaTop()
-//            safeAreaBottom = getSafeAreaBottom()
-//        }
-//        
-//        let inverse = UIScreen.main.bounds.width > UIScreen.main.bounds.height;
-//        let assumedWidth = inverse ? UIScreen.main.bounds.height : UIScreen.main.bounds.width
-//        let assumedHeight = inverse ? UIScreen.main.bounds.width : UIScreen.main.bounds.height
-        
-//        let webViewFrame = CGRect(
-//            x: 0,
-//            y: safeAreaTop,
-//            width: UIScreen.main.bounds.width,
-//            height: UIScreen.main.bounds.height - safeAreaTop - safeAreaBottom
-//        )
-        
         // Create webview config
         let configuration = getWKWebViewConfiguration()
         
         // Create display WKWebView object, size (based on orientation) will be determined at time of show()
-        TempoUtils.Say(msg: "🌟🌟🌟 Creating WKWebView... (w: \(UIScreen.main.bounds.width), h: \(UIScreen.main.bounds.height)")
         webViewAd = FullScreenAdWebView(frame: UIScreen.main.bounds, configuration: configuration)
         if(webViewAd == nil){ throw WebViewError.webViewCreationFailed }
         webViewAd.navigationDelegate = self
@@ -1013,28 +989,6 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
         return .portrait
     }
     
-//    // **Force portrait when view appears**
-//    public override func viewWillAppear(_ animated: Bool) {
-//        TempoUtils.Say(msg: "🌟🌟🌟 viewWillAppear... ")
-//        
-//        super.viewWillAppear(animated)
-////        UIDevice.current.setValue(UIInterfaceOrientation.portrait.rawValue, forKey: "orientation")
-////        UIViewController.attemptRotationToDeviceOrientation()
-////        if #available(iOS 16.0, *) {
-////            self.setNeedsUpdateOfSupportedInterfaceOrientations()
-////        } else {
-////            // Fallback on earlier versions
-////        }
-//    }
-//    
-//    public override func viewWillDisappear(_ animated: Bool) {
-//            super.viewWillDisappear(animated)
-//        
-//            TempoUtils.Say(msg: "🌟🌟🌟 viewWillDisappear... ")
-//            // Restore Unity's rotation settings
-//            UIDevice.current.setValue(UIInterfaceOrientation.unknown.rawValue, forKey: "orientation")
-//            UIViewController.attemptRotationToDeviceOrientation()
-//        }
 }
 
 
