@@ -27,6 +27,17 @@ public struct Constants {
     }
     
     struct Web {
+        static let PROT_HTTPS = "https://"
+        static let SUBDOM_METRICS = "metric-api"
+        static let SUBDOM_ADS_API = "ads-api"
+        static let SUBDOM_ADS_DOM = "ads"
+        static let SUBDOM_DEV = "ads"
+        static let SUBDOM_STG = "ads"
+        static let SUBDOM_PRD = "ads"
+        static let URL_TEMPO = "tempoplatform.com"
+        static let URL_PATH_METRICS = "metrics"
+        static let URL_PATH_AD = "ad"
+        
         static let METRICS_URL_PROD = "https://metric-api.tempoplatform.com/metrics" // PROD
         static let ADS_API_URL_PROD = "https://ads-api.tempoplatform.com/ad" // PROD
         static let ADS_DOM_URL_PROD = "https://ads.tempoplatform.com" // PROD
@@ -108,7 +119,7 @@ public struct Constants {
     }
     
     // Test tool variables
-    public static var environment: Environment = Environment.PRD
-    public static var isVerboseDebugging = false
+    public static var environment: Environment = Environment.DEV
+    public static var isVerboseDebugging = true
     
 }

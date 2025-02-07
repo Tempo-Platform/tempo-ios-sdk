@@ -10,7 +10,6 @@ public class TempoAdController: NSObject {
     public var adView: TempoAdView?
     public var locationData: LocationData? = nil
     var tempoProfile: TempoProfile? = nil
-   
     
     public init(tempoAdListener: TempoAdListener, appId: String!) {
         super.init()
@@ -66,7 +65,6 @@ public class TempoAdController: NSObject {
         tempoProfile?.doTaskAfterLocAuthUpdate(completion: loadAdCallback)
     }
     
-    
     /// Public SHOW function for mediation adapters to call
     public func showAd(parentViewController: UIViewController?) {
         
@@ -86,7 +84,6 @@ public class TempoAdController: NSObject {
             // This does not take long, it's just run async on background thread
             tempoProfile?.doTaskAfterLocAuthUpdate(completion: showAdCallback)
     }
-    
     
     /// Public LOAD function for internal testing with specific campaign ID {ONLY USED IN TESTING)
     public func loadSpecificAd(isInterstitial: Bool, campaignId:String) {

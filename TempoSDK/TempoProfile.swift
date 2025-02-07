@@ -198,7 +198,7 @@ public class TempoProfile: NSObject, CLLocationManagerDelegate { //TODO: Make cl
     /// Location Manager callback: didChangeAuthorization
     public func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
         var updating = "NOT UPDATING"
-        
+            
         if status == .authorizedWhenInUse || status == .authorizedAlways {
             if(TempoProfile.locationState != .CHECKING) {
                 updating = "UPDATING"
