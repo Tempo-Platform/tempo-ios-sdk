@@ -8,7 +8,7 @@ public struct Constants {
     static let UNDEF = "UNDEFINED"
     static let ZERO_AD_ID = "00000000-0000-0000-0000-000000000000"
     static let TEMP_GEO_US = "US"
-    static let IOS_OS = "IOS"
+    static let IOS_SDK_PLATFORM = "IOS"
     
     struct Backup {
         static let METRIC_BACKUP_FOLDER = "metricJsons"
@@ -61,7 +61,7 @@ public struct Constants {
         static let SDK_VERSION = "sdk_version"
         static let ADAPTER_VERSION = "adapter_version"
         static let ADAPTER_TYPE = "adapter_type"
-        static let OS = "os"
+        static let SDK_PLATFORM = "sdk_platform"
         static let LOC_COUNTRY_CODE = "country_code"
         static let LOC_POSTAL_CODE = "postal_code"
         static let LOC_ADMIN_AREA = "admin_area"
@@ -109,7 +109,7 @@ public struct Constants {
     }
     
     // Test tool variables
-    public static var environment: Environment = Environment.PRD
-    public static var isVerboseDebugging = false
+    public static var environment: Environment = Environment.DEV
+    public static var isVerboseDebugging = true
     
 }

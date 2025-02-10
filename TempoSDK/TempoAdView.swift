@@ -531,7 +531,7 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
             URLQueryItem(name: Constants.URL.IS_INTERSTITIAL, value: String(isInterstitial)),
             URLQueryItem(name: Constants.URL.SDK_VERSION, value: String(sdkVersion ?? "")),
             URLQueryItem(name: Constants.URL.ADAPTER_VERSION, value: String(adapterVersion ?? "")),
-            URLQueryItem(name: Constants.URL.OS, value: Constants.IOS_OS),
+            URLQueryItem(name: Constants.URL.SDK_PLATFORM, value: Constants.IOS_SDK_PLATFORM),
         ]
         
         // Add adapterType if it exists
