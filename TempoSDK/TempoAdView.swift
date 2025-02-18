@@ -34,6 +34,14 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
     public init(listener: TempoAdListener, appId: String) {
         super.init(nibName: nil, bundle: nil)
         
+        // Set up notificaton callback when app returns to view
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(appMovedToForeground),
+            name: UIApplication.willEnterForegroundNotification,
+            object: nil
+        )
+        
         self.listener = listener
         self.appId = appId
         
@@ -60,10 +68,16 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
         }
         TempoUtils.Say(msg: "Ad ID: \(adId!)")
     }
+    
     /// Ignore requirement to implement required initializer ‘init(coder:) in it.
     @available(*, unavailable, message: "Nibs are unsupported")
     public required init?(coder aDecoder: NSCoder) {
         fatalError("Nibs are unsupported")
+    }
+    
+    // Remove listeners when AdView destroyed, avoiding memory leaks
+    deinit {
+        NotificationCenter.default.removeObserver(self)
     }
     
     /// Prepares ad for current session (interstitial/reward)
@@ -141,7 +155,7 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
             
             // Ensure completion handler is called on the main thread
             DispatchQueue.main.async {
-            
+                
                 // Handle any request errors
                 if let error = error as NSError? {
                     if error.code == NSURLErrorTimedOut {
@@ -266,20 +280,7 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
             listener.onTempoAdDisplayed(isInterstitial: self.isInterstitial)
             
             // Create JS statement to find video element and play.
-            let script = Constants.JS.JS_FORCE_PLAY
-            self.webViewAd.evaluateJavaScript(script) { (result, error) in
-                
-                if let error = error {
-                    TempoUtils.Say(msg: "Error playing video: \(error)")
-                    // TODO: METRIC if this occurs? Close?
-                }
-                
-                // Note: Method return type not recognised by WKWebKit so we add null return.
-                if let result = result {
-                    TempoUtils.Say(msg: "Playing video result: \(result)")
-                    // Placer if required, should be nil
-                }
-            }
+            forcePlayVideo()
         } else {
             processAdShowFailed(reason: "keyWindow could not be produced to display ad")
             closeAd()
@@ -538,7 +539,7 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
         if let adapterType = adapterType {
             components.queryItems?.append(URLQueryItem(name: Constants.URL.ADAPTER_TYPE, value: adapterType))
         }
-
+        
         // Add locData parameters if locData exists and consent is not NONE
         if let locData = TempoProfile.locData, locData.consent != Constants.LocationConsent.NONE.rawValue {
             if let countryCode = locData.country_code {
@@ -641,7 +642,7 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
             return
         }
         
-        // Cannot work with an empty string s check that first
+        // Cannot work with an empty string
         if !bodyString.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             
             TempoUtils.Say(msg: "WEB_MSG: \(bodyString)", absoluteDisplay: true)
@@ -679,10 +680,16 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
                             // URL redirect
                             if redirect.msgType == Constants.MetricType.OPEN_URL_IN_EXTERNAL_BROWSER {
                                 TempoUtils.openUrlInBrowser(url: redirect.url)
+                                do {
+                                    try self.pushMetrics()
+                                } catch {
+                                    TempoUtils.Warn(msg: "❌ error pushing metrics: \(error)")
+                                }
+                            } else {
+                                // Send metric from header of this JSON message
+                                self.addMetric(metricType: redirect.msgType)
                             }
                             
-                            // Send metric from header of this JSON message
-                            self.addMetric(metricType: redirect.msgType)
                         } else {
                             TempoUtils.Warn(msg: "❌ MessageType was empty/null")
                         }
@@ -850,7 +857,7 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
         
         TempoUtils.Say(msg: "🧹 NONE => \(metric.metric_type ?? "TYPE?"): admin=[\(preAdmin ?? "nil"):nil)], locality=[\(preLocality ?? "nil"):nil]")
     }
-
+    
     /// Updates location data from TempoProfile
     private func updateLocationDataFromTempoProfile(_ metric: inout Metric) {
         metric.location_data?.postcode = TempoProfile.locData?.postcode ?? nil
@@ -862,13 +869,13 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
         metric.location_data?.locality = TempoProfile.locData?.locality ?? nil
         metric.location_data?.sub_locality = TempoProfile.locData?.sub_locality ?? nil
         
-//        // Original implementation example...
-//        // Confirm postcode has a value
-//        if let currentPostcode = TempoProfile.locData?.postcode, !currentPostcode.isEmpty {
-//            metricList[index].location_data?.postcode = currentPostcode
-//        } else {
-//            metricList[index].location_data?.postcode = nil
-//        }
+        //        // Original implementation example...
+        //        // Confirm postcode has a value
+        //        if let currentPostcode = TempoProfile.locData?.postcode, !currentPostcode.isEmpty {
+        //            metricList[index].location_data?.postcode = currentPostcode
+        //        } else {
+        //            metricList[index].location_data?.postcode = nil
+        //        }
     }
     
     /// Returns safe area insert based on current orientation (and top/bottom/left/right argument)
@@ -883,7 +890,7 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
         else {
             return 0
         }
-
+        
         // Return designated edge value
         switch edge {
         case .top: return keyWindow.safeAreaInsets.top
@@ -1000,12 +1007,36 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
     public override var shouldAutorotate: Bool {
         return false
     }
-
+    
     /// Restrict to portrait mode
     public override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
         return .portrait
     }
     
+    /// Sends JS message to web-side to find video element and play it
+    private func forcePlayVideo() {
+        let script = Constants.JS.JS_FORCE_PLAY
+        self.webViewAd.evaluateJavaScript(script) { (result, error) in
+            
+            if let error = error {
+                TempoUtils.Say(msg: "Error playing video: \(error)")
+                // TODO: METRIC if this occurs? Close?
+            }
+            
+            // Note: Method return type not recognised by WKWebKit so we add null return.
+            if let result = result {
+                TempoUtils.Say(msg: "Playing video result: \(result)")
+                // Placer if required, should be nil
+            }
+        }
+    }
+    
+    /// Callback when App is retruend to (from external browser)
+    @objc func appMovedToForeground() {
+        // Restart video playback
+        forcePlayVideo()
+        // TODO: Mute audio (if audio)
+    }
 }
 
 

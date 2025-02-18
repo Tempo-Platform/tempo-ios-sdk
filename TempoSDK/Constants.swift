@@ -109,7 +109,7 @@ public struct Constants {
     }
     
     // Test tool variables
-    public static var environment: Environment = Environment.PRD
+    public static var environment: Environment = Environment.DEV
     public static var isVerboseDebugging = true
     
 }
