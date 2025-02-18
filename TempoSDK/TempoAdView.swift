@@ -640,49 +640,66 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
             TempoUtils.Warn(msg: "Invalid message format received: \(message.body)")
             return
         }
-        TempoUtils.Say(msg: "WEB_MSG: \(bodyString)", absoluteDisplay: true)
         
-        // Check if known one-word reference
-        if actionList.contains(bodyString) {
-            // Send metric for web message
-            self.addMetric(metricType: bodyString)
+        // Cannot work with an empty string s check that first
+        if !bodyString.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             
-            // Handle actionable commands
-            var jsMsg = "👀: "
-            switch bodyString {
-            case Constants.MetricType.CLOSE_AD:
-                jsMsg.append("CLOSE_AD")
-                self.closeAd()
-            case Constants.MetricType.IMAGES_LOADED:
-                jsMsg.append("IMAGES_LOADED")
-                listener.onTempoAdFetchSucceeded(isInterstitial: self.isInterstitial)
-                self.addMetric(metricType: Constants.MetricType.LOAD_SUCCESS)
-            default:
-                jsMsg.append("⚠️ \(bodyString) (unexpected)")
-            }
-            TempoUtils.Say(msg: jsMsg)
-        }
-        // Check if JSON format first
-        else if (TempoUtils.isPossiblyJSONObject(msg: bodyString)) {
-            if let jsonData = bodyString.data(using: .utf8) {
-                do {
-                    // Parse expected JSON data
-                    let redirect = try JSONDecoder().decode(Constants.Function_RedirectToUrl.self, from: jsonData)
-//                    TempoUtils.Say(msg: "Message Type: \(redirect.msgType)")
-//                    TempoUtils.Say(msg: "URL: \(redirect.url)")
-                    
-                    if redirect.msgType == Constants.MetricType.OPEN_URL_IN_EXTERNAL_BROWSER {
-                        TempoUtils.openUrlInBrowser(url: redirect.url)
-                    }
-                } catch {
-                    TempoUtils.Warn(msg: "❌ Failed to decode JSON: \(error)")
+            TempoUtils.Say(msg: "WEB_MSG: \(bodyString)", absoluteDisplay: true)
+            
+            // Check if known one-word reference
+            if actionList.contains(bodyString) {
+                // Send metric for web message
+                self.addMetric(metricType: bodyString)
+                
+                // Handle actionable commands
+                var jsMsg = "👀: "
+                switch bodyString {
+                case Constants.MetricType.CLOSE_AD:
+                    jsMsg.append("CLOSE_AD")
+                    self.closeAd()
+                case Constants.MetricType.IMAGES_LOADED:
+                    jsMsg.append("IMAGES_LOADED")
+                    listener.onTempoAdFetchSucceeded(isInterstitial: self.isInterstitial)
+                    self.addMetric(metricType: Constants.MetricType.LOAD_SUCCESS)
+                default:
+                    jsMsg.append("⚠️ \(bodyString) (unexpected)")
                 }
-            } else {
-                TempoUtils.Warn(msg: "❌ Failed to create JSON data from string: \(bodyString)")
+                TempoUtils.Say(msg: jsMsg)
             }
-        }
-        else {
-            TempoUtils.Say(msg: "🆗 \(bodyString)")
+            // Check if JSON format first
+            else if (TempoUtils.isPossiblyJSONObject(msg: bodyString)) {
+                if let jsonData = bodyString.data(using: .utf8) {
+                    do {
+                        // Parse expected JSON data
+                        let redirect = try JSONDecoder().decode(Constants.Function_RedirectToUrl.self, from: jsonData)
+                        
+                        // Make sure msgType is not empty or just whitespace
+                        if !redirect.msgType.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                            
+                            // URL redirect
+                            if redirect.msgType == Constants.MetricType.OPEN_URL_IN_EXTERNAL_BROWSER {
+                                TempoUtils.openUrlInBrowser(url: redirect.url)
+                            }
+                            
+                            // Send metric from header of this JSON message
+                            self.addMetric(metricType: redirect.msgType)
+                        } else {
+                            TempoUtils.Warn(msg: "❌ MessageType was empty/null")
+                        }
+                    } catch {
+                        TempoUtils.Warn(msg: "❌ Failed to decode JSON: \(error)")
+                    }
+                } else {
+                    TempoUtils.Warn(msg: "❌ Failed to create JSON data from string: \(bodyString)")
+                }
+            }
+            else {
+                // Send metric from message, even if there is no specific handling
+                self.addMetric(metricType: bodyString)
+                TempoUtils.Say(msg: "🆗 \(bodyString)")
+            }
+        } else {
+            TempoUtils.Warn(msg: "❌ MessageType was empty/null")
         }
     }
     
