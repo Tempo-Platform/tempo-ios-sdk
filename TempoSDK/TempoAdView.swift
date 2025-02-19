@@ -679,13 +679,15 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
                             
                             // URL redirect
                             if redirect.msgType == Constants.MetricType.OPEN_URL_IN_EXTERNAL_BROWSER {
-                                TempoUtils.openUrlInBrowser(url: redirect.url)
                                 do {
                                     try self.pushMetrics()
                                 } catch {
                                     TempoUtils.Warn(msg: "❌ error pushing metrics: \(error)")
                                 }
-                            } else {
+                                TempoUtils.openUrlInBrowser(url: redirect.url)
+                            }
+                            // Other JSON data (just creates metric based on msgType property)
+                            else {
                                 // Send metric from header of this JSON message
                                 self.addMetric(metricType: redirect.msgType)
                             }
@@ -1003,20 +1005,24 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
         }
     }
     
-    /// Disable auto-rotation
-    public override var shouldAutorotate: Bool {
-        return false
+    /// Sends JS message for webview to find video element and mute it
+    private func forceVideoMute() {
+        webViewAd.evaluateJavaScript(Constants.JS.JS_MUTE_VIDEO) { (result, error) in
+            
+            if let error = error {
+                TempoUtils.Say(msg: "Error muting video: \(error)")
+            }
+            
+            // Note: Method return type not recognised by WKWebKit so we add null return.
+            if let result = result {
+                TempoUtils.Say(msg: "Muting video result: \(result)")
+            }
+        }
     }
-    
-    /// Restrict to portrait mode
-    public override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-        return .portrait
-    }
-    
-    /// Sends JS message to web-side to find video element and play it
+
+    /// Sends JS message for webview to find video element and play it
     private func forcePlayVideo() {
-        let script = Constants.JS.JS_FORCE_PLAY
-        self.webViewAd.evaluateJavaScript(script) { (result, error) in
+        webViewAd.evaluateJavaScript(Constants.JS.JS_FORCE_PLAY_VIDEO) { (result, error) in
             
             if let error = error {
                 TempoUtils.Say(msg: "Error playing video: \(error)")
@@ -1026,16 +1032,25 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
             // Note: Method return type not recognised by WKWebKit so we add null return.
             if let result = result {
                 TempoUtils.Say(msg: "Playing video result: \(result)")
-                // Placer if required, should be nil
             }
         }
     }
     
-    /// Callback when App is retruend to (from external browser)
+    /// Callback when App is returned to (from external browser)
     @objc func appMovedToForeground() {
         // Restart video playback
         forcePlayVideo()
-        // TODO: Mute audio (if audio)
+        forceVideoMute()
+    }
+    
+    /// Disable auto-rotation
+    public override var shouldAutorotate: Bool {
+        return false
+    }
+    
+    /// Restrict to portrait mode
+    public override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
+        return .portrait
     }
 }
 
