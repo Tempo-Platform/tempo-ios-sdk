@@ -12,7 +12,7 @@ public class TempoTesting {
     public static var instance: TempoTesting?
     
     public var isTestingDeployVersion: Bool = false
-    public var isTestingCustomCampaigns: Bool = true
+    public var isTestingCustomCampaigns: Bool = false
     public var currentDeployVersion: String?
     public var customCampaignId: String?
     
