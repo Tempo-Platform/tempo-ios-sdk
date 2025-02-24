@@ -7,9 +7,9 @@
 
 import Foundation
 
-public class TempoTesting {
+public class TempoExternal {
     
-    public static var instance: TempoTesting?
+    public static var instance: TempoExternal?
     
     public var isTestingDeployVersion: Bool = false
     public var isTestingCustomCampaigns: Bool = false
@@ -17,7 +17,7 @@ public class TempoTesting {
     public var customCampaignId: String?
     
     public init() {
-        TempoTesting.instance = self
+        TempoExternal.instance = self
     }
     
     public func toggleVerboseDebugging() -> Void {
@@ -26,6 +26,12 @@ public class TempoTesting {
     
     public func updateEnvironment(isProd: Bool) -> Void {
         //Constants.isProd = isProd
+    }
+    
+    public func updateStopProfileData(stopProfileData: Bool) -> Void {
+        if(stopProfileData) {
+            TempoProfile.updateLocState(newState: LocationState.DISABLED)
+        }
     }
     
     public func updateEnvironmentWithIndex(enumValue: Int) -> Void {

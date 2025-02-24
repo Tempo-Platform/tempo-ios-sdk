@@ -2,7 +2,7 @@
 
 public struct Constants {
     
-    public static let SDK_VERSIONS = "1.8.2"
+    public static let SDK_VERSIONS = "1.8.3-rc.0"
     static let NO_FILL = "NO_FILL"
     static let OK = "OK"
     static let UNDEF = "UNDEFINED"
@@ -110,7 +110,7 @@ public struct Constants {
     }
     
     // Test tool variables
-    public static var environment: Environment = Environment.PRD
-    public static var isVerboseDebugging = false
+    public static var environment: Environment = Environment.DEV
+    public static var isVerboseDebugging = true
     
 }

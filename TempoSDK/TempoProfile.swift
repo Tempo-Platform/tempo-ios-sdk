@@ -4,18 +4,25 @@ import CoreLocation
 public class TempoProfile: NSObject, CLLocationManagerDelegate { //TODO: Make class internal/private/default(none)?
     
     // This instance's location manager delegate
-    let locManager = CLLocationManager()
+    let locManager = CLLocationManager() //TODO: Does this do anything in instantiation?
     let requestOnLoad_testing = false
     let adView: TempoAdView
     
     // The static that can be retrieved at any time during the SDK's usage
     static var outputtingLocationInfo = false
-    static var locationState: LocationState?
+    static var locationState: LocationState = LocationState.UNCHECKED
     static var locData: LocationData?
     
+    // First steps when instantiated
     init(adView: TempoAdView) {
         self.adView = adView
         super.init()
+        
+        if(TempoProfile.locationState == LocationState.DISABLED)
+        {
+            TempoUtils.Warn(msg: "👨‍🦽‍➡️👨‍🦽‍➡️👨‍🦽‍➡️ LocationState.DISABLED (TempoProfile.init")
+            return
+        }
         
         // Update locData with backup if nil
         if(TempoProfile.locData == nil) {
@@ -29,8 +36,8 @@ public class TempoProfile: NSObject, CLLocationManagerDelegate { //TODO: Make cl
             TempoUtils.Say(msg: "🌏 LocData is null, no backup needed")
         }
 
-        // Update location state
-        TempoProfile.updateLocState(newState: TempoProfile.locationState ?? LocationState.UNCHECKED)
+        // Update location state // TODO: This one seems redundant??
+        TempoProfile.updateLocState(newState: TempoProfile.locationState)
         
         // Assign manager delegate
         locManager.delegate = self
@@ -46,7 +53,11 @@ public class TempoProfile: NSObject, CLLocationManagerDelegate { //TODO: Make cl
     
     /// Makes a location request, updates locationState to CHECKING
     private func requestLocationWithChecks() {
-        if(TempoProfile.locationState != .CHECKING) {
+        if(TempoProfile.locationState == LocationState.DISABLED)
+        {
+            TempoUtils.Warn(msg: "👨‍🦽‍➡️👨‍🦽‍➡️👨‍🦽‍➡️ LocationState.DISABLED (TempoProfile.requestLocationWithChecks)")
+            return
+        } else if(TempoProfile.locationState != .CHECKING) {
             TempoProfile.updateLocState(newState: .CHECKING)
             locManager.requestLocation()
         }
@@ -60,6 +71,15 @@ public class TempoProfile: NSObject, CLLocationManagerDelegate { //TODO: Make cl
         
         // CLLocationManager.authorizationStatus can cause UI unresponsiveness if invoked on the main thread.
         DispatchQueue.global().async {
+            
+            // Ignore and go to completion task if LocState disabled
+            if(TempoProfile.locationState == LocationState.DISABLED)
+            {
+                TempoUtils.Warn(msg: "👨‍🦽‍➡️👨‍🦽‍➡️👨‍🦽‍➡️ LocationState.DISABLED (TempoProfile.doTaskAfterLocAuthUpdate)")
+                self.updateLocConsentValues(consentType: Constants.LocationConsent.NONE)
+                completion?()
+                return
+            }
             
             // Make sure location services are available
             guard CLLocationManager.locationServicesEnabled() else {
@@ -120,7 +140,14 @@ public class TempoProfile: NSObject, CLLocationManagerDelegate { //TODO: Make cl
     
     /// Behaviour when location access returned is NOT authorizedAlways/authorizedWhenInUse
     private func handleNoAccessUpdate(completion: (() -> Void)?) {
-        TempoProfile.locData = self.adView.getClonedAndCleanedLocation()
+        if(TempoProfile.locationState == LocationState.DISABLED)
+        {
+            TempoUtils.Warn(msg: "👨‍🦽‍➡️👨‍🦽‍➡️👨‍🦽‍➡️ LocationState.DISABLED (TempoProfile.handleNoAccessUpdate)")
+            TempoProfile.locData = LocationData()
+        } else {
+            TempoProfile.locData = self.adView.getClonedAndCleanedLocation()
+        }
+        
         TempoProfile.updateLocState(newState: LocationState.UNAVAILABLE)
         self.updateLocConsentValues(consentType: Constants.LocationConsent.NONE)
         self.saveLatestValidLocData()
@@ -131,7 +158,7 @@ public class TempoProfile: NSObject, CLLocationManagerDelegate { //TODO: Make cl
     private func updateLocConsentValues(consentType: Constants.LocationConsent) {
         TempoProfile.locData?.consent = consentType.rawValue
         if(TempoProfile.outputtingLocationInfo) {
-            TempoUtils.Say(msg: " Updated location consent to: \(consentType.rawValue)")
+            TempoUtils.Say(msg: "✍️ Updated location consent to: \(consentType.rawValue)")
         }
     }
     
@@ -185,7 +212,7 @@ public class TempoProfile: NSObject, CLLocationManagerDelegate { //TODO: Make cl
         }
     }
    
-    /// Updates the fetchingf state of location data
+    /// Updates the fetching state of location data
     public static func updateLocState(newState: LocationState) {
         TempoProfile.locationState = newState
         
@@ -199,7 +226,14 @@ public class TempoProfile: NSObject, CLLocationManagerDelegate { //TODO: Make cl
     public func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
         var updating = "NOT UPDATING"
         
-        if status == .authorizedWhenInUse || status == .authorizedAlways {
+        TempoUtils.Say(msg: "🚨🚨🚨 locationManager callback")
+        if(TempoProfile.locationState == LocationState.DISABLED) {
+            // TODO: Do negative check first? Same response
+            TempoUtils.Warn(msg: "👨‍🦽‍➡️👨‍🦽‍➡️👨‍🦽‍➡️ LocationState.DISABLED (TempoProfile.locationManager [delegate callback])")
+            TempoProfile.updateLocState(newState: LocationState.UNAVAILABLE)
+            self.updateLocConsentValues(consentType: Constants.LocationConsent.NONE)
+        }
+        else if status == .authorizedWhenInUse || status == .authorizedAlways {
             if(TempoProfile.locationState != .CHECKING) {
                 updating = "UPDATING"
                 doTaskAfterLocAuthUpdate(completion: nil)
@@ -315,7 +349,13 @@ public class TempoProfile: NSObject, CLLocationManagerDelegate { //TODO: Make cl
     /// Public function for prompting consent (used for testing)
     public func requestLocationConsentNowAsTesting() {
         TempoUtils.Say(msg: "🪲🪲🪲 requestLocationConsent")
-        locManager.requestWhenInUseAuthorization()
+        if(TempoProfile.locationState == LocationState.DISABLED)
+        {
+            TempoUtils.Warn(msg: "👨‍🦽‍➡️👨‍🦽‍➡️👨‍🦽‍➡️ LocationState.DISABLED (TempoProfile.requestLocationConsentNowAsTesting")
+            return
+        } else {
+            locManager.requestWhenInUseAuthorization()
+        }
         
         requestLocationWithChecks()
     }
@@ -340,4 +380,5 @@ public enum LocationState: String {
     case CHECKED
     case FAILED
     case UNAVAILABLE
+    case DISABLED
 }

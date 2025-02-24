@@ -367,8 +367,14 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
     /// Generate REST-ADS-API web request with current session data
     func sendAdRequest() throws {
         
+        // Remove profile options if DISABLED
+        if(TempoProfile.locationState == LocationState.DISABLED)
+        {
+            TempoUtils.Warn(msg: "👨‍🦽‍➡️👨‍🦽‍➡️👨‍🦽‍➡️ LocationState.DISABLED (TempoAdView.sendAdRequest)")
+            TempoProfile.locData = LocationData()
+        }
         // Update locData with backup if nil
-        if(TempoProfile.locData == nil) {
+        else if(TempoProfile.locData == nil) {
             TempoUtils.Say(msg: "🌏 Updating with backup")
             do{
                 TempoProfile.locData = try TempoDataBackup.getMostRecentLocationData()
@@ -745,13 +751,13 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
             
             // Hold if still waiting for profile LocationData (or if consent != NONE)
             guard validState || metric.location_data?.consent == Constants.LocationConsent.NONE.rawValue else {
-                TempoUtils.Warn(msg: "[\(metricType)::\(TempoProfile.locationState ?? LocationState.UNCHECKED)] " +
-                                "Not sending metrics just yet: [state/admin=\(metric.location_data?.admin_area ?? "nil")]")
+                TempoUtils.Warn(msg: "[\(metricType)::\(TempoProfile.locationState)] " +
+                "Not sending metrics just yet: [state/admin=\(metric.location_data?.admin_area ?? "nil")]")
                 return
             }
             
-            TempoUtils.Say(msg: "[\(metricType)::\(TempoProfile.locationState ?? LocationState.UNCHECKED)] " +
-                           "Sending metrics! [state/admin=\(metric.location_data?.admin_area ?? "nil")]")
+            TempoUtils.Say(msg: "[\(metricType)::\(TempoProfile.locationState)] " +
+                "Sending metrics! [state/admin=\(metric.location_data?.admin_area ?? "nil")]")
             
             if Constants.MetricType.METRIC_SEND_NOW.contains(metricType) {
                 try pushMetrics()

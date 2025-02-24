@@ -146,8 +146,8 @@ public class TempoUtils {
     internal static func checkForTestCampaign(campaignId: String!) throws -> String! {
         if(campaignId != nil && !campaignId.isEmpty) {
             
-            if (TempoTesting.instance?.isTestingCustomCampaigns ?? false) {
-                guard let customCampaignId = TempoTesting.instance?.customCampaignId?.trimmingCharacters(in: .whitespacesAndNewlines), !customCampaignId.isEmpty else {
+            if (TempoExternal.instance?.isTestingCustomCampaigns ?? false) {
+                guard let customCampaignId = TempoExternal.instance?.customCampaignId?.trimmingCharacters(in: .whitespacesAndNewlines), !customCampaignId.isEmpty else {
                     throw WebURLError.invalidCustomCampaignID
                 }
                 
@@ -169,7 +169,7 @@ public class TempoUtils {
         let cw = Constants.Web.self
         
         // Check is TempoTesting inititalised, and is in DeployPreview mode. Then checks if DP version is valid.
-        if let tester = TempoTesting.instance, tester.isTestingDeployVersion, let deployVersion = tester.currentDeployVersion {
+        if let tester = TempoExternal.instance, tester.isTestingDeployVersion, let deployVersion = tester.currentDeployVersion {
             let deployPreviewUrl = "\(cw.ADS_DOM_PREFIX_URL_PREVIEW)\(deployVersion)\(cw.ADS_DOM_APPENDIX_URL_PREVIEW)\(cw.URL_REW)"
             TempoUtils.Say(msg: "DeployPreview (R) URL = \(deployPreviewUrl)")
             return deployPreviewUrl
@@ -195,7 +195,7 @@ public class TempoUtils {
         let cw = Constants.Web.self
         
         // Check is TempoTesting inititalised, and is in DeployPreview mode. Then checks if DP version is valid.
-        if let tester = TempoTesting.instance, tester.isTestingDeployVersion, let deployVersion = tester.currentDeployVersion {
+        if let tester = TempoExternal.instance, tester.isTestingDeployVersion, let deployVersion = tester.currentDeployVersion {
             let deployPreviewUrl = "\(cw.ADS_DOM_PREFIX_URL_PREVIEW)\(deployVersion)\(cw.ADS_DOM_APPENDIX_URL_PREVIEW)\(cw.URL_INT)"
             TempoUtils.Say(msg: "DeployPreview (I) URL = \(deployPreviewUrl)")
             return deployPreviewUrl
