@@ -64,7 +64,7 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
             try updateAdId()
         } catch {
             adId = Constants.ZERO_AD_ID
-            TempoUtils.Warn(msg: "Ad ID could not be retireved: \(error.localizedDescription)")
+            TempoUtils.Warn(msg: "Ad ID could not be retrieved: \(error.localizedDescription)")
         }
         TempoUtils.Say(msg: "Ad ID: \(adId!)")
     }
@@ -367,10 +367,10 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
     /// Generate REST-ADS-API web request with current session data
     func sendAdRequest() throws {
         
-        // Remove profile options if DISABLED
+        // We don't want to update any backups with personal data is that is disabled
         if(TempoProfile.locationState == LocationState.DISABLED)
         {
-            TempoUtils.Warn(msg: "👨‍🦽‍➡️👨‍🦽‍➡️👨‍🦽‍➡️ LocationState.DISABLED (TempoAdView.sendAdRequest)")
+            TempoUtils.Warn(msg: "🌏👨‍🦽‍➡️  LocationState.DISABLED (TempoAdView.sendAdRequest)")
             TempoProfile.locData = LocationData()
         }
         // Update locData with backup if nil

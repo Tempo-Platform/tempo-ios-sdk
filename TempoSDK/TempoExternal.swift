@@ -28,12 +28,6 @@ public class TempoExternal {
         //Constants.isProd = isProd
     }
     
-    public func updateStopProfileData(stopProfileData: Bool) -> Void {
-        if(stopProfileData) {
-            TempoProfile.updateLocState(newState: LocationState.DISABLED)
-        }
-    }
-    
     public func updateEnvironmentWithIndex(enumValue: Int) -> Void {
         Constants.environment = Constants.Environment.allValues[enumValue]
     }
