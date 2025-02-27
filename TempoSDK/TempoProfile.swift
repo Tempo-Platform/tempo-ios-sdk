@@ -11,12 +11,14 @@ public class TempoProfile: NSObject, CLLocationManagerDelegate { //TODO: Make cl
     // The static that can be retrieved at any time during the SDK's usage
     static var outputtingLocationInfo = false
     static var locationState: LocationState = LocationState.UNCHECKED
-    static var locData: LocationData?
+    var locData: LocationData = LocationData()
+    var initialLocationRequestDone: Bool = false
     
     // First steps when instantiated
     init(adView: TempoAdView) {
         self.adView = adView
         super.init()
+        TempoUtils.Say(msg: "🌟🌟🌟🌟🌟🌟🌟 TempoProfile INIT")
         
         // Assign manager delegate
         locManager.delegate = self
@@ -25,26 +27,23 @@ public class TempoProfile: NSObject, CLLocationManagerDelegate { //TODO: Make cl
         if(TempoProfile.locationState == LocationState.DISABLED)
         {
             TempoUtils.Warn(msg: "🌏👨‍🦽‍➡️ LocationState.DISABLED (TempoProfile.init)")
-            TempoProfile.locData = LocationData()
+            locData = LocationData()
             return
         }
         
         // Update locData with backup if nil
-        if(TempoProfile.locData == nil) {
-            do{
-                TempoProfile.locData = try TempoDataBackup.getMostRecentLocationData()
-            } catch {
-                TempoUtils.Warn(msg: "Error while attempting to fetch cached location data during init")
-                TempoProfile.locData = LocationData()
-            }
-        } else {
-            TempoUtils.Say(msg: "🌏 LocData is null, no backup needed")
+        do {
+            locData = try TempoDataBackup.getLocationDataFromCache()
+            initialLocationRequestDone = true
+        } catch {
+            TempoUtils.Warn(msg: "Error while attempting to fetch cached location data during init")
+            locData = LocationData()
         }
         
         // Assign level of accuracy we want to start off with
         locManager.desiredAccuracy = kCLLocationAccuracyHundredMeters
         
-        // For testing, loads when initialised
+        // For testing, loads when initialised // TODO: Move this now?
         if(requestOnLoad_testing) {
             locManager.requestWhenInUseAuthorization()
             locManager.requestLocation()
@@ -148,9 +147,9 @@ public class TempoProfile: NSObject, CLLocationManagerDelegate { //TODO: Make cl
         if(TempoProfile.locationState == LocationState.DISABLED)
         {
             TempoUtils.Warn(msg: "🌏👨‍🦽‍➡️ LocationState.DISABLED (TempoProfile.handleNoAccessUpdate)")
-            TempoProfile.locData = LocationData()
+            locData = LocationData()
         } else {
-            TempoProfile.locData = self.adView.getClonedAndCleanedLocation()
+            locData = self.adView.getClonedAndCleanedLocation()
         }
         
         TempoProfile.updateLocState(newState: LocationState.UNAVAILABLE)
@@ -161,7 +160,7 @@ public class TempoProfile: NSObject, CLLocationManagerDelegate { //TODO: Make cl
     
     // Updates consent value to both the static object and the adView instance string reference
     private func updateLocConsentValues(consentType: Constants.LocationConsent) {
-        TempoProfile.locData?.consent = consentType.rawValue
+        locData.consent = consentType.rawValue
         if(TempoProfile.outputtingLocationInfo) {
             TempoUtils.Say(msg: "✍️ Updated location consent to: \(consentType.rawValue)")
         }
@@ -252,6 +251,7 @@ public class TempoProfile: NSObject, CLLocationManagerDelegate { //TODO: Make cl
         else{
             TempoUtils.Say(msg: "❌ didChangeAuthorization => \((status as CLAuthorizationStatus).rawValue): \(updating)")
             TempoProfile.updateLocState(newState: LocationState.UNAVAILABLE)
+            adView.checkSessionInitialRequestDone()
         }
         
         // Make consent state NONE
@@ -275,32 +275,33 @@ public class TempoProfile: NSObject, CLLocationManagerDelegate { //TODO: Make cl
                 TempoProfile.updateLocState(newState: LocationState.FAILED)
                 self.adView.pushHeldMetricsWithUpdatedLocationData()
             } else if let placemark = placemarks?.first {
-                TempoProfile.locData?.state = self.getLocationPropertyValue(labelName: "State", property: placemark.administrativeArea)
-                TempoProfile.locData?.postcode = self.getLocationPropertyValue(labelName: "Postcode", property: placemark.postalCode)
-                TempoProfile.locData?.postal_code = self.getLocationPropertyValue(labelName: "Postal Code", property: placemark.postalCode)
-                TempoProfile.locData?.country_code = self.getLocationPropertyValue(labelName: "Country Code", property: placemark.isoCountryCode)
-                TempoProfile.locData?.admin_area = self.getLocationPropertyValue(labelName: "Admin Area", property: placemark.administrativeArea)
-                TempoProfile.locData?.sub_admin_area = self.getLocationPropertyValue(labelName: "Sub Admin Area", property: placemark.subAdministrativeArea)
-                TempoProfile.locData?.locality = self.getLocationPropertyValue(labelName: "Locality", property: placemark.locality)
-                TempoProfile.locData?.sub_locality = self.getLocationPropertyValue(labelName: "Sub Locality", property: placemark.subLocality)
+                self.locData.state = self.getLocationPropertyValue(labelName: "State", property: placemark.administrativeArea)
+                self.locData.postcode = self.getLocationPropertyValue(labelName: "Postcode", property: placemark.postalCode)
+                self.locData.postal_code = self.getLocationPropertyValue(labelName: "Postal Code", property: placemark.postalCode)
+                self.locData.country_code = self.getLocationPropertyValue(labelName: "Country Code", property: placemark.isoCountryCode)
+                self.locData.admin_area = self.getLocationPropertyValue(labelName: "Admin Area", property: placemark.administrativeArea)
+                self.locData.sub_admin_area = self.getLocationPropertyValue(labelName: "Sub Admin Area", property: placemark.subAdministrativeArea)
+                self.locData.locality = self.getLocationPropertyValue(labelName: "Locality", property: placemark.locality)
+                self.locData.sub_locality = self.getLocationPropertyValue(labelName: "Sub Locality", property: placemark.subLocality)
                 
                 // Update current session's top-level country code parameter if there is a value
-                if let countryCode = TempoProfile.locData?.country_code, !countryCode.isEmpty {
+                if let countryCode = self.locData.country_code, !countryCode.isEmpty {
                     self.adView.countryCode = countryCode
                 }
                 
-                TempoUtils.Say(msg: "☎️ didUpdateLocations: [state/admin=\(TempoProfile.locData?.admin_area ?? "nil")] | Values have been updated")
+                TempoUtils.Say(msg: "☎️ didUpdateLocations: [state/admin=\(self.locData.admin_area ?? "nil")] | Values have been updated")
                 
                 // Save data instance as the most recently validated data
                 self.saveLatestValidLocData()
-                
                 TempoProfile.updateLocState(newState: LocationState.CHECKED)
                 self.adView.pushHeldMetricsWithUpdatedLocationData()
+    
             } else {
                 TempoUtils.Warn(msg: "No placemarks found")
                 TempoProfile.updateLocState(newState: LocationState.FAILED)
                 self.adView.pushHeldMetricsWithUpdatedLocationData()
             }
+            self.adView.checkSessionInitialRequestDone()
         }
     }
     
@@ -310,7 +311,7 @@ public class TempoProfile: NSObject, CLLocationManagerDelegate { //TODO: Make cl
         let encoder = JSONEncoder()
         do {
             // Encode locData to JSON
-            let encoded = try encoder.encode(TempoProfile.locData)
+            let encoded = try encoder.encode(locData)
             
             // Save encoded data to UserDefaults
             let defaults = UserDefaults.standard
@@ -353,7 +354,7 @@ public class TempoProfile: NSObject, CLLocationManagerDelegate { //TODO: Make cl
 }
 
 public struct LocationData : Codable {
-    var consent: String?
+    var consent: String? = Constants.LocationConsent.NONE.rawValue
     var postcode: String?
     var state: String?
     

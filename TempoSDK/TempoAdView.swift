@@ -30,6 +30,7 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
     var locationData: LocationData?
     var metricList: [Metric] = []
     var lastestURL: String? = nil
+    var tempoProfile: TempoProfile? = nil
     
     public init(listener: TempoAdListener, appId: String) {
         super.init(nibName: nil, bundle: nil)
@@ -42,31 +43,21 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
             object: nil
         )
         
+        TempoUtils.Say(msg: "🌟🌟🌟🌟🌟🌟🌟 AdView INIT")
+        
+        // Update from passed properties
         self.listener = listener
         self.appId = appId
         
-        // Confirm a valid country code - catch result is a nil countryCode, which should be ok // TODO: Check this
-        do {
-            countryCode = try CountryCode.getIsoCountryCode2Digit()
-            TempoUtils.Say(msg: "ISO Country Code: \(countryCode!)")
-        } catch {
-            TempoUtils.Warn(msg: "Setting countryCode as hard nil")
-            countryCode = nil
-        }
-        
+        // Gather available value for other properties
+        countryCode = getCountryCode();
         sdkVersion = Constants.SDK_VERSIONS
         adapterVersion = self.listener.getTempoAdapterVersion()
         adapterType = self.listener.getTempoAdapterType()
         consent = self.listener.hasUserConsent()
-        
-        // Check if Ad ID is activated and available
-        do {
-            try updateAdId()
-        } catch {
-            adId = Constants.ZERO_AD_ID
-            TempoUtils.Warn(msg: "Ad ID could not be retrieved: \(error.localizedDescription)")
-        }
-        TempoUtils.Say(msg: "Ad ID: \(adId!)")
+    
+        // See of Ad ID can be updated
+        attemptUpdateForAdId();
     }
     
     /// Ignore requirement to implement required initializer ‘init(coder:) in it.
@@ -80,6 +71,30 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
         NotificationCenter.default.removeObserver(self)
     }
     
+    /// Confirm a valid country code - catch result is a nil countryCode, which should be ok
+    private func getCountryCode() -> String? {
+        var returningCountryCode: String?
+        do {
+            returningCountryCode = try CountryCode.getIsoCountryCode2Digit()
+            TempoUtils.Say(msg: "ISO Country Code: \(returningCountryCode!)")
+        } catch {
+            TempoUtils.Warn(msg: "Setting countryCode as hard nil")
+            returningCountryCode = nil // TODO: Check this, should be ok...
+        }
+        return returningCountryCode;
+    }
+    
+    /// Check if Ad ID is activated and available
+    private func attemptUpdateForAdId() {
+        do {
+            try updateAdId()
+        } catch {
+            adId = Constants.ZERO_AD_ID
+            TempoUtils.Warn(msg: "Ad ID could not be retrieved: \(error.localizedDescription)")
+        }
+        TempoUtils.Say(msg: "Ad ID: \(adId!)")
+    }
+    
     /// Prepares ad for current session (interstitial/reward)
     public func loadAd(isInterstitial: Bool, cpmFloor: Float?, placementId: String?) {
         TempoUtils.Say(msg: "loadAd() \(TempoUtils.getAdTypeString(isInterstitial: isInterstitial))", absoluteDisplay: true)
@@ -89,17 +104,18 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
         
         // Create WKWebView instance
         do {
-            try setupWKWebview()
+            try preloadWebView()
         } catch let error {
             // Fails if cannot get WkWebView
             self.adState = AdState.dormant
             DispatchQueue.main.async {
                 self.processAdFetchFailed(reason: "Could not create WKWebView: \(error.localizedDescription)")
             }
+            // Abort load process
             return
         }
         
-        // Update session values from paramters
+        // Update session values from parameters
         self.isInterstitial = isInterstitial
         self.placementId = placementId
         self.cpmFloor = cpmFloor ?? 0.0
@@ -110,9 +126,35 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
         // Create ad load metrics with updated ad data
         self.addMetric(metricType: Constants.MetricType.LOAD_REQUEST)
         
+        // Create tempoProfile instance if does not already exist
+        tempoProfile = tempoProfile ?? TempoProfile(adView: self)
+        
+        // If initial check has been done, request ad straight away
+        if(tempoProfile != nil && tempoProfile!.initialLocationRequestDone)
+        {
+            TempoUtils.Say(msg: "💥💥💥 No need to wait, location has been checked already!!")
+            doLocationConfirmedAdRequest()
+        }
+        
+//        // Create and send ad request with latest data
+//        do {
+//            try sendAdRequest()
+//        }
+//        catch {
+//            // Send failure trigger and reset state
+//            self.adState = AdState.dormant
+//            DispatchQueue.main.async {
+//                self.processAdFetchFailed(reason: "Failed sending ad fetch request")
+//            }
+//        }
+    }
+    
+    // Callback to send ad request once location data checks have been resolved
+    private func doLocationConfirmedAdRequest() {
         // Create and send ad request with latest data
         do {
             try sendAdRequest()
+            tempoProfile?.initialLocationRequestDone = true
         }
         catch {
             // Send failure trigger and reset state
@@ -122,6 +164,14 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
             }
         }
     }
+    
+    public func checkSessionInitialRequestDone() {
+        if(tempoProfile != nil && !tempoProfile!.initialLocationRequestDone) {
+            TempoUtils.Say(msg: "💥💥💥 Ad requested after location checks")
+            doLocationConfirmedAdRequest()
+        }
+    }
+    
     
     /// Plays currently loaded ad for current session (interstitial/reward)
     public func showAd(parentVC: UIViewController?) {
@@ -371,16 +421,16 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
         if(TempoProfile.locationState == LocationState.DISABLED)
         {
             TempoUtils.Warn(msg: "🌏👨‍🦽‍➡️  LocationState.DISABLED (TempoAdView.sendAdRequest)")
-            TempoProfile.locData = LocationData()
+            tempoProfile?.locData = LocationData()
         }
         // Update locData with backup if nil
-        else if(TempoProfile.locData == nil) {
+        else if(tempoProfile?.locData == nil) {
             TempoUtils.Say(msg: "🌏 Updating with backup")
             do{
-                TempoProfile.locData = try TempoDataBackup.getMostRecentLocationData()
+                tempoProfile?.locData = try TempoDataBackup.getLocationDataFromCache()
             } catch {
                 TempoUtils.Warn(msg: "LocData error during ad request")
-                TempoProfile.locData = LocationData()
+                tempoProfile?.locData = LocationData()
             }
         } else {
             TempoUtils.Say(msg: "🌏 LocData is not null, no backup needed")
@@ -547,7 +597,7 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
         }
         
         // Add locData parameters if locData exists and consent is not NONE
-        if let locData = TempoProfile.locData, locData.consent != Constants.LocationConsent.NONE.rawValue {
+        if let locData = tempoProfile?.locData, locData.consent != Constants.LocationConsent.NONE.rawValue {
             if let countryCode = locData.country_code {
                 components.queryItems?.append(URLQueryItem(name: Constants.URL.LOC_COUNTRY_CODE, value: countryCode))
             }
@@ -591,7 +641,7 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
     }
     
     /// Creates the custom WKWebView including safe areas, background color and pulls custom configurations
-    private func setupWKWebview() throws {
+    private func preloadWebView() throws {
         
         // Create webview config
         let configuration = getWKWebViewConfiguration()
@@ -722,18 +772,18 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
     public func getClonedAndCleanedLocation() -> LocationData {
         
         var newLocData = LocationData()
-        let newConsent = TempoProfile.locData?.consent ?? Constants.LocationConsent.NONE.rawValue
+        let newConsent = tempoProfile?.locData.consent ?? Constants.LocationConsent.NONE.rawValue
         
         newLocData.consent = newConsent
         if(newConsent != Constants.LocationConsent.NONE.rawValue) {
-            if let state = TempoProfile.locData?.state { newLocData.state = state }
-            if let postcode = TempoProfile.locData?.postcode { newLocData.postcode = postcode }
-            if let countryCode = TempoProfile.locData?.country_code { newLocData.country_code = countryCode }
-            if let postalCode = TempoProfile.locData?.postal_code { newLocData.postal_code = postalCode }
-            if let adminArea = TempoProfile.locData?.admin_area { newLocData.admin_area = adminArea }
-            if let subAdminArea = TempoProfile.locData?.sub_admin_area { newLocData.sub_admin_area = subAdminArea }
-            if let locality = TempoProfile.locData?.locality { newLocData.locality = locality }
-            if let subLocality = TempoProfile.locData?.sub_locality { newLocData.sub_locality = subLocality }
+            if let state = tempoProfile?.locData.state { newLocData.state = state }
+            if let postcode = tempoProfile?.locData.postcode { newLocData.postcode = postcode }
+            if let countryCode = tempoProfile?.locData.country_code { newLocData.country_code = countryCode }
+            if let postalCode = tempoProfile?.locData.postal_code { newLocData.postal_code = postalCode }
+            if let adminArea = tempoProfile?.locData.admin_area { newLocData.admin_area = adminArea }
+            if let subAdminArea = tempoProfile?.locData.sub_admin_area { newLocData.sub_admin_area = subAdminArea }
+            if let locality = tempoProfile?.locData.locality { newLocData.locality = locality }
+            if let subLocality = tempoProfile?.locData.sub_locality { newLocData.sub_locality = subLocality }
         }
         
         return newLocData
@@ -868,14 +918,14 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
     
     /// Updates location data from TempoProfile
     private func updateLocationDataFromTempoProfile(_ metric: inout Metric) {
-        metric.location_data?.postcode = TempoProfile.locData?.postcode ?? nil
-        metric.location_data?.state = TempoProfile.locData?.state ?? nil
-        metric.location_data?.postal_code = TempoProfile.locData?.postal_code ?? nil
-        metric.location_data?.country_code = TempoProfile.locData?.country_code ?? nil
-        metric.location_data?.admin_area = TempoProfile.locData?.admin_area ?? nil
-        metric.location_data?.sub_admin_area = TempoProfile.locData?.sub_admin_area ?? nil
-        metric.location_data?.locality = TempoProfile.locData?.locality ?? nil
-        metric.location_data?.sub_locality = TempoProfile.locData?.sub_locality ?? nil
+        metric.location_data?.postcode = tempoProfile?.locData.postcode ?? nil
+        metric.location_data?.state = tempoProfile?.locData.state ?? nil
+        metric.location_data?.postal_code = tempoProfile?.locData.postal_code ?? nil
+        metric.location_data?.country_code = tempoProfile?.locData.country_code ?? nil
+        metric.location_data?.admin_area = tempoProfile?.locData.admin_area ?? nil
+        metric.location_data?.sub_admin_area = tempoProfile?.locData.sub_admin_area ?? nil
+        metric.location_data?.locality = tempoProfile?.locData.locality ?? nil
+        metric.location_data?.sub_locality = tempoProfile?.locData.sub_locality ?? nil
         
         //        // Original implementation example...
         //        // Confirm postcode has a value
@@ -957,7 +1007,7 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
         
         // Create WKWebView instance
         do {
-            try setupWKWebview()
+            try preloadWebView()
         } catch let error {
             // Fails if cannot get WkWebView
             self.adState = AdState.dormant

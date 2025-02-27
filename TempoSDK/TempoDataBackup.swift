@@ -187,7 +187,7 @@ public class TempoDataBackup
     }
     
     /// Checks backups for any cached location data
-    public static func getMostRecentLocationData() throws -> LocationData {
+    public static func getLocationDataFromCache() throws -> LocationData {
         
         // Validate backup location exists with UserDefaults using 'locationData' key
         guard let savedLocationData = UserDefaults.standard.data(forKey: Constants.Backup.LOC_BACKUP_REF) else {
