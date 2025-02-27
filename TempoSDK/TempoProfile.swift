@@ -48,7 +48,7 @@ public class TempoProfile: NSObject, CLLocationManagerDelegate { //TODO: Make cl
         if(requestOnLoad_testing) {
             locManager.requestWhenInUseAuthorization()
             locManager.requestLocation()
-            requestLocationWithChecks()
+            //requestLocationWithChecks()
         }
     }
     
@@ -71,8 +71,8 @@ public class TempoProfile: NSObject, CLLocationManagerDelegate { //TODO: Make cl
         }
     }
         
-    /// Runs async thread process that gets authorization type/accuray and updates LocationData when received
-    public func doTaskAfterLocAuthUpdate(completion: (() -> Void)?) {
+    /// Runs async thread process that gets authorization type/accuracy and updates LocationData when received
+    public func updateConsentTypeThenDoCallback(completion: (() -> Void)?) {
         
         // CLLocationManager.authorizationStatus can cause UI unresponsiveness if invoked on the main thread.
         DispatchQueue.global().async {
@@ -104,16 +104,23 @@ public class TempoProfile: NSObject, CLLocationManagerDelegate { //TODO: Make cl
             case .authorizedAlways, .authorizedWhenInUse:
                 DispatchQueue.main.async {
                     TempoUtils.say(msg: "✅ Access - always or authorizedWhenInUse [UPDATE]")
+                    // iOS 14 introduced precise/general options
                     if #available(iOS 14.0, *) {
-                        // iOS 14 introduced precise/general options
+                        // Mark as GENERAL
                         if self.locManager.accuracyAuthorization == .reducedAccuracy {
-                            self.handleAuthorizedLocAccess(.GENERAL, completion: completion)
-                        } else {
-                            self.handleAuthorizedLocAccess(.PRECISE, completion: completion)
+                            self.updateLocConsentValues(consentType: Constants.LocationConsent.GENERAL)
+                            completion?()
                         }
-                    } else {
-                        // Pre-iOS 14: always treat as precise
-                        self.handleAuthorizedLocAccess(.PRECISE, completion: completion)
+                        // Mark as PRECISE
+                        else {
+                            self.updateLocConsentValues(consentType: Constants.LocationConsent.PRECISE)
+                            completion?()
+                        }
+                    }
+                    // Pre-iOS 14: always treat as precise
+                    else {
+                        self.updateLocConsentValues(consentType: Constants.LocationConsent.PRECISE)
+                        completion?()
                     }
                 }
             case .restricted, .denied, .notDetermined:
@@ -136,23 +143,9 @@ public class TempoProfile: NSObject, CLLocationManagerDelegate { //TODO: Make cl
         }
     }
     
-    /// Behaviour when location access returns as authorizedAlways/authorizedWhenInUse
-    private func handleAuthorizedLocAccess(_ consentType: Constants.LocationConsent, completion: (() -> Void)?) {
-        TempoUtils.say(msg: "Updating LocationData consent as \(consentType.rawValue)")
-        self.updateLocConsentValues(consentType: consentType)
-        completion?()
-    }
-    
     /// Behaviour when location access returned is NOT authorizedAlways/authorizedWhenInUse
     private func handleNoAccessUpdate(completion: (() -> Void)?) {
-        if(TempoProfile.locationState == LocationState.DISABLED)
-        {
-            TempoUtils.warn(msg: "🌏👨‍🦽‍➡️ LocationState.DISABLED (TempoProfile.handleNoAccessUpdate)")
-            locData = LocationData()
-        } else {
-            locData = self.adView.getClonedAndCleanedLocation()
-        }
-        
+        locData = self.adView.getClonedAndCleanedLocation()
         TempoProfile.updateLocState(newState: LocationState.UNAVAILABLE)
         self.updateLocConsentValues(consentType: Constants.LocationConsent.NONE)
         self.saveLatestValidLocData()
@@ -226,42 +219,64 @@ public class TempoProfile: NSObject, CLLocationManagerDelegate { //TODO: Make cl
         }
     }
     
+    
+    func authorizationStatusString(_ status: CLAuthorizationStatus) -> String {
+        switch status {
+        case .notDetermined: return "notDetermined"
+        case .restricted: return "restricted"
+        case .denied: return "denied"
+        case .authorizedAlways: return "authorizedAlways"
+        case .authorizedWhenInUse: return "authorizedWhenInUse"
+        @unknown default: return "unknown"
+        }
+    }
+    
     /* ---------- Location Manager Callback ---------- */
     /// Location Manager callback: didChangeAuthorization
     public func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
+        TempoUtils.warn(msg: "⚠️⚠️⚠️ STATUS CHANGE ⚠️⚠️⚠️: \(authorizationStatusString(status))")
         var updating = "NOT UPDATING"
         
-        // Not likely to reach here if disabled - but handled jsut in case
+        // If disabled, can attempt ad load (if not already done so)
         if(TempoProfile.locationState == LocationState.DISABLED) {
             TempoUtils.warn(msg: "🌏👨‍🦽‍➡️ LocationState.DISABLED (TempoProfile.locationManager [delegate callback])")
-            adView.checkSessionInitialRequestDone()
+            adView.checkIfSessionInitialRequestDone()
         }
         // If authorisation checks out, proceed with update
         else if status == .authorizedWhenInUse || status == .authorizedAlways {
-            if(TempoProfile.locationState != .CHECKING) {
-                updating = "UPDATING"
-                doTaskAfterLocAuthUpdate(completion: adView.checkSessionInitialRequestDone)
-            } else {
+            if(TempoProfile.locationState == .CHECKING) {
                 updating = "NOT UPDATING WHILE CHECKING"
+                return
+            } else {
+                updating = "UPDATING"
+                TempoProfile.updateLocState(newState: .CHECKING)
+                // Update consent type (i.e. GENERAL/PRECISE)
+                updateConsentTypeThenDoCallback(completion: locManager.requestLocation)
+                TempoUtils.say(msg: "✅ didChangeAuthorization => \((status as CLAuthorizationStatus).rawValue): \(updating)")
+                return
             }
-            
-            requestLocationWithChecks()
-            TempoUtils.say(msg: "✅ didChangeAuthorization => \((status as CLAuthorizationStatus).rawValue): \(updating)")
+        }
+        // If explicitly denied, return locData to default and exit process
+        else if status == .denied || status == .restricted {
+            TempoProfile.updateLocState(newState: LocationState.UNAVAILABLE)
+            locData = LocationData()
+            self.saveLatestValidLocData()
             return
         }
         // The latest change (or first check) showed no valid authorisation
-        else{
+        else {
             TempoUtils.say(msg: "❌ didChangeAuthorization => \((status as CLAuthorizationStatus).rawValue): \(updating)")
             TempoProfile.updateLocState(newState: LocationState.UNAVAILABLE)
-            adView.checkSessionInitialRequestDone()
         }
         
         // Make consent state NONE
         self.updateLocConsentValues(consentType: Constants.LocationConsent.NONE)
+        adView.checkIfSessionInitialRequestDone()
     }
     
     /// Location Manager callback: didUpdateLocations
     public func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        TempoUtils.warn(msg: "⚠️⚠️⚠️ LOCATION DATA ⚠️⚠️⚠️")
         guard let location = locations.last else {
             TempoUtils.warn(msg: "☎️ didUpdateLocations: No valid locations found")
             TempoProfile.updateLocState(newState: LocationState.FAILED)
@@ -303,7 +318,7 @@ public class TempoProfile: NSObject, CLLocationManagerDelegate { //TODO: Make cl
                 TempoProfile.updateLocState(newState: LocationState.FAILED)
                 self.adView.pushHeldMetricsWithUpdatedLocationData()
             }
-            self.adView.checkSessionInitialRequestDone()
+            self.adView.checkIfSessionInitialRequestDone()
         }
     }
     

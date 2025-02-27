@@ -165,7 +165,7 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
         }
     }
     
-    public func checkSessionInitialRequestDone() {
+    public func checkIfSessionInitialRequestDone() {
         if(tempoProfile != nil && !tempoProfile!.initialLocationRequestDone) {
             TempoUtils.say(msg: "💥💥💥 Ad requested after location checks")
             doLocationConfirmedAdRequest()

@@ -110,7 +110,7 @@ public struct Constants {
     }
     
     // Test tool variables
-    public static var environment: Environment = Environment.DEV
-    public static var isVerboseDebugging = false
+    public static var environment: Environment = Environment.STG
+    public static var isVerboseDebugging = true
     
 }
