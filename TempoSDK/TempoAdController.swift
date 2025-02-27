@@ -14,7 +14,6 @@ public class TempoAdController: NSObject {
     
     public init(tempoAdListener: TempoAdListener, appId: String!) {
         super.init()
-        TempoUtils.say(msg: "🌟🌟🌟🌟🌟🌟🌟 TempoAdListener INIT")
         
         // On first instantiation by either ad type do some initial global checks
         if(!TempoAdController.isInitialised) {
@@ -43,69 +42,25 @@ public class TempoAdController: NSObject {
         }
         
         // Create AdView object
-        TempoUtils.say(msg: "🌟🌟🌟 adView created... ")
         adView = TempoAdView(listener: tempoAdListener, appId: appId)
-//        adView!.modalPresentationStyle = .fullScreen
-//        if let unityVC = UIApplication.shared.windows.first?.rootViewController {
-//            
-//            TempoUtils.Say(msg: "🌟🌟🌟 Presenting adView... ")
-//            unityVC.present(adView!, animated: true, completion: nil)
-//        }
     }
     
     /// Public LOAD function for mediation adapters to call
     public func loadAd(isInterstitial: Bool, cpmFloor: Float?, placementId: String?) {
-        
-//        // Load ad callback for when checks are satisfied
-//        let loadAdCallback: () -> Void = {
-//            DispatchQueue.main.async {
-//                self.adView!.loadAd (
-//                    isInterstitial: isInterstitial,
-//                    cpmFloor: cpmFloor,
-//                    placementId: placementId)
-//            }
-//        }
-        
         DispatchQueue.main.async {
             self.adView!.loadAd (
                 isInterstitial: isInterstitial,
                 cpmFloor: cpmFloor,
                 placementId: placementId)
         }
-        
-//
-//        // Create tempoProfile instance if does not already exist
-//        tempoProfile = tempoProfile ?? TempoProfile(adView: adView!)
-//        
-//        // Check for latest location consent authorisation - after which run loadAds()
-//        // This does not take long, it's just run async on background thread
-//        tempoProfile?.doTaskAfterLocAuthUpdate(completion: loadAdCallback)
     }
         
     /// Public SHOW function for mediation adapters to call
     public func showAd(parentViewController: UIViewController?) {
-        
-        //adView!.showAd(parentVC: parentViewController)
-        
-        // Load ad callback for when checks are satisfied
-        //            let showAdCallback: () -> Void = {
-        //                DispatchQueue.main.async {
-        //                    self.adView!.modalPresentationStyle = .fullScreen
-        //                    self.adView!.showAd(parentVC: parentViewController)
-        //                }
-        //            }
-        
         DispatchQueue.main.async {
             self.adView!.modalPresentationStyle = .fullScreen
             self.adView!.showAd(parentVC: parentViewController)
         }
-        //
-        //            // Create tempoProfile instance if does not already exist
-        //            tempoProfile =  tempoProfile ?? TempoProfile(adView: adView!)
-        //            
-        //            // Check for lates location consent autorisation - after which, run showAds()
-        //            // This does not take long, it's just run async on background thread
-        //            tempoProfile?.doTaskAfterLocAuthUpdate(completion: showAdCallback)
     }
         
     /// Public LOAD function for internal testing with specific campaign ID {ONLY USED IN TESTING)

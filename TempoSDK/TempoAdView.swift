@@ -43,8 +43,6 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
             object: nil
         )
         
-        TempoUtils.say(msg: "🌟🌟🌟🌟🌟🌟🌟 AdView INIT")
-        
         // Update from passed properties
         self.listener = listener
         self.appId = appId
@@ -423,6 +421,7 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
             TempoUtils.warn(msg: "🌏👨‍🦽‍➡️  LocationState.DISABLED (TempoAdView.sendAdRequest)")
             tempoProfile?.locData = LocationData()
         }
+        
         // Update locData with backup if nil
         else if(tempoProfile?.locData == nil) {
             TempoUtils.say(msg: "🌏 Updating with backup")
@@ -432,8 +431,6 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
                 TempoUtils.warn(msg: "LocData error during ad request")
                 tempoProfile?.locData = LocationData()
             }
-        } else {
-            TempoUtils.say(msg: "🌏 LocData is not null, no backup needed")
         }
         
         // Create request
@@ -482,7 +479,7 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
                     DispatchQueue.main.async { self.processAdFetchFailed(reason: "Invalid HTTP response") }
                     return
                 }
-                TempoUtils.say(msg: "🤖🤖🤖 Response: \((response as! HTTPURLResponse).statusCode)")
+                TempoUtils.say(msg: "🤖 Response: \((response as! HTTPURLResponse).statusCode)")
                 
                 switch(httpResponse.statusCode) {
                 case 200:
@@ -510,7 +507,7 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
                                 self.lastestURL = url.absoluteString
                                 self.campaignId = try TempoUtils.checkForTestCampaign(campaignId: campaignId)
                                 self.adState = AdState.dormant
-                                TempoUtils.say(msg: "🧨 URL: \(self.lastestURL!)")
+                                TempoUtils.say(msg: "🌏 ADS-API URL: \(self.lastestURL!)")
                                 DispatchQueue.main.async {
                                     self.webViewAd.load(URLRequest(url: url))
                                 }
@@ -701,7 +698,7 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
         // Cannot work with an empty string
         if !bodyString.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             
-            TempoUtils.say(msg: "WEB_MSG: \(bodyString)", absoluteDisplay: true)
+            //TempoUtils.say(msg: "WEB_MSG: \(bodyString)", absoluteDisplay: true)
             
             // Check if known one-word reference
             if actionList.contains(bodyString) {
@@ -709,7 +706,7 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
                 self.addMetric(metricType: bodyString)
                 
                 // Handle actionable commands
-                var jsMsg = "👀: "
+                var jsMsg = "📊: "
                 switch bodyString {
                 case Constants.MetricType.CLOSE_AD:
                     jsMsg.append("CLOSE_AD")
@@ -761,7 +758,7 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
             else {
                 // Send metric from message, even if there is no specific handling
                 self.addMetric(metricType: bodyString)
-                TempoUtils.say(msg: "🆗 \(bodyString)")
+                TempoUtils.say(msg: "📊 \(bodyString)")
             }
         } else {
             TempoUtils.warn(msg: "❌ MessageType was empty/null")

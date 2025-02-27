@@ -131,7 +131,7 @@ public class TempoUtils {
                 webAdUrl.append("\(suffix)")
             }
             
-            TempoUtils.say(msg: "🌏 Web URL: \(webAdUrl)")
+            //TempoUtils.say(msg: "🌏 Web URL: \(webAdUrl)")
             
             return webAdUrl
             

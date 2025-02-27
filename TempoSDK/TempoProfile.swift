@@ -18,7 +18,6 @@ public class TempoProfile: NSObject, CLLocationManagerDelegate { //TODO: Make cl
     init(adView: TempoAdView) {
         self.adView = adView
         super.init()
-        TempoUtils.say(msg: "🌟🌟🌟🌟🌟🌟🌟 TempoProfile INIT")
         
         // Assign manager delegate
         locManager.delegate = self
@@ -252,12 +251,13 @@ public class TempoProfile: NSObject, CLLocationManagerDelegate { //TODO: Make cl
                 TempoProfile.updateLocState(newState: .CHECKING)
                 // Update consent type (i.e. GENERAL/PRECISE)
                 updateConsentTypeThenDoCallback(completion: locManager.requestLocation)
-                TempoUtils.say(msg: "✅ didChangeAuthorization => \((status as CLAuthorizationStatus).rawValue): \(updating)")
+                TempoUtils.say(msg: "☎️ didChangeAuthorization => \((status as CLAuthorizationStatus).rawValue): \(updating) ✅")
                 return
             }
         }
         // If explicitly denied, return locData to default and exit process
         else if status == .denied || status == .restricted {
+            TempoUtils.say(msg: "☎️ didChangeAuthorization => \((status as CLAuthorizationStatus).rawValue): \(updating) ❌")
             TempoProfile.updateLocState(newState: LocationState.UNAVAILABLE)
             locData = LocationData()
             self.saveLatestValidLocData()
@@ -265,7 +265,7 @@ public class TempoProfile: NSObject, CLLocationManagerDelegate { //TODO: Make cl
         }
         // The latest change (or first check) showed no valid authorisation
         else {
-            TempoUtils.say(msg: "❌ didChangeAuthorization => \((status as CLAuthorizationStatus).rawValue): \(updating)")
+            TempoUtils.say(msg: "☎️ didChangeAuthorization => \((status as CLAuthorizationStatus).rawValue): \(updating) ❌")
             TempoProfile.updateLocState(newState: LocationState.UNAVAILABLE)
         }
         

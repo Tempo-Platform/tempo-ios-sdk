@@ -249,7 +249,7 @@ public class TempoDataBackup
                     }
                 }
             } catch {
-                TempoUtils.warn(msg: "Error while checking backup metrics: \(error)")
+                TempoUtils.warn(msg: "Error while checking backup metrics: \(error.localizedDescription)")
                 throw MetricsError.checkingFailed(error)
             }
             

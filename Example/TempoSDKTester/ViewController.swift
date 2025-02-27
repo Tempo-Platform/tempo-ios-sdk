@@ -68,7 +68,7 @@ class ViewController: UIViewController, TempoAdListener {
         do{
             try TempoDataBackup.checkHeldMetrics(completion: Metrics.pushMetrics)
         } catch {
-            TempoUtils.warn(msg: "Error checking backups: \(error)")
+            //TempoUtils.warn(msg: "Error checking backups: \(error)")
         }
         
         initializeUIButtons();
