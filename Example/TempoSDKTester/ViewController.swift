@@ -68,7 +68,7 @@ class ViewController: UIViewController, TempoAdListener {
         do{
             try TempoDataBackup.checkHeldMetrics(completion: Metrics.pushMetrics)
         } catch {
-            TempoUtils.Warn(msg: "Error checking backups: \(error)")
+            TempoUtils.warn(msg: "Error checking backups: \(error)")
         }
         
         initializeUIButtons();
@@ -366,7 +366,7 @@ extension ViewController: CLLocationManagerDelegate {
     }
     
     public func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-            TempoUtils.Say(msg: "👉👉👉 didFailWithError: \(error)")
+            TempoUtils.say(msg: "👉👉👉 didFailWithError: \(error)")
             locationManager?.stopUpdatingLocation()
     
                     if let clErr = error as? CLError {

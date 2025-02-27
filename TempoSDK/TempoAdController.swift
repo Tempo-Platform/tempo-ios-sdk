@@ -14,7 +14,7 @@ public class TempoAdController: NSObject {
     
     public init(tempoAdListener: TempoAdListener, appId: String!) {
         super.init()
-        TempoUtils.Say(msg: "🌟🌟🌟🌟🌟🌟🌟 TempoAdListener INIT")
+        TempoUtils.say(msg: "🌟🌟🌟🌟🌟🌟🌟 TempoAdListener INIT")
         
         // On first instantiation by either ad type do some initial global checks
         if(!TempoAdController.isInitialised) {
@@ -28,13 +28,13 @@ public class TempoAdController: NSObject {
                 // Handle specific errors or log them
                 if let metricsError = error as? MetricsError {
                     switch metricsError {
-                        case .missingJsonString: TempoUtils.Warn(msg: "Missing JSON string error: \(metricsError)")
-                        case .decodingFailed(let decodingError): TempoUtils.Warn(msg: "Decoding failed: \(decodingError)")
-                        default: TempoUtils.Warn(msg: "Failed to push backup metrics")
+                        case .missingJsonString: TempoUtils.warn(msg: "Missing JSON string error: \(metricsError)")
+                        case .decodingFailed(let decodingError): TempoUtils.warn(msg: "Decoding failed: \(decodingError)")
+                        default: TempoUtils.warn(msg: "Failed to push backup metrics")
                     }
                 } else {
                     // Handle other generic errors
-                    TempoUtils.Warn(msg: "Error while handling backup metrics: \(error)")
+                    TempoUtils.warn(msg: "Error while handling backup metrics: \(error)")
                 }
             }
             
@@ -43,7 +43,7 @@ public class TempoAdController: NSObject {
         }
         
         // Create AdView object
-        TempoUtils.Say(msg: "🌟🌟🌟 adView created... ")
+        TempoUtils.say(msg: "🌟🌟🌟 adView created... ")
         adView = TempoAdView(listener: tempoAdListener, appId: appId)
 //        adView!.modalPresentationStyle = .fullScreen
 //        if let unityVC = UIApplication.shared.windows.first?.rootViewController {

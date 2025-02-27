@@ -43,7 +43,7 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
             object: nil
         )
         
-        TempoUtils.Say(msg: "🌟🌟🌟🌟🌟🌟🌟 AdView INIT")
+        TempoUtils.say(msg: "🌟🌟🌟🌟🌟🌟🌟 AdView INIT")
         
         // Update from passed properties
         self.listener = listener
@@ -76,9 +76,9 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
         var returningCountryCode: String?
         do {
             returningCountryCode = try CountryCode.getIsoCountryCode2Digit()
-            TempoUtils.Say(msg: "ISO Country Code: \(returningCountryCode!)")
+            TempoUtils.say(msg: "ISO Country Code: \(returningCountryCode!)")
         } catch {
-            TempoUtils.Warn(msg: "Setting countryCode as hard nil")
+            TempoUtils.warn(msg: "Setting countryCode as hard nil")
             returningCountryCode = nil // TODO: Check this, should be ok...
         }
         return returningCountryCode;
@@ -90,14 +90,14 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
             try updateAdId()
         } catch {
             adId = Constants.ZERO_AD_ID
-            TempoUtils.Warn(msg: "Ad ID could not be retrieved: \(error.localizedDescription)")
+            TempoUtils.warn(msg: "Ad ID could not be retrieved: \(error.localizedDescription)")
         }
-        TempoUtils.Say(msg: "Ad ID: \(adId!)")
+        TempoUtils.say(msg: "Ad ID: \(adId!)")
     }
     
     /// Prepares ad for current session (interstitial/reward)
     public func loadAd(isInterstitial: Bool, cpmFloor: Float?, placementId: String?) {
-        TempoUtils.Say(msg: "loadAd() \(TempoUtils.getAdTypeString(isInterstitial: isInterstitial))", absoluteDisplay: true)
+        TempoUtils.say(msg: "loadAd() \(TempoUtils.getAdTypeString(isInterstitial: isInterstitial))", absoluteDisplay: true)
         
         // Update state to LOADING
         adState = AdState.loading
@@ -132,7 +132,7 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
         // If initial check has been done, request ad straight away
         if(tempoProfile != nil && tempoProfile!.initialLocationRequestDone)
         {
-            TempoUtils.Say(msg: "💥💥💥 No need to wait, location has been checked already!!")
+            TempoUtils.say(msg: "💥💥💥 No need to wait, location has been checked already!!")
             doLocationConfirmedAdRequest()
         }
         
@@ -167,7 +167,7 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
     
     public func checkSessionInitialRequestDone() {
         if(tempoProfile != nil && !tempoProfile!.initialLocationRequestDone) {
-            TempoUtils.Say(msg: "💥💥💥 Ad requested after location checks")
+            TempoUtils.say(msg: "💥💥💥 Ad requested after location checks")
             doLocationConfirmedAdRequest()
         }
     }
@@ -351,9 +351,9 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
             // Push metrics with error handling
             do {
                 try Metrics.pushMetrics(currentMetrics: &metricList, backupUrl: nil)
-                TempoUtils.Say(msg: "Metrics pushed successfully.")
+                TempoUtils.say(msg: "Metrics pushed successfully.")
             } catch {
-                TempoUtils.Warn(msg: "Error pushing metrics on close: \(error)")
+                TempoUtils.warn(msg: "Error pushing metrics on close: \(error)")
             }
         }
         
@@ -399,7 +399,7 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
         
         // Check if advertising tracking is enabled
         guard ASIdentifierManager.shared().isAdvertisingTrackingEnabled else {
-            TempoUtils.Warn(msg: "Error: IDFA not available. Ensure that advertising tracking is enabled.")
+            TempoUtils.warn(msg: "Error: IDFA not available. Ensure that advertising tracking is enabled.")
             throw ProfileError.idfaNotAvailable
         }
         
@@ -409,7 +409,7 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
         
         // Validate the IDFA
         if adId == nil || adId!.isEmpty {
-            TempoUtils.Warn(msg: "Invalid Ad ID received.")
+            TempoUtils.warn(msg: "Invalid Ad ID received.")
             throw ProfileError.invalidAdId
         }
     }
@@ -420,20 +420,20 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
         // We don't want to update any backups with personal data is that is disabled
         if(TempoProfile.locationState == LocationState.DISABLED)
         {
-            TempoUtils.Warn(msg: "🌏👨‍🦽‍➡️  LocationState.DISABLED (TempoAdView.sendAdRequest)")
+            TempoUtils.warn(msg: "🌏👨‍🦽‍➡️  LocationState.DISABLED (TempoAdView.sendAdRequest)")
             tempoProfile?.locData = LocationData()
         }
         // Update locData with backup if nil
         else if(tempoProfile?.locData == nil) {
-            TempoUtils.Say(msg: "🌏 Updating with backup")
+            TempoUtils.say(msg: "🌏 Updating with backup")
             do{
                 tempoProfile?.locData = try TempoDataBackup.getLocationDataFromCache()
             } catch {
-                TempoUtils.Warn(msg: "LocData error during ad request")
+                TempoUtils.warn(msg: "LocData error during ad request")
                 tempoProfile?.locData = LocationData()
             }
         } else {
-            TempoUtils.Say(msg: "🌏 LocData is not null, no backup needed")
+            TempoUtils.say(msg: "🌏 LocData is not null, no backup needed")
         }
         
         // Create request
@@ -445,7 +445,7 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
         }
         
         guard let url = components.url else {
-            TempoUtils.Warn(msg: "URL component's URL property invalid")
+            TempoUtils.warn(msg: "URL component's URL property invalid")
             throw AdRequestError.urlCreationFailed
         }
         
@@ -458,7 +458,7 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
         // Reformat the url string for easier readibility
         var urlStringOutput = components.url?.absoluteString ?? "❌ INVALID URL STRING?!"
         urlStringOutput = urlStringOutput.replacingOccurrences(of: "com/ad", with: "com/ad\n")
-        TempoUtils.Say(msg: "🌏 REST-ADS-API: " + urlStringOutput)
+        TempoUtils.say(msg: "🌏 REST-ADS-API: " + urlStringOutput)
         
         // Create request task and send
         let session = URLSession.shared
@@ -482,7 +482,7 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
                     DispatchQueue.main.async { self.processAdFetchFailed(reason: "Invalid HTTP response") }
                     return
                 }
-                TempoUtils.Say(msg: "🤖🤖🤖 Response: \((response as! HTTPURLResponse).statusCode)")
+                TempoUtils.say(msg: "🤖🤖🤖 Response: \((response as! HTTPURLResponse).statusCode)")
                 
                 switch(httpResponse.statusCode) {
                 case 200:
@@ -510,7 +510,7 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
                                 self.lastestURL = url.absoluteString
                                 self.campaignId = try TempoUtils.checkForTestCampaign(campaignId: campaignId)
                                 self.adState = AdState.dormant
-                                TempoUtils.Say(msg: "🧨 URL: \(self.lastestURL!)")
+                                TempoUtils.say(msg: "🧨 URL: \(self.lastestURL!)")
                                 DispatchQueue.main.async {
                                     self.webViewAd.load(URLRequest(url: url))
                                 }
@@ -571,7 +571,7 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
         
         // Get URL domain/path
         guard let url = URL(string: TempoUtils.getAdsApiUrl()) else {
-            TempoUtils.Warn(msg: "Failed to create URL component")
+            TempoUtils.warn(msg: "Failed to create URL component")
             throw AdProcessError.invalidUrl
         }
         
@@ -617,7 +617,7 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
                 components.queryItems?.append(URLQueryItem(name: Constants.URL.LOC_SUB_LOCALITY, value: subLocality))
             }
         } else {
-            TempoUtils.Warn(msg: "No LocationData was sent with Ads call")
+            TempoUtils.warn(msg: "No LocationData was sent with Ads call")
         }
         
         // Clean any '+' references with safe '%2B'
@@ -628,14 +628,14 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
     
     // Combines fetch fail callback and metric send
     func processAdFetchFailed(reason: String?) {
-        TempoUtils.Warn(msg: "AdFetchFailed: \(reason ?? "UNKNOWN")")
+        TempoUtils.warn(msg: "AdFetchFailed: \(reason ?? "UNKNOWN")")
         self.addMetric(metricType: Constants.MetricType.LOAD_FAILED)
         self.listener.onTempoAdFetchFailed(isInterstitial: self.isInterstitial, reason: reason)
     }
     
     // Combines show fail callback and metric send
     func processAdShowFailed(reason: String?) {
-        TempoUtils.Warn(msg: "AdShowFailed: \(reason ?? "UNKNOWN")")
+        TempoUtils.warn(msg: "AdShowFailed: \(reason ?? "UNKNOWN")")
         self.addMetric(metricType: Constants.MetricType.SHOW_FAIL)
         self.listener.onTempoAdShowFailed(isInterstitial: self.isInterstitial, reason: reason)
     }
@@ -694,14 +694,14 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
         
         // Ensure message body is a string
         guard let bodyString = message.body as? String else {
-            TempoUtils.Warn(msg: "Invalid message format received: \(message.body)")
+            TempoUtils.warn(msg: "Invalid message format received: \(message.body)")
             return
         }
         
         // Cannot work with an empty string
         if !bodyString.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             
-            TempoUtils.Say(msg: "WEB_MSG: \(bodyString)", absoluteDisplay: true)
+            TempoUtils.say(msg: "WEB_MSG: \(bodyString)", absoluteDisplay: true)
             
             // Check if known one-word reference
             if actionList.contains(bodyString) {
@@ -721,7 +721,7 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
                 default:
                     jsMsg.append("⚠️ \(bodyString) (unexpected)")
                 }
-                TempoUtils.Say(msg: jsMsg)
+                TempoUtils.say(msg: jsMsg)
             }
             // Check if JSON format first
             else if (TempoUtils.isPossiblyJSONObject(msg: bodyString)) {
@@ -738,7 +738,7 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
                                 do {
                                     try self.pushMetrics()
                                 } catch {
-                                    TempoUtils.Warn(msg: "❌ error pushing metrics: \(error)")
+                                    TempoUtils.warn(msg: "❌ error pushing metrics: \(error)")
                                 }
                                 TempoUtils.openUrlInBrowser(url: redirect.url)
                             }
@@ -749,22 +749,22 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
                             }
                             
                         } else {
-                            TempoUtils.Warn(msg: "❌ MessageType was empty/null")
+                            TempoUtils.warn(msg: "❌ MessageType was empty/null")
                         }
                     } catch {
-                        TempoUtils.Warn(msg: "❌ Failed to decode JSON: \(error)")
+                        TempoUtils.warn(msg: "❌ Failed to decode JSON: \(error)")
                     }
                 } else {
-                    TempoUtils.Warn(msg: "❌ Failed to create JSON data from string: \(bodyString)")
+                    TempoUtils.warn(msg: "❌ Failed to create JSON data from string: \(bodyString)")
                 }
             }
             else {
                 // Send metric from message, even if there is no specific handling
                 self.addMetric(metricType: bodyString)
-                TempoUtils.Say(msg: "🆗 \(bodyString)")
+                TempoUtils.say(msg: "🆗 \(bodyString)")
             }
         } else {
-            TempoUtils.Warn(msg: "❌ MessageType was empty/null")
+            TempoUtils.warn(msg: "❌ MessageType was empty/null")
         }
     }
     
@@ -801,12 +801,12 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
             
             // Hold if still waiting for profile LocationData (or if consent != NONE)
             guard validState || metric.location_data?.consent == Constants.LocationConsent.NONE.rawValue else {
-                TempoUtils.Warn(msg: "[\(metricType)::\(TempoProfile.locationState)] " +
+                TempoUtils.warn(msg: "[\(metricType)::\(TempoProfile.locationState)] " +
                 "Not sending metrics just yet: [state/admin=\(metric.location_data?.admin_area ?? "nil")]")
                 return
             }
             
-            TempoUtils.Say(msg: "[\(metricType)::\(TempoProfile.locationState)] " +
+            TempoUtils.say(msg: "[\(metricType)::\(TempoProfile.locationState)] " +
                 "Sending metrics! [state/admin=\(metric.location_data?.admin_area ?? "nil")]")
             
             if Constants.MetricType.METRIC_SEND_NOW.contains(metricType) {
@@ -820,24 +820,24 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
     /// Push metrics with error handling
     private func pushMetrics() throws {
         try Metrics.pushMetrics(currentMetrics: &metricList, backupUrl: nil)
-        TempoUtils.Say(msg: "Metrics pushed successfully.")
+        TempoUtils.say(msg: "Metrics pushed successfully.")
     }
     
     /// Handle metric-related errors
     private func handleMetricError(_ error: Error) {
         switch error {
         case MetricsError.invalidURL:
-            TempoUtils.Warn(msg: "Error: Invalid URL for metrics")
+            TempoUtils.warn(msg: "Error: Invalid URL for metrics")
         case MetricsError.jsonEncodingFailed:
-            TempoUtils.Warn(msg: "Error: Failed to encode metrics data")
+            TempoUtils.warn(msg: "Error: Failed to encode metrics data")
         case MetricsError.emptyMetrics:
-            TempoUtils.Warn(msg: "Error: No metrics to push")
+            TempoUtils.warn(msg: "Error: No metrics to push")
         case MetricsError.missingJsonString:
-            TempoUtils.Warn(msg: "Error: Missing JSON string")
+            TempoUtils.warn(msg: "Error: Missing JSON string")
         case MetricsError.invalidHeaderValue:
-            TempoUtils.Warn(msg: "Error: Invalid header value")
+            TempoUtils.warn(msg: "Error: Invalid header value")
         default:
-            TempoUtils.Warn(msg: "An unknown error occurred: \(error)")
+            TempoUtils.warn(msg: "An unknown error occurred: \(error)")
         }
     }
     
@@ -874,7 +874,7 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
     func pushHeldMetricsWithUpdatedLocationData() {
         
         guard !metricList.isEmpty else {
-            TempoUtils.Say(msg:"🧹 No metrics to push (EMPTY)")
+            TempoUtils.say(msg:"🧹 No metrics to push (EMPTY)")
             return
         }
         
@@ -889,7 +889,7 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
                 updateLocationDataFromTempoProfile(&metric)
             }
             
-            TempoUtils.Say(msg: "🧹\(metric.location_data?.consent ?? "NOT_NONE") => \(metric.metric_type ?? "TYPE?"): admin=[\(preAdmin ?? "nil"):\(metric.location_data?.postcode ?? "nil")], locality=[\(preLocality ?? "nil"):\(metric.location_data?.state ?? "nil")]")
+            TempoUtils.say(msg: "🧹\(metric.location_data?.consent ?? "NOT_NONE") => \(metric.metric_type ?? "TYPE?"): admin=[\(preAdmin ?? "nil"):\(metric.location_data?.postcode ?? "nil")], locality=[\(preLocality ?? "nil"):\(metric.location_data?.state ?? "nil")]")
             
             metricList[index] = metric
         }
@@ -913,7 +913,7 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
         metric.location_data?.locality = nil
         metric.location_data?.sub_locality = nil
         
-        TempoUtils.Say(msg: "🧹 NONE => \(metric.metric_type ?? "TYPE?"): admin=[\(preAdmin ?? "nil"):nil)], locality=[\(preLocality ?? "nil"):nil]")
+        TempoUtils.say(msg: "🧹 NONE => \(metric.metric_type ?? "TYPE?"): admin=[\(preAdmin ?? "nil"):nil)], locality=[\(preLocality ?? "nil"):nil]")
     }
     
     /// Updates location data from TempoProfile
@@ -963,7 +963,7 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
     func abortTempo() {
         // If no ad state, abort now
         guard let adState = adState else {
-            TempoUtils.Warn(msg: "Abrupt Tempo shutdown: adState is nil")
+            TempoUtils.warn(msg: "Abrupt Tempo shutdown: adState is nil")
             self.processAdFetchFailed(reason: "WKWebView navigation failure (adState=nil)")
             return
         }
@@ -977,7 +977,7 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
             // Close the iOS WebView - this should return to original view this was called against
             closeAd()
         default:
-            TempoUtils.Warn(msg: "Unhandled adState: \(adState)")
+            TempoUtils.warn(msg: "Unhandled adState: \(adState)")
         }
     }
     
@@ -1000,7 +1000,7 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
     
     /// Test function used to test specific campaign ID using dummy values fo other metrics
     public func loadSpecificCampaignAd(isInterstitial: Bool, campaignId:String) {
-        TempoUtils.Say(msg: "load specific url \(isInterstitial ? "INTERSTITIAL": "REWARDED")")
+        TempoUtils.say(msg: "load specific url \(isInterstitial ? "INTERSTITIAL": "REWARDED")")
         
         // Update state to LOADING
         adState = AdState.loading
@@ -1030,7 +1030,7 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
             // Generate URL based on interstitial type and campaign ID
             guard let url = URL(string: try TempoUtils.getFullWebUrl(isInterstitial: isInterstitial, campaignId: campaignId, urlSuffix: nil)) else {
                 
-                TempoUtils.Shout(msg: "---- 0 (fail) ----")
+                TempoUtils.shout(msg: "---- 0 (fail) ----")
                 adState = .dormant
                 DispatchQueue.main.async {
                     self.processAdFetchFailed(reason: "Invalid URL for campaign \(campaignId)")
@@ -1044,7 +1044,7 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
             // Load the ad in the web view
             webViewAd.load(URLRequest(url: url))
             
-            TempoUtils.Shout(msg: "---- 1 (suc) ----")
+            TempoUtils.shout(msg: "---- 1 (suc) ----")
             return
             
         } catch WebURLError.invalidCampaignId {  errorMsg = "200 - Custom campaign ID invalid"
@@ -1052,7 +1052,7 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
         } catch { errorMsg = "200 - Unknown error while loading ad"
         }
         
-        TempoUtils.Shout(msg: "---- 2 (err) ----")
+        TempoUtils.shout(msg: "---- 2 (err) ----")
         
         // If ends here, we have failed so exit
         adState = .dormant
@@ -1066,12 +1066,12 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
         webViewAd.evaluateJavaScript(Constants.JS.JS_MUTE_VIDEO) { (result, error) in
             
             if let error = error {
-                TempoUtils.Say(msg: "Error muting video: \(error)")
+                TempoUtils.say(msg: "Error muting video: \(error)")
             }
             
             // Note: Method return type not recognised by WKWebKit so we add null return.
             if let result = result {
-                TempoUtils.Say(msg: "Muting video result: \(result)")
+                TempoUtils.say(msg: "Muting video result: \(result)")
             }
         }
     }
@@ -1081,13 +1081,13 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
         webViewAd.evaluateJavaScript(Constants.JS.JS_FORCE_PLAY_VIDEO) { (result, error) in
             
             if let error = error {
-                TempoUtils.Say(msg: "Error playing video: \(error)")
+                TempoUtils.say(msg: "Error playing video: \(error)")
                 // TODO: METRIC if this occurs? Close?
             }
             
             // Note: Method return type not recognised by WKWebKit so we add null return.
             if let result = result {
-                TempoUtils.Say(msg: "Playing video result: \(result)")
+                TempoUtils.say(msg: "Playing video result: \(result)")
             }
         }
     }
