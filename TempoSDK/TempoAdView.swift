@@ -130,7 +130,7 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
         // If initial check has been done, request ad straight away
         if(tempoProfile != nil && tempoProfile!.initialLocationRequestDone)
         {
-            TempoUtils.say(msg: "💥💥💥 No need to wait, location has been checked already!!")
+            //TempoUtils.say(msg: "💥💥💥 No need to wait, location has been checked already!!")
             doLocationConfirmedAdRequest()
         }
         
@@ -165,7 +165,7 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
     
     public func checkIfSessionInitialRequestDone() {
         if(tempoProfile != nil && !tempoProfile!.initialLocationRequestDone) {
-            TempoUtils.say(msg: "💥💥💥 Ad requested after location checks")
+            //TempoUtils.say(msg: "💥💥💥 Ad requested after location checks")
             doLocationConfirmedAdRequest()
         }
     }

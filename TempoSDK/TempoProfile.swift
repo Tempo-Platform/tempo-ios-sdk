@@ -218,7 +218,6 @@ public class TempoProfile: NSObject, CLLocationManagerDelegate { //TODO: Make cl
         }
     }
     
-    
     func authorizationStatusString(_ status: CLAuthorizationStatus) -> String {
         switch status {
         case .notDetermined: return "notDetermined"
@@ -233,13 +232,12 @@ public class TempoProfile: NSObject, CLLocationManagerDelegate { //TODO: Make cl
     /* ---------- Location Manager Callback ---------- */
     /// Location Manager callback: didChangeAuthorization
     public func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
-        TempoUtils.warn(msg: "⚠️⚠️⚠️ STATUS CHANGE ⚠️⚠️⚠️: \(authorizationStatusString(status))")
+        //TempoUtils.warn(msg: "⚠️⚠️⚠️ STATUS CHANGE ⚠️⚠️⚠️: \(authorizationStatusString(status))")
         var updating = "NOT UPDATING"
         
-        // If disabled, can attempt ad load (if not already done so)
+        // If disabled, can attempt ad load immediately (if not already done so)
         if(TempoProfile.locationState == LocationState.DISABLED) {
-            TempoUtils.warn(msg: "🌏👨‍🦽‍➡️ LocationState.DISABLED (TempoProfile.locationManager [delegate callback])")
-            adView.checkIfSessionInitialRequestDone()
+            // pass through
         }
         // If authorisation checks out, proceed with update
         else if status == .authorizedWhenInUse || status == .authorizedAlways {
@@ -251,32 +249,30 @@ public class TempoProfile: NSObject, CLLocationManagerDelegate { //TODO: Make cl
                 TempoProfile.updateLocState(newState: .CHECKING)
                 // Update consent type (i.e. GENERAL/PRECISE)
                 updateConsentTypeThenDoCallback(completion: locManager.requestLocation)
-                TempoUtils.say(msg: "☎️ didChangeAuthorization => \((status as CLAuthorizationStatus).rawValue): \(updating) ✅")
+                TempoUtils.say(msg: "☎️ didChangeAuthorization => \(authorizationStatusString(status)): \(updating) ✅")
                 return
             }
         }
         // If explicitly denied, return locData to default and exit process
         else if status == .denied || status == .restricted {
-            TempoUtils.say(msg: "☎️ didChangeAuthorization => \((status as CLAuthorizationStatus).rawValue): \(updating) ❌")
+            TempoUtils.say(msg: "☎️ didChangeAuthorization => \(authorizationStatusString(status)): \(updating) ❌")
             TempoProfile.updateLocState(newState: LocationState.UNAVAILABLE)
-            locData = LocationData()
-            self.saveLatestValidLocData()
-            return
         }
         // The latest change (or first check) showed no valid authorisation
         else {
-            TempoUtils.say(msg: "☎️ didChangeAuthorization => \((status as CLAuthorizationStatus).rawValue): \(updating) ❌")
+            TempoUtils.say(msg: "☎️ didChangeAuthorization => \(authorizationStatusString(status)): \(updating) ❌")
             TempoProfile.updateLocState(newState: LocationState.UNAVAILABLE)
         }
         
         // Make consent state NONE
-        self.updateLocConsentValues(consentType: Constants.LocationConsent.NONE)
+        locData = LocationData()
+        self.saveLatestValidLocData()
         adView.checkIfSessionInitialRequestDone()
     }
     
     /// Location Manager callback: didUpdateLocations
     public func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        TempoUtils.warn(msg: "⚠️⚠️⚠️ LOCATION DATA ⚠️⚠️⚠️")
+        //TempoUtils.warn(msg: "⚠️⚠️⚠️ LOCATION DATA ⚠️⚠️⚠️")
         guard let location = locations.last else {
             TempoUtils.warn(msg: "☎️ didUpdateLocations: No valid locations found")
             TempoProfile.updateLocState(newState: LocationState.FAILED)
