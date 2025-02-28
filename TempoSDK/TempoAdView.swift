@@ -121,11 +121,11 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
         // Update session values from global checks
         uuid = UUID().uuidString
         
-        // Create ad load metrics with updated ad data
-        self.addMetric(metricType: Constants.MetricType.LOAD_REQUEST)
-        
         // Create tempoProfile instance if does not already exist
         tempoProfile = tempoProfile ?? TempoProfile(adView: self)
+        
+        // Create ad load metrics with updated ad data
+        self.addMetric(metricType: Constants.MetricType.LOAD_REQUEST)
         
         // If initial check has been done, request ad straight away
         if(tempoProfile != nil && tempoProfile!.initialLocationRequestDone)
