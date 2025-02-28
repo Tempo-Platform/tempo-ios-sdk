@@ -124,31 +124,19 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
         // Create tempoProfile instance if does not already exist
         tempoProfile = tempoProfile ?? TempoProfile(adView: self)
         
-        // Create ad load metrics with updated ad data
-        self.addMetric(metricType: Constants.MetricType.LOAD_REQUEST)
-        
         // If initial check has been done, request ad straight away
         if(tempoProfile != nil && tempoProfile!.initialLocationRequestDone)
         {
             //TempoUtils.say(msg: "💥💥💥 No need to wait, location has been checked already!!")
             doLocationConfirmedAdRequest()
         }
-        
-//        // Create and send ad request with latest data
-//        do {
-//            try sendAdRequest()
-//        }
-//        catch {
-//            // Send failure trigger and reset state
-//            self.adState = AdState.dormant
-//            DispatchQueue.main.async {
-//                self.processAdFetchFailed(reason: "Failed sending ad fetch request")
-//            }
-//        }
     }
     
     // Callback to send ad request once location data checks have been resolved
     private func doLocationConfirmedAdRequest() {
+        // Create ad load metrics with updated ad data
+        self.addMetric(metricType: Constants.MetricType.LOAD_REQUEST)
+        
         // Create and send ad request with latest data
         do {
             try sendAdRequest()
@@ -163,13 +151,13 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
         }
     }
     
+    /// For post-location checks - if an initial check has NOT been done yet, request ad
     public func checkIfSessionInitialRequestDone() {
         if(tempoProfile != nil && !tempoProfile!.initialLocationRequestDone) {
             //TempoUtils.say(msg: "💥💥💥 Ad requested after location checks")
             doLocationConfirmedAdRequest()
         }
     }
-    
     
     /// Plays currently loaded ad for current session (interstitial/reward)
     public func showAd(parentVC: UIViewController?) {
