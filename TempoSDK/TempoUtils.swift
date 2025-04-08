@@ -175,16 +175,30 @@ public class TempoUtils {
             return deployPreviewUrl
         }
         
-        // If non-DP, return env-based address
-        switch(Constants.environment) {
-        case .STG:
-            return "\(cw.ADS_DOM_URL_STG)/\(cw.URL_REW)"
-        case .PRD:
-            return "\(cw.ADS_DOM_URL_PROD)/\(cw.URL_REW)"
-        case .DEV:
-            fallthrough
-        default:
-            return "\(cw.ADS_DOM_URL_DEV)/\(cw.URL_REW)"
+        if let usingNextJS = TempoExternal.instance?.usingNextJS, usingNextJS  {
+            // If non-DP, return env-based address
+            switch(Constants.environment) {
+            case .STG:
+                return "\(cw.ADS_DOM_URL_STG_NEXT_JS)/\(cw.URL_REW)"
+            case .PRD:
+                return "\(cw.ADS_DOM_URL_PROD_NEXT_JS)/\(cw.URL_REW)"
+            case .DEV:
+                fallthrough
+            default:
+                return "\(cw.ADS_DOM_URL_DEV_NEXT_JS)/\(cw.URL_REW)"
+            }
+        } else {
+            // If non-DP, return env-based address
+            switch(Constants.environment) {
+            case .STG:
+                return "\(cw.ADS_DOM_URL_STG)/\(cw.URL_REW)"
+            case .PRD:
+                return "\(cw.ADS_DOM_URL_PROD)/\(cw.URL_REW)"
+            case .DEV:
+                fallthrough
+            default:
+                return "\(cw.ADS_DOM_URL_DEV)/\(cw.URL_REW)"
+            }
         }
     }
     
@@ -201,16 +215,30 @@ public class TempoUtils {
             return deployPreviewUrl
         }
         
-        // If non-DP, return env-based address
-        switch(Constants.environment) {
-        case .STG:
-            return "\(cw.ADS_DOM_URL_STG)/\(cw.URL_INT)"
-        case .PRD:
-            return "\(cw.ADS_DOM_URL_PROD)/\(cw.URL_INT)"
-        case .DEV:
-            fallthrough
-        default:
-            return "\(cw.ADS_DOM_URL_DEV)/\(cw.URL_INT)"
+        if let usingNextJS = TempoExternal.instance?.usingNextJS, usingNextJS  {
+            // If non-DP, return env-based address
+            switch(Constants.environment) {
+            case .STG:
+                return "\(cw.ADS_DOM_URL_STG_NEXT_JS)/\(cw.URL_INT)"
+            case .PRD:
+                return "\(cw.ADS_DOM_URL_PROD_NEXT_JS)/\(cw.URL_INT)"
+            case .DEV:
+                fallthrough
+            default:
+                return "\(cw.ADS_DOM_URL_DEV_NEXT_JS)/\(cw.URL_INT)"
+            }
+        } else {
+            // If non-DP, return env-based address
+            switch(Constants.environment) {
+            case .STG:
+                return "\(cw.ADS_DOM_URL_STG)/\(cw.URL_INT)"
+            case .PRD:
+                return "\(cw.ADS_DOM_URL_PROD)/\(cw.URL_INT)"
+            case .DEV:
+                fallthrough
+            default:
+                return "\(cw.ADS_DOM_URL_DEV)/\(cw.URL_INT)"
+            }
         }
     }
     
@@ -220,16 +248,30 @@ public class TempoUtils {
         // For ease of reading
         let cw = Constants.Web.self
         
-        // Return env-based ads-api URL
-        switch(Constants.environment){
-        case .STG:
-            return cw.ADS_API_URL_STG
-        case .PRD:
-            return cw.ADS_API_URL_PROD
-        case .DEV:
-            fallthrough
-        default:
-            return cw.ADS_API_URL_DEV
+        if let usingNextJS = TempoExternal.instance?.usingNextJS, usingNextJS  {
+            // Return env-based ads-api URL in next.js
+            switch(Constants.environment) {
+            case .STG:
+                return cw.ADS_DOM_URL_STG_NEXT_JS
+            case .PRD:
+                return cw.ADS_DOM_URL_PROD_NEXT_JS
+            case .DEV:
+                fallthrough
+            default:
+                return cw.ADS_DOM_URL_DEV_NEXT_JS
+            }
+        } else {
+            // Return env-based ads-api URL
+            switch(Constants.environment){
+            case .STG:
+                return cw.ADS_API_URL_STG
+            case .PRD:
+                return cw.ADS_API_URL_PROD
+            case .DEV:
+                fallthrough
+            default:
+                return cw.ADS_API_URL_DEV
+            }
         }
     }
     

@@ -32,14 +32,17 @@ public struct Constants {
         static let METRICS_URL_PROD = "https://metric-api.tempoplatform.com/metrics" // PROD
         static let ADS_API_URL_PROD = "https://ads-api.tempoplatform.com/ad" // PROD
         static let ADS_DOM_URL_PROD = "https://ads.tempoplatform.com" // PROD
+        static let ADS_DOM_URL_PROD_NEXT_JS = "html-ads.prd.tempoplatform.com" // PROD
         
         static let METRICS_URL_STG = "https://metric-api.stg.tempoplatform.com/metrics" // STG
         static let ADS_API_URL_STG = "https://ads-api.stg.tempoplatform.com/ad" // STG
         static let ADS_DOM_URL_STG = "https://staging--tempo-html-ads.netlify.app" // STG
+        static let ADS_DOM_URL_STG_NEXT_JS = "html-ads.stg.tempoplatform.com" // STG
         
         static let METRICS_URL_DEV = "https://metric-api.dev.tempoplatform.com/metrics" // DEV
         static let ADS_API_URL_DEV = "https://ads-api.dev.tempoplatform.com/ad" // DEV
         static let ADS_DOM_URL_DEV = "https://development--tempo-html-ads.netlify.app" // DEV
+        static let ADS_DOM_URL_DEV_NEXT_JS = "html-ads.dev.tempoplatform.com" // DEV
         
         static let ADS_DOM_PREFIX_URL_PREVIEW = "https://deploy-preview-" // DEPLOY PREVIEW
         static let ADS_DOM_APPENDIX_URL_PREVIEW = "--tempo-html-ads.netlify.app/" // DEPLOY PREVIEW
@@ -110,7 +113,7 @@ public struct Constants {
     }
     
     // Test tool variables
-    public static var environment: Environment = Environment.PRD
-    public static var isVerboseDebugging = false
+    public static var environment: Environment = Environment.DEV
+    public static var isVerboseDebugging = true
     
 }

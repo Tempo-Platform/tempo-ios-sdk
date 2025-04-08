@@ -8,6 +8,7 @@ public class TempoExternal {
     public var isTestingCustomCampaigns: Bool = false
     public var currentDeployVersion: String?
     public var customCampaignId: String?
+    public var usingNextJS: Bool = false
     
     public init() {
         TempoExternal.instance = self
@@ -35,6 +36,10 @@ public class TempoExternal {
     
     public func activateCustomCampaigns(activate: Bool) -> Void {
         isTestingCustomCampaigns = activate
+    }
+    
+    public func toggleURLForNextjs(isOn: Bool) -> Void {
+        usingNextJS = isOn
     }
     
     public func updateCustomCampaignId(campaignId: String) -> Void {
