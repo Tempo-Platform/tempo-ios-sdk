@@ -131,7 +131,7 @@ public class TempoUtils {
                 webAdUrl.append("\(suffix)")
             }
             
-            //TempoUtils.say(msg: "🌏 Web URL: \(webAdUrl)")
+            TempoUtils.say(msg: "🌏 Web URL: \(webAdUrl)")
             
             return webAdUrl
             
@@ -248,30 +248,16 @@ public class TempoUtils {
         // For ease of reading
         let cw = Constants.Web.self
         
-        if let usingNextJS = TempoExternal.instance?.usingNextJS, usingNextJS  {
-            // Return env-based ads-api URL in next.js
-            switch(Constants.environment) {
-            case .STG:
-                return cw.ADS_DOM_URL_STG_NEXT_JS
-            case .PRD:
-                return cw.ADS_DOM_URL_PROD_NEXT_JS
-            case .DEV:
-                fallthrough
-            default:
-                return cw.ADS_DOM_URL_DEV_NEXT_JS
-            }
-        } else {
-            // Return env-based ads-api URL
-            switch(Constants.environment){
-            case .STG:
-                return cw.ADS_API_URL_STG
-            case .PRD:
-                return cw.ADS_API_URL_PROD
-            case .DEV:
-                fallthrough
-            default:
-                return cw.ADS_API_URL_DEV
-            }
+        // Return env-based ads-api URL
+        switch(Constants.environment){
+        case .STG:
+            return cw.ADS_API_URL_STG
+        case .PRD:
+            return cw.ADS_API_URL_PROD
+        case .DEV:
+            fallthrough
+        default:
+            return cw.ADS_API_URL_DEV
         }
     }
     

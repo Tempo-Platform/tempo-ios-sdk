@@ -493,7 +493,7 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
                                 self.lastestURL = url.absoluteString
                                 self.campaignId = try TempoUtils.checkForTestCampaign(campaignId: campaignId)
                                 self.adState = AdState.dormant
-                                TempoUtils.say(msg: "🌏 ADS-API URL: \(self.lastestURL!)")
+                                TempoUtils.say(msg: "🌏 URL: \(self.lastestURL!)")
                                 DispatchQueue.main.async {
                                     self.webViewAd.load(URLRequest(url: url))
                                 }
@@ -964,21 +964,25 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
         }
     }
     
+    public func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
+        TempoUtils.say(msg: "🫣 Started loading...")
+    }
+    
     /// WebView fail delegate (ProvisionalNavigation)
     public func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
-        //TempoUtils.Warn(msg: "❌ didFailProvisionalNavigation FAILURE: \(error.localizedDescription)")
+        TempoUtils.warn(msg: "❌ didFailProvisionalNavigation FAILURE: \(error.localizedDescription)")
         abortTempo()
     }
     
     /// WebView fail delegate (General fail)
     public func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
-        //TempoUtils.Shout(msg: "❌ didFail FAILURE: \(error.localizedDescription)")
+        TempoUtils.shout(msg: "❌ didFail FAILURE: \(error.localizedDescription)")
         abortTempo()
     }
     
     /// WebView success delegate
     public func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
-        //TempoUtils.Say(msg: "✅ didFinish SUCCESS")
+        TempoUtils.say(msg: "✅ didFinish SUCCESS")
     }
     
     /// Test function used to test specific campaign ID using dummy values fo other metrics
