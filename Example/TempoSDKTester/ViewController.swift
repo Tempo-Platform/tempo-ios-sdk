@@ -123,6 +123,9 @@ class ViewController: UIViewController, TempoAdListener {
     func onTempoAdShowFailed(isInterstitial: Bool, reason: String?) {
         print("\(TempoUtils.getAdTypeString(isInterstitial: isInterstitial)) :: show failed: \(reason ?? "uknown")")
     }
+    func onTempoAdAddressReady(isInterstitial: Bool, url: String?) {
+             print("\(TempoUtils.getAdTypeString(isInterstitial: isInterstitial)) :: url ready: \(url ?? "unknown")")
+         }
     func onTempoAdClicked(isInterstitial: Bool) {
         print("\(TempoUtils.getAdTypeString(isInterstitial: isInterstitial)) :: clicked")
     }

@@ -175,7 +175,9 @@ public class TempoUtils {
             return deployPreviewUrl
         }
         
-        if let usingNextJS = TempoExternal.instance?.usingNextJS, usingNextJS  {
+        if let usingCustUrl = TempoExternal.instance?.usingCustomUrl, usingCustUrl  {
+            return "\(TempoExternal.instance?.customUrl ?? "err")/\(cw.URL_REW)"
+        } else if let usingNJS = TempoExternal.instance?.usingNextJS, usingNJS   {
             // If non-DP, return env-based address
             switch(Constants.environment) {
             case .STG:
@@ -215,7 +217,9 @@ public class TempoUtils {
             return deployPreviewUrl
         }
         
-        if let usingNextJS = TempoExternal.instance?.usingNextJS, usingNextJS  {
+        if let usingCustUrl = TempoExternal.instance?.usingCustomUrl, usingCustUrl  {
+                     return "\(TempoExternal.instance?.customUrl ?? "err")/\(cw.URL_INT)"
+        } else if let usingNextJS = TempoExternal.instance?.usingNextJS, usingNextJS  {  
             // If non-DP, return env-based address
             switch(Constants.environment) {
             case .STG:
@@ -240,7 +244,7 @@ public class TempoUtils {
                 return "\(cw.ADS_DOM_URL_DEV)/\(cw.URL_INT)"
             }
         }
-    }
+        }
     
     /// Returns REST-ADS-API url based on current environment
     public static func getAdsApiUrl() -> String {

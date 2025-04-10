@@ -17,6 +17,9 @@ public protocol TempoAdListener {
     // Called when an ad is clicked.
     func onTempoAdClicked(isInterstitial: Bool)  // TODO: actually monitor clicks and call this callback
     
+    // Called when ad fails, need to differentiate adNotReady from other failures
+    func onTempoAdAddressReady(isInterstitial: Bool, url: String?)
+    
     // Called when swapping version information
     func getTempoAdapterVersion() -> String?
     

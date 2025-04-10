@@ -494,6 +494,7 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
                                 self.campaignId = try TempoUtils.checkForTestCampaign(campaignId: campaignId)
                                 self.adState = AdState.dormant
                                 TempoUtils.say(msg: "🌏 URL: \(self.lastestURL!)")
+                                self.listener.onTempoAdAddressReady(isInterstitial: self.isInterstitial, url: self.lastestURL)
                                 DispatchQueue.main.async {
                                     self.webViewAd.load(URLRequest(url: url))
                                 }
