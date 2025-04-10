@@ -3,6 +3,8 @@ import UIKit
 import CoreLocation
 
 class ViewController: UIViewController, TempoAdListener {
+
+    
     
     var locationManager: CLLocationManager?
     var adControllerReady: Bool = false
@@ -121,7 +123,10 @@ class ViewController: UIViewController, TempoAdListener {
         showAdButton.isEnabled = false
     }
     func onTempoAdShowFailed(isInterstitial: Bool, reason: String?) {
-        print("\(TempoUtils.getAdTypeString(isInterstitial: isInterstitial)) :: show failed: \(reason ?? "uknown")")
+        print("\(TempoUtils.getAdTypeString(isInterstitial: isInterstitial)) :: show failed: \(reason ?? "unknown")")
+    }
+    func onTempoAdAddressReady(isInterstitial: Bool, url: String?) {
+        print("\(TempoUtils.getAdTypeString(isInterstitial: isInterstitial)) :: url ready: \(url ?? "unknown")")
     }
     func onTempoAdClicked(isInterstitial: Bool) {
         print("\(TempoUtils.getAdTypeString(isInterstitial: isInterstitial)) :: clicked")

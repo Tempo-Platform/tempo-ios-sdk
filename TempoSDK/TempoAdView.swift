@@ -445,7 +445,7 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
         
         // Create request task and send
         let session = URLSession.shared
-        let task = session.dataTask(with: request, completionHandler: { data, response, error -> Void in
+        let task = session.dataTask(with: request, completionHandler: { [self] data, response, error -> Void in
             
             // Faluire reason to be updated if any errors encountered
             var errorMsg = "Unknown"
@@ -494,6 +494,8 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
                                 self.campaignId = try TempoUtils.checkForTestCampaign(campaignId: campaignId)
                                 self.adState = AdState.dormant
                                 TempoUtils.say(msg: "🌏 URL: \(self.lastestURL!)")
+                                
+                                self.listener.onTempoAdAddressReady(isInterstitial: self.isInterstitial, url: self.lastestURL)
                                 DispatchQueue.main.async {
                                     self.webViewAd.load(URLRequest(url: url))
                                 }
