@@ -698,9 +698,11 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
                 switch bodyString {
                 case Constants.MetricType.CLOSE_AD:
                     jsMsg.append("CLOSE_AD")
+                    self.listener.onTempoLogEvent(isInterstitial: isInterstitial, logEvent: bodyString)
                     self.closeAd()
                 case Constants.MetricType.IMAGES_LOADED:
                     jsMsg.append("IMAGES_LOADED")
+                    self.listener.onTempoLogEvent(isInterstitial: isInterstitial, logEvent: bodyString)
                     listener.onTempoAdFetchSucceeded(isInterstitial: self.isInterstitial)
                     self.addMetric(metricType: Constants.MetricType.LOAD_SUCCESS)
                 default:
@@ -718,6 +720,7 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
                         // Make sure msgType is not empty or just whitespace
                         if !redirect.msgType.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                             
+                            self.listener.onTempoLogEvent(isInterstitial: isInterstitial, logEvent: redirect.msgType)
                             // URL redirect
                             if redirect.msgType == Constants.MetricType.OPEN_URL_IN_EXTERNAL_BROWSER {
                                 do {
@@ -745,6 +748,7 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
             }
             else {
                 // Send metric from message, even if there is no specific handling
+                self.listener.onTempoLogEvent(isInterstitial: isInterstitial, logEvent: bodyString)
                 self.addMetric(metricType: bodyString)
                 TempoUtils.say(msg: "📊 \(bodyString)")
             }

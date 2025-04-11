@@ -20,6 +20,9 @@ public protocol TempoAdListener {
     // Called when ad fails, need to differentiate adNotReady from other failures
     func onTempoAdAddressReady(isInterstitial: Bool, url: String?)
     
+    // Called when log event raised
+    func onTempoLogEvent(isInterstitial: Bool, logEvent: String?)
+    
     // Called when swapping version information
     func getTempoAdapterVersion() -> String?
     
