@@ -488,15 +488,32 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
                                 return
                             }
                             do {
-                                let url = URL(string: try TempoUtils.getFullWebUrl(isInterstitial: self.isInterstitial, campaignId: campaignId, urlSuffix: responseSuccess.location_url_suffix))!
+                                var urlString: String = try TempoUtils.getFullWebUrl(isInterstitial: self.isInterstitial, campaignId: campaignId, urlSuffix: responseSuccess.location_url_suffix)
+                                
+//                                let hyphen = "\u{002D}"  // ASCII hyphen-minus
+//                                let enDash = "\u{2013}"
+//                                let emDash = "\u{2014}"
+//                                TempoUtils.say(msg: "⭐️ before: \(urlString) \(hyphen) v \(emDash) v \(enDash)")
+//                                urlString = urlString
+//                                    .replacingOccurrences(of: enDash, with: hyphen) // en dash to hyphen
+//                                    .replacingOccurrences(of: emDash, with: hyphen) // em dash to hyphen
+                                
+                                TempoUtils.say(msg: "🌍 Raw: \(urlString)")
+                                TempoUtils.say(msg: "(Raw) Hyphen (\("\u{002D}")): \(urlString.contains("\u{002D}"))")
+                                TempoUtils.say(msg: "(Raw) Emdash (\("\u{2013}")): \(urlString.contains("\u{2013}"))")
+                                TempoUtils.say(msg: "(Raw) Hyphen (\("\u{2014}")): \(urlString.contains("\u{2014}"))")
+                                let url = URL(string: urlString)!
                                 
                                 self.lastestURL = url.absoluteString
                                 self.campaignId = try TempoUtils.checkForTestCampaign(campaignId: campaignId)
                                 self.adState = AdState.dormant
                                 TempoUtils.say(msg: "🌏 URL: \(self.lastestURL!)")
-                                let carryOnUrl = self.lastestURL
+                                TempoUtils.say(msg: "(URL) Hyphen (\("\u{002D}")): \(urlString.contains("\u{002D}"))")
+                                TempoUtils.say(msg: "(URL) Emdash (\("\u{2013}")): \(urlString.contains("\u{2013}"))")
+                                TempoUtils.say(msg: "(URL) Hyphen (\("\u{2014}")): \(urlString.contains("\u{2014}"))")
+                                
                                 DispatchQueue.main.async {
-                                    self.listener.onTempoAdAddressReady(isInterstitial: self.isInterstitial, url: carryOnUrl)
+                                    self.listener.onTempoAdAddressReady(isInterstitial: self.isInterstitial, url: self.lastestURL)
                                     self.webViewAd.load(URLRequest(url: url))
                                 }
                                 
@@ -698,9 +715,11 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
                 switch bodyString {
                 case Constants.MetricType.CLOSE_AD:
                     jsMsg.append("CLOSE_AD")
+                    self.listener.onTempoLogEvent(isInterstitial: isInterstitial, logEvent: bodyString)
                     self.closeAd()
                 case Constants.MetricType.IMAGES_LOADED:
                     jsMsg.append("IMAGES_LOADED")
+                    self.listener.onTempoLogEvent(isInterstitial: isInterstitial, logEvent: bodyString)
                     listener.onTempoAdFetchSucceeded(isInterstitial: self.isInterstitial)
                     self.addMetric(metricType: Constants.MetricType.LOAD_SUCCESS)
                 default:
@@ -715,6 +734,7 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
                         // Parse expected JSON data
                         let redirect = try JSONDecoder().decode(Constants.Function_RedirectToUrl.self, from: jsonData)
                         
+                        self.listener.onTempoLogEvent(isInterstitial: isInterstitial, logEvent: redirect.msgType)
                         // Make sure msgType is not empty or just whitespace
                         if !redirect.msgType.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                             
@@ -745,6 +765,7 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
             }
             else {
                 // Send metric from message, even if there is no specific handling
+                self.listener.onTempoLogEvent(isInterstitial: isInterstitial, logEvent: bodyString)
                 self.addMetric(metricType: bodyString)
                 TempoUtils.say(msg: "📊 \(bodyString)")
             }
@@ -984,6 +1005,14 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
     
     /// WebView success delegate
     public func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+//        if let usingCustUrl = TempoExternal.instance?.usingCustomUrl, usingCustUrl {
+//            listener.onTempoAdFetchSucceeded(isInterstitial: isInterstitial)
+//        }
+        
+        //        if let usingCustUrl = TempoExternal.instance?.usingCustomUrl, usingCustUrl {
+        //            showAd(parentVC: self)
+        //        }
+        
         TempoUtils.say(msg: "✅ didFinish SUCCESS")
     }
     
