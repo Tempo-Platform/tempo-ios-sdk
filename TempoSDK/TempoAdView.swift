@@ -1005,9 +1005,9 @@ public class TempoAdView: UIViewController, WKNavigationDelegate, WKScriptMessag
     
     /// WebView success delegate
     public func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
-//        if let usingCustUrl = TempoExternal.instance?.usingCustomUrl, usingCustUrl {
-//            listener.onTempoAdFetchSucceeded(isInterstitial: isInterstitial)
-//        }
+        if let usingCustUrl = TempoExternal.instance?.usingCustomUrl, usingCustUrl {
+            listener.onTempoAdFetchSucceeded(isInterstitial: isInterstitial)
+        }
         
         //        if let usingCustUrl = TempoExternal.instance?.usingCustomUrl, usingCustUrl {
         //            showAd(parentVC: self)
